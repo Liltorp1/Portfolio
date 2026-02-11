@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passive Income Portfolio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap');
+        
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #151b2e;
+            --bg-card: #1a2237;
+            --text-primary: #e8edf4;
+            --text-secondary: #9ba5b8;
+            --accent-green: #00ff88;
+            --accent-red: #ff4466;
+            --accent-blue: #4d94ff;
+            --accent-gold: #ffc044;
+            --border: #2a3550;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        header {
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 100%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+        
+        .last-update {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .summary-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            opacity: 0.6;
+        }
+        
+        .card-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .card-value {
+            font-family: 'Instrument Serif', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        
+        .card-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .positive { color: var(--accent-green); }
+        .negative { color: var(--accent-red); }
+        .neutral { color: var(--text-secondary); }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        .holdings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .holding-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .holding-card:active {
+            transform: scale(0.98);
+            border-color: var(--accent-blue);
+        }
+        
+        .holding-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .holding-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .holding-values {
+            text-align: right;
+        }
+        
+        .holding-price {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.125rem;
+            margin-bottom: 4px;
+        }
+        
+        .holding-change {
+            font-size: 0.75rem;
+        }
+        
+        .btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+            width: 100%;
+        }
+        
+        .btn:active {
+            transform: scale(0.96);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.8125rem;
+            width: auto;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 40px;
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid var(--border);
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        input, select {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .reminder-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent-gold);
+        }
+        
+        .reminder-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--accent-gold);
+        }
+        
+        .reminder-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            backdrop-filter: blur(12px);
+        }
+        
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .nav-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Passive Income</h1>
+                <div class="last-update" id="lastUpdate">Never updated</div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="card-label">Portfolio Value</div>
+                <div class="card-value" id="totalValue">0 DKK</div>
+                <div class="card-change" id="totalChange">
+                    <span class="neutral">— DKK (—%)</span>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="card-label">Annual Income</div>
+                <div class="card-value" id="annualIncome">0 DKK</div>
+                <div class="card-change neutral">
+                    <span id="yieldPercent">0.0%</span> yield
+                </div>
+            </div>
+        </div>
+        
+        <div class="reminder-card">
+            <h3>☕ Stay the Course</h3>
+            <p>You're building long-term passive income. Short-term volatility is normal. Focus on dividend growth, not daily fluctuations. Next quarterly review: <strong id="nextReview">Loading...</strong></p>
+        </div>
+        
+        <div class="section-header">
+            <div class="section-title">Holdings</div>
+            <button class="btn btn-small" onclick="openAddModal()">+ Add</button>
+        </div>
+        
+        <div id="holdingsContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h3>No Holdings Yet</h3>
+                <p>Add your first investment to start tracking your passive income portfolio.</p>
+                <button class="btn" onclick="openAddModal()">Add Your First Holding</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add Holding</div>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form onsubmit="saveHolding(event)">
+                <div class="form-group">
+                    <label>Ticker Symbol</label>
+                    <input type="text" id="ticker" placeholder="e.g., AAPL, NOVO.CO" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="name" placeholder="e.g., Apple Inc." required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Shares</label>
+                    <input type="number" id="shares" step="0.01" placeholder="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cost Basis (per share, DKK)</label>
+                    <input type="number" id="costBasis" step="0.01" placeholder="0.00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Annual Dividend (DKK per share)</label>
+                    <input type="number" id="dividend" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="type">
+                        <option value="stock">Stock</option>
+                        <option value="fund">Fund</option>
+                        <option value="rsu">RSU</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">Save Holding</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="bottom-nav">
+        <button class="nav-btn active">Dashboard</button>
+        <button class="nav-btn" onclick="refreshPrices()">↻ Refresh</button>
+        <button class="nav-btn" onclick="exportData()">Export</button>
+    </div>
+    
+    <script>
+        let portfolio = {
+            holdings: [],
+            lastUpdate: null
+        };
+        
+        function loadData() {
+            const saved = localStorage.getItem('portfolioData');
+            if (saved) {
+                portfolio = JSON.parse(saved);
+                renderDashboard();
+            }
+            updateNextReviewDate();
+        }
+        
+        function saveData() {
+            localStorage.setItem('portfolioData', JSON.stringify(portfolio));
+        }
+        
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('ticker').focus();
+        }
+        
+        function closeModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('ticker').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('shares').value = '';
+            document.getElementById('costBasis').value = '';
+            document.getElementById('dividend').value = '';
+        }
+        
+        function saveHolding(event) {
+            event.preventDefault();
+            
+            const holding = {
+                id: Date.now(),
+                ticker: document.getElementById('ticker').value.toUpperCase(),
+                name: document.getElementById('name').value,
+                shares: parseFloat(document.getElementById('shares').value),
+                costBasis: parseFloat(document.getElementById('costBasis').value),
+                dividend: parseFloat(document.getElementById('dividend').value) || 0,
+                type: document.getElementById('type').value,
+                currentPrice: null,
+                addedDate: new Date().toISOString()
+            };
+            
+            portfolio.holdings.push(holding);
+            saveData();
+            closeModal();
+            renderDashboard();
+            fetchPriceForHolding(holding);
+        }
+        
+        async function fetchPriceForHolding(holding) {
+            try {
+                const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${holding.ticker}?interval=1d&range=1d`);
+                const data = await response.json();
+                
+                if (data.chart && data.chart.result && data.chart.result[0]) {
+                    const quote = data.chart.result[0].meta.regularMarketPrice;
+                    holding.currentPrice = quote;
+                    holding.lastUpdated = new Date().toISOString();
+                    saveData();
+                    renderDashboard();
+                }
+            } catch (error) {
+                console.error(`Failed to fetch price for ${holding.ticker}:`, error);
+            }
+        }
+        
+        async function refreshPrices() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            
+            for (const holding of portfolio.holdings) {
+                await fetchPriceForHolding(holding);
+            }
+            
+            portfolio.lastUpdate = new Date().toISOString();
+            saveData();
+            
+            btn.disabled = false;
+            btn.textContent = '↻ Refresh';
+        }
+        
+        function renderDashboard() {
+            const container = document.getElementById('holdingsContainer');
+            
+            if (portfolio.holdings.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h3>No Holdings Yet</h3>
+                        <p>Add your first investment to start tracking your passive income portfolio.</p>
+                        <button class="btn" onclick="openAddModal()">Add Your First Holding</button>
+                    </div>
+                `;
+                updateSummary();
+                return;
+            }
+            
+            let html = '<div class="holdings-list">';
+            
+            portfolio.holdings.forEach(holding => {
+                const currentValue = holding.currentPrice ? holding.currentPrice * holding.shares : holding.costBasis * holding.shares;
+                const costValue = holding.costBasis * holding.shares;
+                const change = currentValue - costValue;
+                const changePercent = (change / costValue) * 100;
+                const changeClass = change >= 0 ? 'positive' : 'negative';
+                const changeSymbol = change >= 0 ? '+' : '';
+                
+                html += `
+                    <div class="holding-card">
+                        <div class="holding-info">
+                            <h3>${holding.ticker}</h3>
+                            <div class="holding-meta">${holding.shares} shares · ${formatCurrency(holding.dividend)} div/share</div>
+                        </div>
+                        <div class="holding-values">
+                            <div class="holding-price">${formatCurrency(currentValue)}</div>
+                            <div class="holding-change ${changeClass}">
+                                ${changeSymbol}${formatCurrency(change)} (${changeSymbol}${changePercent.toFixed(1)}%)
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            updateSummary();
+            updateLastUpdate();
+        }
+        
+        function updateSummary() {
+            let totalValue = 0;
+            let totalCost = 0;
+            let totalDividend = 0;
+            
+            portfolio.holdings.forEach(holding => {
+                const currentValue = holding.currentPrice ? holding.currentPrice * holding.shares : holding.costBasis * holding.shares;
+                totalValue += currentValue;
+                totalCost += holding.costBasis * holding.shares;
+                totalDividend += holding.dividend * holding.shares;
+            });
+            
+            const totalChange = totalValue - totalCost;
+            const changePercent = totalCost > 0 ? (totalChange / totalCost) * 100 : 0;
+            const yieldPercent = totalValue > 0 ? (totalDividend / totalValue) * 100 : 0;
+            
+            document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+            
+            const changeClass = totalChange >= 0 ? 'positive' : 'negative';
+            const changeSymbol = totalChange >= 0 ? '+' : '';
+            document.getElementById('totalChange').innerHTML = `
+                <span class="${changeClass}">${changeSymbol}${formatCurrency(totalChange)} (${changeSymbol}${changePercent.toFixed(1)}%)</span>
+            `;
+            
+            document.getElementById('annualIncome').textContent = formatCurrency(totalDividend);
+            document.getElementById('yieldPercent').textContent = `${yieldPercent.toFixed(2)}%`;
+        }
+        
+        function updateLastUpdate() {
+            const lastUpdateEl = document.getElementById('lastUpdate');
+            if (portfolio.lastUpdate) {
+                const date = new Date(portfolio.lastUpdate);
+                const now = new Date();
+                const diff = now - date;
+                const minutes = Math.floor(diff / 60000);
+                
+                if (minutes < 1) {
+                    lastUpdateEl.textContent = 'Just now';
+                } else if (minutes < 60) {
+                    lastUpdateEl.textContent = `${minutes}m ago`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    lastUpdateEl.textContent = `${hours}h ago`;
+                }
+            }
+        }
+        
+        function updateNextReviewDate() {
+            const now = new Date();
+            const month = now.getMonth();
+            let nextQuarter;
+            
+            if (month < 3) nextQuarter = new Date(now.getFullYear(), 2, 31);
+            else if (month < 6) nextQuarter = new Date(now.getFullYear(), 5, 30);
+            else if (month < 9) nextQuarter = new Date(now.getFullYear(), 8, 30);
+            else nextQuarter = new Date(now.getFullYear(), 11, 31);
+            
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            document.getElementById('nextReview').textContent = nextQuarter.toLocaleDateString('en-US', options);
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('da-DK', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value) + ' DKK';
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(portfolio, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `portfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+        
+        loadData();
+        
+        setInterval(() => {
+            if (portfolio.holdings.length > 0) {
+                portfolio.holdings.forEach(fetchPriceForHolding);
+            }
+        }, 300000);
+        
+        setInterval(updateLastUpdate, 60000);
+    </script>
+</body>
+</html>
