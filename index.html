@@ -359,26 +359,45 @@
         }
         
         async function fetchPrice(h) {
-            try {
-                const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${h.ticker}?interval=1d&range=1d`);
-                const d = await r.json();
-                
-                if (d.chart && d.chart.result && d.chart.result[0]) {
-                    h.price = d.chart.result[0].meta.regularMarketPrice;
-                    h.priceError = false;
-                    localStorage.setItem('portfolio', JSON.stringify(data));
-                    render();
-                } else {
-                    h.priceError = true;
-                    localStorage.setItem('portfolio', JSON.stringify(data));
-                    render();
-                }
-            } catch (e) {
-                console.error('Price fetch error:', e);
-                h.priceError = true;
-                localStorage.setItem('portfolio', JSON.stringify(data));
-                render();
-            }
+    // Method 1: Try the chart API
+    try {
+        const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${h.ticker}?interval=1d&range=1d`);
+        const d = await r.json();
+        
+        if (d.chart && d.chart.result && d.chart.result[0]) {
+            const meta = d.chart.result[0].meta;
+            h.price = meta.regularMarketPrice || meta.previousClose;
+            h.priceError = false;
+            localStorage.setItem('portfolio', JSON.stringify(data));
+            render();
+            return;
+        }
+    } catch (e) {
+        console.error('Chart API failed:', e);
+    }
+    
+    // Method 2: Try the quote API
+    try {
+        const r = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${h.ticker}`);
+        const d = await r.json();
+        
+        if (d.quoteResponse && d.quoteResponse.result && d.quoteResponse.result[0]) {
+            const quote = d.quoteResponse.result[0];
+            h.price = quote.regularMarketPrice || quote.previousClose;
+            h.priceError = false;
+            localStorage.setItem('portfolio', JSON.stringify(data));
+            render();
+            return;
+        }
+    } catch (e) {
+        console.error('Quote API failed:', e);
+    }
+    
+    // Both methods failed
+    h.priceError = true;
+    localStorage.setItem('portfolio', JSON.stringify(data));
+    render();
+}
         }
         
         async function refreshPrices() {
