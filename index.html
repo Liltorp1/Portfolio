@@ -7,7 +7,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; background: #0a0e1a; color: #e8edf4; padding: 20px 20px 100px; }
-        .header { margin-bottom: 30px; }
         h1 { font-size: 28px; margin-bottom: 10px; }
         .card { background: #1a2237; border: 1px solid #2a3550; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
         .label { font-size: 12px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 8px; }
@@ -15,7 +14,7 @@
         .change { font-size: 14px; color: #9ba5b8; }
         .positive { color: #00ff88; }
         .negative { color: #ff4466; }
-        .btn { background: #4d94ff; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 16px; width: 100%; margin-bottom: 10px; cursor: pointer; }
+        .btn { background: #4d94ff; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 16px; width: 100%; cursor: pointer; }
         .btn:active { opacity: 0.8; }
         .btn-small { width: auto; padding: 10px 20px; font-size: 14px; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); padding: 20px; overflow-y: auto; z-index: 1000; }
@@ -29,26 +28,21 @@
         .holding:active { background: #202840; }
         .holding-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .ticker { font-size: 18px; font-weight: 600; }
-        .holding-value { font-size: 18px; }
         .meta { font-size: 12px; color: #9ba5b8; }
-        .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin: 20px 0 15px; display: flex; justify-content: space-between; align-items: center; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
-        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; }
-        .nav-btn:active { opacity: 0.7; }
-        .status { font-size: 10px; color: #00ff88; margin-top: 3px; }
-        .error { color: #ff4466; }
+        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; border: none; }
+        .status { font-size: 10px; margin-top: 3px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Passive Income</h1>
-        <div class="meta" id="lastUpdate">Never updated</div>
-    </div>
+    <h1>Passive Income</h1>
+    <div class="meta" id="lastUpdate" style="margin-bottom:30px;">Never updated</div>
     
     <div class="card">
         <div class="label">Portfolio Value</div>
         <div class="value" id="totalValue">0 DKK</div>
-        <div class="change" id="totalChange">— DKK (—%)</div>
+        <div class="change" id="totalChange">—</div>
     </div>
     
     <div class="card">
@@ -71,25 +65,19 @@
                 <button class="close" id="closeBtn">&times;</button>
             </div>
             <label>Ticker</label>
-            <input type="text" id="ticker" placeholder="AAPL">
+            <input type="text" id="ticker">
             <label>Name</label>
-            <input type="text" id="name" placeholder="Apple Inc.">
+            <input type="text" id="name">
             <label>Shares</label>
-            <input type="number" step="0.01" id="shares" placeholder="0">
+            <input type="number" step="0.01" id="shares">
             <label>Average Cost per Share (DKK)</label>
-            <input type="number" step="0.01" id="cost" placeholder="0.00">
-            <label>Current Price (DKK) - Optional, will auto-fetch if available</label>
-            <input type="number" step="0.01" id="currentPrice" placeholder="Leave blank for auto-fetch">
-            <label>Annual Dividend per Share (DKK)</label>
-            <input type="number" step="0.01" id="dividend" placeholder="0.00">
-            <label>Type</label>
-            <select id="type">
-                <option>Stock</option>
-                <option>Fund</option>
-                <option>RSU</option>
-            </select>
+            <input type="number" step="0.01" id="cost">
+            <label>Current Price (DKK) - optional</label>
+            <input type="number" step="0.01" id="currentPrice">
+            <label>Annual Dividend (DKK per share)</label>
+            <input type="number" step="0.01" id="dividend">
             <button class="btn" id="saveBtn">Save</button>
-            <button class="btn" id="deleteBtn" style="display:none;background:#ff4466;">Delete</button>
+            <button class="btn" id="deleteBtn" style="display:none;background:#ff4466;margin-top:10px;">Delete</button>
         </div>
     </div>
     
@@ -103,26 +91,23 @@
         var data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
         var editing = null;
         
+        // Add button
         document.getElementById('addBtn').onclick = function() {
             editing = null;
             document.getElementById('modalTitle').textContent = 'Add Holding';
             document.getElementById('deleteBtn').style.display = 'none';
-            document.getElementById('ticker').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('shares').value = '';
-            document.getElementById('cost').value = '';
-            document.getElementById('currentPrice').value = '';
-            document.getElementById('dividend').value = '';
+            clearForm();
             document.getElementById('modal').classList.add('show');
         };
         
+        // Close button
         document.getElementById('closeBtn').onclick = function() {
             document.getElementById('modal').classList.remove('show');
         };
         
+        // Save button
         document.getElementById('saveBtn').onclick = function() {
-            var manualPrice = parseFloat(document.getElementById('currentPrice').value);
-            
+            var manual = parseFloat(document.getElementById('currentPrice').value);
             var h = {
                 id: editing || Date.now(),
                 ticker: document.getElementById('ticker').value.toUpperCase(),
@@ -130,14 +115,17 @@
                 shares: parseFloat(document.getElementById('shares').value),
                 cost: parseFloat(document.getElementById('cost').value),
                 dividend: parseFloat(document.getElementById('dividend').value) || 0,
-                type: document.getElementById('type').value,
-                price: manualPrice || null,
-                manualPrice: manualPrice ? true : false,
-                priceError: false
+                price: manual || null,
+                manual: manual ? true : false
             };
             
             if (editing) {
-                data.holdings = data.holdings.map(function(x) { return x.id === editing ? h : x; });
+                for (var i = 0; i < data.holdings.length; i++) {
+                    if (data.holdings[i].id === editing) {
+                        data.holdings[i] = h;
+                        break;
+                    }
+                }
             } else {
                 data.holdings.push(h);
             }
@@ -145,56 +133,63 @@
             localStorage.setItem('portfolio', JSON.stringify(data));
             document.getElementById('modal').classList.remove('show');
             render();
-            
-            if (!manualPrice) {
-                fetchPrice(h);
-            }
         };
         
+        // Delete button
         document.getElementById('deleteBtn').onclick = function() {
             if (confirm('Delete this holding?')) {
-                data.holdings = data.holdings.filter(function(x) { return x.id !== editing; });
+                var newHoldings = [];
+                for (var i = 0; i < data.holdings.length; i++) {
+                    if (data.holdings[i].id !== editing) {
+                        newHoldings.push(data.holdings[i]);
+                    }
+                }
+                data.holdings = newHoldings;
                 localStorage.setItem('portfolio', JSON.stringify(data));
                 document.getElementById('modal').classList.remove('show');
                 render();
             }
         };
         
+        // Refresh button - SIMPLIFIED
         document.getElementById('refreshBtn').onclick = function() {
-            var btn = this;
-            btn.textContent = 'Updating...';
-            btn.disabled = true;
-            
-            var i = 0;
-            function next() {
-                if (i < data.holdings.length) {
-                    if (!data.holdings[i].manualPrice) {
-                        fetchPrice(data.holdings[i]);
-                    }
-                    i++;
-                    setTimeout(next, 300);
-                } else {
-                    data.lastUpdate = new Date().toISOString();
-                    localStorage.setItem('portfolio', JSON.stringify(data));
-                    btn.textContent = '↻ Refresh';
-                    btn.disabled = false;
-                }
-            }
-            next();
+            alert('Refresh clicked! For Danish stocks (ORSTED.CO, VWS.CO), please edit and enter current price manually. Auto-fetch works best for US stocks.');
+            data.lastUpdate = new Date().toISOString();
+            localStorage.setItem('portfolio', JSON.stringify(data));
+            render();
         };
         
+        // Export button
         document.getElementById('exportBtn').onclick = function() {
-            var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            var json = JSON.stringify(data, null, 2);
+            var blob = new Blob([json], {type: 'application/json'});
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
-            a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+            a.download = 'portfolio.json';
             a.click();
         };
         
-        function edit(id) {
+        function clearForm() {
+            document.getElementById('ticker').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('shares').value = '';
+            document.getElementById('cost').value = '';
+            document.getElementById('currentPrice').value = '';
+            document.getElementById('dividend').value = '';
+        }
+        
+        function editHolding(id) {
             editing = id;
-            var h = data.holdings.find(function(x) { return x.id === id; });
+            var h = null;
+            for (var i = 0; i < data.holdings.length; i++) {
+                if (data.holdings[i].id === id) {
+                    h = data.holdings[i];
+                    break;
+                }
+            }
+            if (!h) return;
+            
             document.getElementById('modalTitle').textContent = 'Edit Holding';
             document.getElementById('deleteBtn').style.display = 'block';
             document.getElementById('ticker').value = h.ticker;
@@ -203,71 +198,7 @@
             document.getElementById('cost').value = h.cost;
             document.getElementById('currentPrice').value = h.price || '';
             document.getElementById('dividend').value = h.dividend;
-            document.getElementById('type').value = h.type;
             document.getElementById('modal').classList.add('show');
-        }
-        
-        function fetchPrice(h) {
-            // Method 1: Yahoo Finance Chart API
-            fetch('https://query1.finance.yahoo.com/v8/finance/chart/' + h.ticker + '?interval=1d&range=1d')
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    if (d.chart && d.chart.result && d.chart.result[0]) {
-                        var meta = d.chart.result[0].meta;
-                        h.price = meta.regularMarketPrice || meta.previousClose;
-                        h.priceError = false;
-                        localStorage.setItem('portfolio', JSON.stringify(data));
-                        render();
-                    } else {
-                        tryYahooQuote(h);
-                    }
-                })
-                .catch(function() {
-                    tryYahooQuote(h);
-                });
-        }
-        
-        function tryYahooQuote(h) {
-            // Method 2: Yahoo Finance Quote API
-            fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + h.ticker)
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    if (d.quoteResponse && d.quoteResponse.result && d.quoteResponse.result[0]) {
-                        var quote = d.quoteResponse.result[0];
-                        h.price = quote.regularMarketPrice || quote.previousClose;
-                        h.priceError = false;
-                        localStorage.setItem('portfolio', JSON.stringify(data));
-                        render();
-                    } else {
-                        tryFinnhub(h);
-                    }
-                })
-                .catch(function() {
-                    tryFinnhub(h);
-                });
-        }
-        
-        function tryFinnhub(h) {
-            // Method 3: Finnhub API (free tier, demo token)
-            fetch('https://finnhub.io/api/v1/quote?symbol=' + h.ticker + '&token=demo')
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    if (d.c && d.c > 0) {
-                        h.price = d.c;
-                        h.priceError = false;
-                        localStorage.setItem('portfolio', JSON.stringify(data));
-                        render();
-                    } else {
-                        h.priceError = true;
-                        localStorage.setItem('portfolio', JSON.stringify(data));
-                        render();
-                    }
-                })
-                .catch(function() {
-                    h.priceError = true;
-                    localStorage.setItem('portfolio', JSON.stringify(data));
-                    render();
-                });
         }
         
         function fmt(n) {
@@ -279,39 +210,33 @@
             var totalVal = 0, totalCost = 0, totalDiv = 0;
             
             if (data.holdings.length === 0) {
-                html = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings yet<br><br><button class="btn" onclick="document.getElementById(\'addBtn\').click()">Add Your First Holding</button></div>';
+                html = '<div style="text-align:center;padding:60px 20px;color:#9ba5b8;">No holdings yet<br><br><button class="btn" onclick="document.getElementById(\'addBtn\').click()">Add First Holding</button></div>';
             } else {
-                data.holdings.forEach(function(h) {
-                    var currentPrice = h.price || h.cost;
-                    var val = currentPrice * h.shares;
-                    var cost = h.cost * h.shares;
-                    var chg = val - cost;
-                    var pct = (chg / cost * 100).toFixed(1);
-                    var cls = chg >= 0 ? 'positive' : 'negative';
+                for (var i = 0; i < data.holdings.length; i++) {
+                    var h = data.holdings[i];
+                    var price = h.price || h.cost;
+                    var val = price * h.shares;
+                    var costVal = h.cost * h.shares;
+                    var chg = val - costVal;
+                    var pct = (chg / costVal * 100).toFixed(1);
                     
                     totalVal += val;
-                    totalCost += cost;
+                    totalCost += costVal;
                     totalDiv += h.dividend * h.shares;
                     
-                    var status = '';
-                    if (h.manualPrice) {
-                        status = '<div class="status">📝 Manual price</div>';
-                    } else if (h.priceError) {
-                        status = '<div class="status error">⚠️ Price unavailable</div>';
-                    } else if (h.price) {
-                        status = '<div class="status">✓ Live price</div>';
-                    }
+                    var status = h.manual ? '📝 Manual' : '💤 Using cost';
+                    var color = chg >= 0 ? 'positive' : 'negative';
                     
-                    html += '<div class="holding" onclick="edit(' + h.id + ')">' +
-                        '<div class="holding-header">' +
-                        '<div class="ticker">' + h.ticker + '</div>' +
-                        '<div class="holding-value">' + fmt(val) + '</div>' +
-                        '</div>' +
-                        '<div class="meta">' + h.shares + ' shares · ' + fmt(h.dividend) + '/share</div>' +
-                        '<div class="meta ' + cls + '">' + (chg >= 0 ? '+' : '') + fmt(chg) + ' (' + (chg >= 0 ? '+' : '') + pct + '%)</div>' +
-                        status +
-                        '</div>';
-                });
+                    html += '<div class="holding" onclick="editHolding(' + h.id + ')">';
+                    html += '<div class="holding-header">';
+                    html += '<div class="ticker">' + h.ticker + '</div>';
+                    html += '<div>' + fmt(val) + '</div>';
+                    html += '</div>';
+                    html += '<div class="meta">' + h.shares + ' shares</div>';
+                    html += '<div class="meta ' + color + '">' + (chg >= 0 ? '+' : '') + fmt(chg) + ' (' + (chg >= 0 ? '+' : '') + pct + '%)</div>';
+                    html += '<div class="status meta">' + status + '</div>';
+                    html += '</div>';
+                }
             }
             
             document.getElementById('holdings').innerHTML = html;
@@ -321,36 +246,21 @@
             var yld = totalVal > 0 ? (totalDiv / totalVal * 100).toFixed(2) : 0;
             
             document.getElementById('totalValue').textContent = fmt(totalVal);
-            document.getElementById('totalChange').innerHTML = '<span class="' + (totChg >= 0 ? 'positive' : 'negative') + '">' + (totChg >= 0 ? '+' : '') + fmt(totChg) + ' (' + (totChg >= 0 ? '+' : '') + totPct + '%)</span>';
+            var color2 = totChg >= 0 ? 'positive' : 'negative';
+            document.getElementById('totalChange').innerHTML = '<span class="' + color2 + '">' + (totChg >= 0 ? '+' : '') + fmt(totChg) + ' (' + (totChg >= 0 ? '+' : '') + totPct + '%)</span>';
             document.getElementById('annualIncome').textContent = fmt(totalDiv);
             document.getElementById('yieldPercent').textContent = yld + '%';
             
             if (data.lastUpdate) {
-                var diff = Date.now() - new Date(data.lastUpdate);
+                var now = new Date();
+                var then = new Date(data.lastUpdate);
+                var diff = now - then;
                 var min = Math.floor(diff / 60000);
                 document.getElementById('lastUpdate').textContent = min < 1 ? 'Just now' : min < 60 ? min + 'm ago' : Math.floor(min/60) + 'h ago';
             }
         }
         
         render();
-        
-        if (data.holdings.length > 0 && !data.lastUpdate) {
-            document.getElementById('refreshBtn').click();
-        }
-        
-        setInterval(function() {
-            if (data.holdings.length > 0) {
-                document.getElementById('refreshBtn').click();
-            }
-        }, 300000);
-        
-        setInterval(function() {
-            if (data.lastUpdate) {
-                var diff = Date.now() - new Date(data.lastUpdate);
-                var min = Math.floor(diff / 60000);
-                document.getElementById('lastUpdate').textContent = min < 1 ? 'Just now' : min < 60 ? min + 'm ago' : Math.floor(min/60) + 'h ago';
-            }
-        }, 60000);
     </script>
 </body>
 </html>
