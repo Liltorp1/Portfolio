@@ -4,57 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>My Portfolio</h1>
-    <form>
-        <label for="holding-name">Holding Name:</label>
-        <input type="text" id="holding-name" name="holding-name" required>
-        <br>
-        <label for="holding-price">Price:</label>
-        <input type="number" id="holding-price" name="holding-price" required>
-        <br>
-        <button type="submit">Add Holding</button>
-    </form>
-    <table>
-        <thead>
-            <tr>
-                <th>Holding</th>
-                <th>Price</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="holdings-table-body">
-            <!-- Dynamic rows will be added here -->
-        </tbody>
-    </table>
+    <div class="portfolio">
+        <h1>My Portfolio</h1>
+        <div id="holdings">
+            <!-- Holding cards will be generated here -->
+        </div>
+        <button id="refresh">Refresh Holdings</button>
+        <div id="error" class="hidden">Error fetching price data!</div>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Holdings Detail</h2>
+            <!-- More details about the holding -->
+            <button id="delete">Delete Holding</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
     <script>
-        // Assume holdings is a list of holding objects retrieved from a database
-        let holdings = [];
-        function renderHoldings() {
-            const tbody = document.getElementById('holdings-table-body');
-            tbody.innerHTML = '';
+        const holdings = []; // This should be populated with fetched data
+        const holdingsContainer = document.getElementById('holdings');
+        const refreshButton = document.getElementById('refresh');
+        const errorDiv = document.getElementById('error');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const deleteButton = document.getElementById('delete');
+
+        function populateHoldings() {
+            holdingsContainer.innerHTML = '';
             holdings.forEach((holding, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${holding.name}</td><td>$${holding.price}</td><td><button onclick='editHolding(${index})'>Edit</button> <button onclick='deleteHolding(${index})'>Delete</button></td>`;
-                tbody.appendChild(row);
+                const card = document.createElement('div');
+                card.className = 'holding-card';
+                card.innerHTML = `<h3>${holding.name}</h3><p>Price: $${holding.price}</p>`;
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', () => openModal(holding));
+                holdingsContainer.appendChild(card);
             });
         }
-        function editHolding(index) {
-            // Function for editing holdings
-            let newName = prompt('Enter new holding name:', holdings[index].name);
-            let newPrice = prompt('Enter new price:', holdings[index].price);
-            if (newName && newPrice) {
-                holdings[index] = { name: newName, price: newPrice };
-                renderHoldings();
-            }
+
+        function openModal(holding) {
+            modal.classList.remove('hidden');
+            modalTitle.textContent = holding.name;
         }
-        function deleteHolding(index) {
-            // Function for deleting holdings
-            holdings.splice(index, 1);
-            renderHoldings();
+
+        deleteButton.addEventListener('click', () => {
+            // Implement delete functionality here
+            console.log('Delete Holding Functionality');
+            modal.classList.add('hidden');
+        });
+
+        refreshButton.addEventListener('click', populateHoldings);
+
+        window.onload = function() {
+            // Fetch holdings and call populateHoldings
+            fetchHoldings();
+        };
+
+        function fetchHoldings() {
+            // Simulate fetching data
+            setTimeout(() => {
+                // Simulated data for demonstration
+                holdings.push({name: 'Holding 1', price: 100});
+                holdings.push({name: 'Holding 2', price: 200});
+                populateHoldings();
+            }, 1000);
         }
-        renderHoldings();
     </script>
 </body>
 </html>
