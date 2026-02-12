@@ -5,21 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Passive Income Portfolio</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap');
-        
-        :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #151b2e;
-            --bg-card: #1a2237;
-            --text-primary: #e8edf4;
-            --text-secondary: #9ba5b8;
-            --accent-green: #00ff88;
-            --accent-red: #ff4466;
-            --accent-blue: #4d94ff;
-            --accent-gold: #ffc044;
-            --border: #2a3550;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -27,195 +12,419 @@
         }
         
         body {
-            font-family: 'DM Sans', system-ui, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            padding-bottom: 80px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #e8edf4;
+            padding: 20px;
+            padding-bottom: 100px;
         }
         
-        .container {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 0 16px;
-        }
-        
-        header {
-            padding: 24px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 24px;
-            background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 100%);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(12px);
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .header {
+            margin-bottom: 30px;
         }
         
         h1 {
-            font-family: 'Instrument Serif', serif;
-            font-size: 1.5rem;
-            font-weight: 400;
-            letter-spacing: -0.02em;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
         
-        .last-update {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-        
-        .summary-grid {
-            display: grid;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .summary-card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .summary-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
-            opacity: 0.6;
-        }
-        
-        .card-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .card-value {
-            font-family: 'Instrument Serif', serif;
-            font-size: 2rem;
-            font-weight: 400;
-            letter-spacing: -0.02em;
-            margin-bottom: 4px;
-        }
-        
-        .card-change {
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .positive { color: var(--accent-green); }
-        .negative { color: var(--accent-red); }
-        .neutral { color: var(--text-secondary); }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .section-title {
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-        
-        .holdings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .holding-card {
-            background: var(--bg-card);
+        .card {
+            background: #1a2237;
+            border: 1px solid #2a3550;
             border-radius: 12px;
-            padding: 16px;
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s, border-color 0.2s;
-            cursor: pointer;
+            padding: 20px;
+            margin-bottom: 15px;
         }
         
-        .holding-card:active {
-            transform: scale(0.98);
-            border-color: var(--accent-blue);
+        .label {
+            font-size: 12px;
+            color: #9ba5b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
         }
         
-        .holding-info h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 4px;
+        .value {
+            font-size: 32px;
+            font-weight: 300;
+            margin-bottom: 5px;
         }
         
-        .holding-meta {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
+        .change {
+            font-size: 14px;
+            color: #9ba5b8;
         }
         
-        .holding-values {
-            text-align: right;
-        }
-        
-        .holding-price {
-            font-family: 'Instrument Serif', serif;
-            font-size: 1.125rem;
-            margin-bottom: 4px;
-        }
-        
-        .holding-change {
-            font-size: 0.75rem;
-        }
+        .positive { color: #00ff88; }
+        .negative { color: #ff4466; }
         
         .btn {
-            background: var(--accent-blue);
+            background: #4d94ff;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             padding: 14px 24px;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
             width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
         }
         
         .btn:active {
-            transform: scale(0.96);
-        }
-        
-        .btn-secondary {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-        }
-        
-        .btn-danger {
-            background: var(--accent-red);
-            margin-top: 12px;
+            opacity: 0.8;
         }
         
         .btn-small {
-            padding: 8px 16px;
-            font-
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal.show {
+            display: block;
+        }
+        
+        .modal-content {
+            background: #1a2237;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            margin: 40px auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            font-size: 30px;
+            color: #9ba5b8;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        input, select {
+            width: 100%;
+            background: #0a0e1a;
+            border: 1px solid #2a3550;
+            border-radius: 8px;
+            padding: 12px;
+            color: #e8edf4;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            color: #9ba5b8;
+            margin-bottom: 5px;
+        }
+        
+        .holding {
+            background: #1a2237;
+            border: 1px solid #2a3550;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .holding:active {
+            background: #202840;
+        }
+        
+        .holding-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .ticker {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .holding-value {
+            font-size: 18px;
+        }
+        
+        .meta {
+            font-size: 12px;
+            color: #9ba5b8;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #9ba5b8;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #151b2e;
+            padding: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            background: #1a2237;
+            border: 1px solid #2a3550;
+            border-radius: 8px;
+            color: #9ba5b8;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Passive Income</h1>
+        <div class="meta" id="lastUpdate">Never updated</div>
+    </div>
+    
+    <div class="card">
+        <div class="label">Portfolio Value</div>
+        <div class="value" id="totalValue">0 DKK</div>
+        <div class="change" id="totalChange">— DKK (—%)</div>
+    </div>
+    
+    <div class="card">
+        <div class="label">Annual Income</div>
+        <div class="value" id="annualIncome">0 DKK</div>
+        <div class="change"><span id="yieldPercent">0.0%</span> yield</div>
+    </div>
+    
+    <div class="section-title">
+        <span>HOLDINGS</span>
+        <button class="btn btn-small" onclick="showModal()">+ Add</button>
+    </div>
+    
+    <div id="holdings"></div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Holding</h2>
+                <button class="close" onclick="hideModal()">&times;</button>
+            </div>
+            
+            <label>Ticker</label>
+            <input type="text" id="ticker" placeholder="AAPL">
+            
+            <label>Name</label>
+            <input type="text" id="name" placeholder="Apple Inc.">
+            
+            <label>Shares</label>
+            <input type="number" step="0.01" id="shares" placeholder="0">
+            
+            <label>Average Cost per Share (DKK)</label>
+            <input type="number" step="0.01" id="cost" placeholder="0.00">
+            
+            <label>Annual Dividend per Share (DKK)</label>
+            <input type="number" step="0.01" id="dividend" placeholder="0.00">
+            
+            <label>Type</label>
+            <select id="type">
+                <option>Stock</option>
+                <option>Fund</option>
+                <option>RSU</option>
+            </select>
+            
+            <button class="btn" onclick="save()">Save</button>
+            <button class="btn" id="deleteBtn" onclick="deleteHolding()" style="display:none;background:#ff4466;">Delete</button>
+        </div>
+    </div>
+    
+    <div class="bottom-nav">
+        <button class="nav-btn">Dashboard</button>
+        <button class="nav-btn" onclick="refresh()">↻ Refresh</button>
+        <button class="nav-btn" onclick="exp()">Export</button>
+    </div>
+    
+    <script>
+        let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
+        let editing = null;
+        
+        function showModal() {
+            editing = null;
+            document.getElementById('modalTitle').textContent = 'Add Holding';
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('ticker').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('shares').value = '';
+            document.getElementById('cost').value = '';
+            document.getElementById('dividend').value = '';
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function hideModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+        
+        function save() {
+            const h = {
+                id: editing || Date.now(),
+                ticker: document.getElementById('ticker').value.toUpperCase(),
+                name: document.getElementById('name').value,
+                shares: parseFloat(document.getElementById('shares').value),
+                cost: parseFloat(document.getElementById('cost').value),
+                dividend: parseFloat(document.getElementById('dividend').value) || 0,
+                type: document.getElementById('type').value,
+                price: null
+            };
+            
+            if (editing) {
+                data.holdings = data.holdings.map(x => x.id === editing ? h : x);
+            } else {
+                data.holdings.push(h);
+            }
+            
+            localStorage.setItem('portfolio', JSON.stringify(data));
+            hideModal();
+            render();
+            fetchPrice(h);
+        }
+        
+        function edit(id) {
+            editing = id;
+            const h = data.holdings.find(x => x.id === id);
+            document.getElementById('modalTitle').textContent = 'Edit Holding';
+            document.getElementById('deleteBtn').style.display = 'block';
+            document.getElementById('ticker').value = h.ticker;
+            document.getElementById('name').value = h.name;
+            document.getElementById('shares').value = h.shares;
+            document.getElementById('cost').value = h.cost;
+            document.getElementById('dividend').value = h.dividend;
+            document.getElementById('type').value = h.type;
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function deleteHolding() {
+            if (confirm('Delete this holding?')) {
+                data.holdings = data.holdings.filter(x => x.id !== editing);
+                localStorage.setItem('portfolio', JSON.stringify(data));
+                hideModal();
+                render();
+            }
+        }
+        
+        async function fetchPrice(h) {
+            try {
+                const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${h.ticker}?interval=1d&range=1d`);
+                const d = await r.json();
+                if (d.chart && d.chart.result && d.chart.result[0]) {
+                    h.price = d.chart.result[0].meta.regularMarketPrice;
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    render();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        async function refresh() {
+            for (const h of data.holdings) {
+                await fetchPrice(h);
+                await new Promise(r => setTimeout(r, 100));
+            }
+            data.lastUpdate = new Date().toISOString();
+            localStorage.setItem('portfolio', JSON.stringify(data));
+        }
+        
+        function fmt(n) {
+            return new Intl.NumberFormat('da-DK').format(n) + ' DKK';
+        }
+        
+        function render() {
+            let html = '';
+            let totalVal = 0, totalCost = 0, totalDiv = 0;
+            
+            if (data.holdings.length === 0) {
+                html = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings yet<br><br><button class="btn" onclick="showModal()">Add Your First Holding</button></div>';
+            } else {
+                data.holdings.forEach(h => {
+                    const val = (h.price || h.cost) * h.shares;
+                    const cost = h.cost * h.shares;
+                    const chg = val - cost;
+                    const pct = (chg / cost * 100).toFixed(1);
+                    const cls = chg >= 0 ? 'positive' : 'negative';
+                    
+                    totalVal += val;
+                    totalCost += cost;
+                    totalDiv += h.dividend * h.shares;
+                    
+                    html += `
+                        <div class="holding" onclick="edit(${h.id})">
+                            <div class="holding-header">
+                                <div class="ticker">${h.ticker}</div>
+                                <div class="holding-value">${fmt(val)}</div>
+                            </div>
+                            <div class="meta">${h.shares} shares · ${fmt(h.dividend)}/share</div>
+                            <div class="meta ${cls}">${chg >= 0 ? '+' : ''}${fmt(chg)} (${chg >= 0 ? '+' : ''}${pct}%)</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('holdings').innerHTML = html;
+            
+            const totChg = totalVal - totalCost;
+            const totPct = totalCost > 0 ? (totChg / totalCost * 100).toFixed(1) : 0;
+            const yld = totalVal > 0 ? (totalDiv / totalVal * 100).toFixed(2) : 0;
+            
+            document.getElementById('totalValue').textContent = fmt(totalVal);
+            document.getElementById('totalChange').innerHTML = `<span class="${totChg >= 0 ? 'positive' : 'negative'}">${totChg >= 0 ? '+' : ''}${fmt(totChg)} (${totChg >= 0 ? '+' : ''}${totPct}%)</span>`;
+            document.getElementById('annualIncome').textContent = fmt(totalDiv);
+            document.getElementById('yieldPercent').textContent = yld + '%';
+            
+            if (data.lastUpdate) {
+                const diff = Date.now() - new Date(data.lastUpdate);
+                const min = Math.floor(diff / 60000);
+                document.getElementById('lastUpdate').textContent = min < 1 ? 'Just now' : min < 60 ? min + 'm ago' : Math.floor(min/60) + 'h ago';
+            }
+        }
+        
+        function exp() {
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+        }
+        
+        render();
+        
+        // Auto-load prices on start
+        if (data.holdings.length > 0 && !data.lastUpdate) {
+            refresh();
+        }
+    </script>
+</body>
+</html>
