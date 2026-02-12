@@ -1,220 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Passive Income Portfolio</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0e1a;
-            color: #e8edf4;
-            padding: 20px;
-            padding-bottom: 100px;
-        }
-        
-        .header {
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .card {
-            background: #1a2237;
-            border: 1px solid #2a3550;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-        
-        .label {
-            font-size: 12px;
-            color: #9ba5b8;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        
-        .value {
-            font-size: 32px;
-            font-weight: 300;
-            margin-bottom: 5px;
-        }
-        
-        .change {
-            font-size: 14px;
-            color: #9ba5b8;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #0a0e1a; color: #e8edf4; padding: 20px 20px 100px; }
+        .header { margin-bottom: 30px; }
+        h1 { font-size: 28px; margin-bottom: 10px; }
+        .card { background: #1a2237; border: 1px solid #2a3550; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .label { font-size: 12px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 8px; }
+        .value { font-size: 32px; font-weight: 300; margin-bottom: 5px; }
+        .change { font-size: 14px; color: #9ba5b8; }
         .positive { color: #00ff88; }
         .negative { color: #ff4466; }
-        
-        .btn {
-            background: #4d94ff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 14px 24px;
-            font-size: 16px;
-            width: 100%;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        
-        .btn:active {
-            opacity: 0.8;
-        }
-        
-        .btn-small {
-            width: auto;
-            padding: 10px 20px;
-            font-size: 14px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            padding: 20px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        
-        .modal.show {
-            display: block;
-        }
-        
-        .modal-content {
-            background: #1a2237;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 500px;
-            margin: 40px auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .close {
-            font-size: 30px;
-            color: #9ba5b8;
-            cursor: pointer;
-            background: none;
-            border: none;
-        }
-        
-        input, select {
-            width: 100%;
-            background: #0a0e1a;
-            border: 1px solid #2a3550;
-            border-radius: 8px;
-            padding: 12px;
-            color: #e8edf4;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            font-size: 14px;
-            color: #9ba5b8;
-            margin-bottom: 5px;
-        }
-        
-        .holding {
-            background: #1a2237;
-            border: 1px solid #2a3550;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        
-        .holding:active {
-            background: #202840;
-        }
-        
-        .holding-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        
-        .ticker {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .holding-value {
-            font-size: 18px;
-        }
-        
-        .meta {
-            font-size: 12px;
-            color: #9ba5b8;
-        }
-        
-        .section-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: #9ba5b8;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #151b2e;
-            padding: 12px;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .nav-btn {
-            flex: 1;
-            padding: 12px;
-            background: #1a2237;
-            border: 1px solid #2a3550;
-            border-radius: 8px;
-            color: #9ba5b8;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .nav-btn:active {
-            opacity: 0.7;
-        }
-        
-        .status {
-            font-size: 10px;
-            color: #00ff88;
-            margin-top: 3px;
-        }
-        
-        .error {
-            color: #ff4466;
-        }
+        .btn { background: #4d94ff; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 16px; width: 100%; margin-bottom: 10px; cursor: pointer; }
+        .btn:active { opacity: 0.8; }
+        .btn-small { width: auto; padding: 10px 20px; font-size: 14px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); padding: 20px; overflow-y: auto; z-index: 1000; }
+        .modal.show { display: block; }
+        .modal-content { background: #1a2237; border-radius: 16px; padding: 24px; max-width: 500px; margin: 40px auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close { font-size: 30px; color: #9ba5b8; cursor: pointer; background: none; border: none; }
+        input, select { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; }
+        label { display: block; font-size: 14px; color: #9ba5b8; margin-bottom: 5px; }
+        .holding { background: #1a2237; border: 1px solid #2a3550; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
+        .holding:active { background: #202840; }
+        .holding-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .ticker { font-size: 18px; font-weight: 600; }
+        .holding-value { font-size: 18px; }
+        .meta { font-size: 12px; color: #9ba5b8; }
+        .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
+        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; }
+        .nav-btn:active { opacity: 0.7; }
+        .status { font-size: 10px; color: #00ff88; margin-top: 3px; }
+        .error { color: #ff4466; }
     </style>
 </head>
 <body>
@@ -248,53 +70,38 @@
                 <h2 id="modalTitle">Add Holding</h2>
                 <button class="close" id="closeBtn">&times;</button>
             </div>
-            
             <label>Ticker</label>
             <input type="text" id="ticker" placeholder="AAPL">
-            
             <label>Name</label>
             <input type="text" id="name" placeholder="Apple Inc.">
-            
             <label>Shares</label>
             <input type="number" step="0.01" id="shares" placeholder="0">
-            
             <label>Average Cost per Share (DKK)</label>
             <input type="number" step="0.01" id="cost" placeholder="0.00">
-            
             <label>Annual Dividend per Share (DKK)</label>
             <input type="number" step="0.01" id="dividend" placeholder="0.00">
-            
             <label>Type</label>
             <select id="type">
                 <option>Stock</option>
                 <option>Fund</option>
                 <option>RSU</option>
             </select>
-            
             <button class="btn" id="saveBtn">Save</button>
             <button class="btn" id="deleteBtn" style="display:none;background:#ff4466;">Delete</button>
         </div>
     </div>
     
     <div class="bottom-nav">
-        <button class="nav-btn" id="dashBtn">Dashboard</button>
+        <button class="nav-btn">Dashboard</button>
         <button class="nav-btn" id="refreshBtn">↻ Refresh</button>
         <button class="nav-btn" id="exportBtn">Export</button>
     </div>
     
     <script>
-        let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
-        let editing = null;
+        var data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
+        var editing = null;
         
-        // Setup event listeners
-        document.getElementById('addBtn').addEventListener('click', showModal);
-        document.getElementById('closeBtn').addEventListener('click', hideModal);
-        document.getElementById('saveBtn').addEventListener('click', save);
-        document.getElementById('deleteBtn').addEventListener('click', deleteHolding);
-        document.getElementById('refreshBtn').addEventListener('click', refreshPrices);
-        document.getElementById('exportBtn').addEventListener('click', exp);
-        
-        function showModal() {
+        document.getElementById('addBtn').onclick = function() {
             editing = null;
             document.getElementById('modalTitle').textContent = 'Add Holding';
             document.getElementById('deleteBtn').style.display = 'none';
@@ -304,14 +111,14 @@
             document.getElementById('cost').value = '';
             document.getElementById('dividend').value = '';
             document.getElementById('modal').classList.add('show');
-        }
+        };
         
-        function hideModal() {
+        document.getElementById('closeBtn').onclick = function() {
             document.getElementById('modal').classList.remove('show');
-        }
+        };
         
-        function save() {
-            const h = {
+        document.getElementById('saveBtn').onclick = function() {
+            var h = {
                 id: editing || Date.now(),
                 ticker: document.getElementById('ticker').value.toUpperCase(),
                 name: document.getElementById('name').value,
@@ -324,20 +131,59 @@
             };
             
             if (editing) {
-                data.holdings = data.holdings.map(x => x.id === editing ? h : x);
+                data.holdings = data.holdings.map(function(x) { return x.id === editing ? h : x; });
             } else {
                 data.holdings.push(h);
             }
             
             localStorage.setItem('portfolio', JSON.stringify(data));
-            hideModal();
+            document.getElementById('modal').classList.remove('show');
             render();
             fetchPrice(h);
-        }
+        };
+        
+        document.getElementById('deleteBtn').onclick = function() {
+            if (confirm('Delete this holding?')) {
+                data.holdings = data.holdings.filter(function(x) { return x.id !== editing; });
+                localStorage.setItem('portfolio', JSON.stringify(data));
+                document.getElementById('modal').classList.remove('show');
+                render();
+            }
+        };
+        
+        document.getElementById('refreshBtn').onclick = function() {
+            var btn = this;
+            btn.textContent = 'Updating...';
+            btn.disabled = true;
+            
+            var i = 0;
+            function next() {
+                if (i < data.holdings.length) {
+                    fetchPrice(data.holdings[i]);
+                    i++;
+                    setTimeout(next, 200);
+                } else {
+                    data.lastUpdate = new Date().toISOString();
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    btn.textContent = '↻ Refresh';
+                    btn.disabled = false;
+                }
+            }
+            next();
+        };
+        
+        document.getElementById('exportBtn').onclick = function() {
+            var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+        };
         
         function edit(id) {
             editing = id;
-            const h = data.holdings.find(x => x.id === id);
+            var h = data.holdings.find(function(x) { return x.id === id; });
             document.getElementById('modalTitle').textContent = 'Edit Holding';
             document.getElementById('deleteBtn').style.display = 'block';
             document.getElementById('ticker').value = h.ticker;
@@ -349,165 +195,103 @@
             document.getElementById('modal').classList.add('show');
         }
         
-        function deleteHolding() {
-            if (confirm('Delete this holding?')) {
-                data.holdings = data.holdings.filter(x => x.id !== editing);
-                localStorage.setItem('portfolio', JSON.stringify(data));
-                hideModal();
-                render();
-            }
-        }
-        
-        async function fetchPrice(h) {
-            // Method 1: Try the chart API
-            try {
-                const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${h.ticker}?interval=1d&range=1d`);
-                const d = await r.json();
-                
-                if (d.chart && d.chart.result && d.chart.result[0]) {
-                    const meta = d.chart.result[0].meta;
-                    h.price = meta.regularMarketPrice || meta.previousClose;
-                    h.priceError = false;
+        function fetchPrice(h) {
+            fetch('https://query1.finance.yahoo.com/v8/finance/chart/' + h.ticker + '?interval=1d&range=1d')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.chart && d.chart.result && d.chart.result[0]) {
+                        var meta = d.chart.result[0].meta;
+                        h.price = meta.regularMarketPrice || meta.previousClose;
+                        h.priceError = false;
+                    } else {
+                        h.priceError = true;
+                    }
                     localStorage.setItem('portfolio', JSON.stringify(data));
                     render();
-                    return;
-                }
-            } catch (e) {
-                console.error('Chart API failed:', e);
-            }
-            
-            // Method 2: Try the quote API
-            try {
-                const r = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${h.ticker}`);
-                const d = await r.json();
-                
-                if (d.quoteResponse && d.quoteResponse.result && d.quoteResponse.result[0]) {
-                    const quote = d.quoteResponse.result[0];
-                    h.price = quote.regularMarketPrice || quote.previousClose;
-                    h.priceError = false;
+                })
+                .catch(function() {
+                    h.priceError = true;
                     localStorage.setItem('portfolio', JSON.stringify(data));
                     render();
-                    return;
-                }
-            } catch (e) {
-                console.error('Quote API failed:', e);
-            }
-            
-            // Both methods failed
-            h.priceError = true;
-            localStorage.setItem('portfolio', JSON.stringify(data));
-            render();
-        }
-        
-        async function refreshPrices() {
-            const btn = document.getElementById('refreshBtn');
-            btn.textContent = 'Updating...';
-            btn.disabled = true;
-            
-            for (const h of data.holdings) {
-                await fetchPrice(h);
-                await new Promise(r => setTimeout(r, 200));
-            }
-            
-            data.lastUpdate = new Date().toISOString();
-            localStorage.setItem('portfolio', JSON.stringify(data));
-            
-            btn.textContent = '↻ Refresh';
-            btn.disabled = false;
+                });
         }
         
         function fmt(n) {
-            return new Intl.NumberFormat('da-DK').format(Math.round(n)) + ' DKK';
+            return Math.round(n).toLocaleString('da-DK') + ' DKK';
         }
         
         function render() {
-            let html = '';
-            let totalVal = 0, totalCost = 0, totalDiv = 0;
+            var html = '';
+            var totalVal = 0, totalCost = 0, totalDiv = 0;
             
             if (data.holdings.length === 0) {
-                html = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings yet<br><br><button class="btn" onclick="showModal()">Add Your First Holding</button></div>';
+                html = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings yet<br><br><button class="btn" onclick="document.getElementById(\'addBtn\').click()">Add Your First Holding</button></div>';
             } else {
-                data.holdings.forEach(h => {
-                    const currentPrice = h.price || h.cost;
-                    const val = currentPrice * h.shares;
-                    const cost = h.cost * h.shares;
-                    const chg = val - cost;
-                    const pct = (chg / cost * 100).toFixed(1);
-                    const cls = chg >= 0 ? 'positive' : 'negative';
+                data.holdings.forEach(function(h) {
+                    var currentPrice = h.price || h.cost;
+                    var val = currentPrice * h.shares;
+                    var cost = h.cost * h.shares;
+                    var chg = val - cost;
+                    var pct = (chg / cost * 100).toFixed(1);
+                    var cls = chg >= 0 ? 'positive' : 'negative';
                     
                     totalVal += val;
                     totalCost += cost;
                     totalDiv += h.dividend * h.shares;
                     
-                    let status = '';
+                    var status = '';
                     if (h.priceError) {
                         status = '<div class="status error">⚠️ Price unavailable</div>';
                     } else if (h.price) {
                         status = '<div class="status">✓ Live price</div>';
                     }
                     
-                    html += `
-                        <div class="holding" onclick="edit(${h.id})">
-                            <div class="holding-header">
-                                <div class="ticker">${h.ticker}</div>
-                                <div class="holding-value">${fmt(val)}</div>
-                            </div>
-                            <div class="meta">${h.shares} shares · ${fmt(h.dividend)}/share</div>
-                            <div class="meta ${cls}">${chg >= 0 ? '+' : ''}${fmt(chg)} (${chg >= 0 ? '+' : ''}${pct}%)</div>
-                            ${status}
-                        </div>
-                    `;
+                    html += '<div class="holding" onclick="edit(' + h.id + ')">' +
+                        '<div class="holding-header">' +
+                        '<div class="ticker">' + h.ticker + '</div>' +
+                        '<div class="holding-value">' + fmt(val) + '</div>' +
+                        '</div>' +
+                        '<div class="meta">' + h.shares + ' shares · ' + fmt(h.dividend) + '/share</div>' +
+                        '<div class="meta ' + cls + '">' + (chg >= 0 ? '+' : '') + fmt(chg) + ' (' + (chg >= 0 ? '+' : '') + pct + '%)</div>' +
+                        status +
+                        '</div>';
                 });
             }
             
             document.getElementById('holdings').innerHTML = html;
             
-            const totChg = totalVal - totalCost;
-            const totPct = totalCost > 0 ? (totChg / totalCost * 100).toFixed(1) : 0;
-            const yld = totalVal > 0 ? (totalDiv / totalVal * 100).toFixed(2) : 0;
+            var totChg = totalVal - totalCost;
+            var totPct = totalCost > 0 ? (totChg / totalCost * 100).toFixed(1) : 0;
+            var yld = totalVal > 0 ? (totalDiv / totalVal * 100).toFixed(2) : 0;
             
             document.getElementById('totalValue').textContent = fmt(totalVal);
-            document.getElementById('totalChange').innerHTML = `<span class="${totChg >= 0 ? 'positive' : 'negative'}">${totChg >= 0 ? '+' : ''}${fmt(totChg)} (${totChg >= 0 ? '+' : ''}${totPct}%)</span>`;
+            document.getElementById('totalChange').innerHTML = '<span class="' + (totChg >= 0 ? 'positive' : 'negative') + '">' + (totChg >= 0 ? '+' : '') + fmt(totChg) + ' (' + (totChg >= 0 ? '+' : '') + totPct + '%)</span>';
             document.getElementById('annualIncome').textContent = fmt(totalDiv);
             document.getElementById('yieldPercent').textContent = yld + '%';
             
             if (data.lastUpdate) {
-                const diff = Date.now() - new Date(data.lastUpdate);
-                const min = Math.floor(diff / 60000);
+                var diff = Date.now() - new Date(data.lastUpdate);
+                var min = Math.floor(diff / 60000);
                 document.getElementById('lastUpdate').textContent = min < 1 ? 'Just now' : min < 60 ? min + 'm ago' : Math.floor(min/60) + 'h ago';
             }
         }
         
-        function exp() {
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
-            a.click();
-        }
-        
-        // Initial render
         render();
         
-        // Auto-load prices on first visit
         if (data.holdings.length > 0 && !data.lastUpdate) {
-            refreshPrices();
+            document.getElementById('refreshBtn').click();
         }
         
-        // Auto-refresh every 5 minutes (300000 milliseconds)
         setInterval(function() {
             if (data.holdings.length > 0) {
-                console.log('Auto-refreshing prices...');
-                refreshPrices();
+                document.getElementById('refreshBtn').click();
             }
         }, 300000);
         
-        // Update "last updated" timestamp every minute
         setInterval(function() {
             if (data.lastUpdate) {
-                const diff = Date.now() - new Date(data.lastUpdate);
-                const min = Math.floor(diff / 60000);
+                var diff = Date.now() - new Date(data.lastUpdate);
+                var min = Math.floor(diff / 60000);
                 document.getElementById('lastUpdate').textContent = min < 1 ? 'Just now' : min < 60 ? min + 'm ago' : Math.floor(min/60) + 'h ago';
             }
         }, 60000);
