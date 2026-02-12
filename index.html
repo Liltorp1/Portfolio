@@ -78,6 +78,8 @@
             <input type="number" step="0.01" id="shares" placeholder="0">
             <label>Average Cost per Share (DKK)</label>
             <input type="number" step="0.01" id="cost" placeholder="0.00">
+            <label>Current Price (DKK) - Optional, will auto-fetch if available</label>
+            <input type="number" step="0.01" id="currentPrice" placeholder="Leave blank for auto-fetch">
             <label>Annual Dividend per Share (DKK)</label>
             <input type="number" step="0.01" id="dividend" placeholder="0.00">
             <label>Type</label>
@@ -109,6 +111,7 @@
             document.getElementById('name').value = '';
             document.getElementById('shares').value = '';
             document.getElementById('cost').value = '';
+            document.getElementById('currentPrice').value = '';
             document.getElementById('dividend').value = '';
             document.getElementById('modal').classList.add('show');
         };
@@ -118,6 +121,8 @@
         };
         
         document.getElementById('saveBtn').onclick = function() {
+            var manualPrice = parseFloat(document.getElementById('currentPrice').value);
+            
             var h = {
                 id: editing || Date.now(),
                 ticker: document.getElementById('ticker').value.toUpperCase(),
@@ -126,7 +131,8 @@
                 cost: parseFloat(document.getElementById('cost').value),
                 dividend: parseFloat(document.getElementById('dividend').value) || 0,
                 type: document.getElementById('type').value,
-                price: null,
+                price: manualPrice || null,
+                manualPrice: manualPrice ? true : false,
                 priceError: false
             };
             
@@ -139,7 +145,10 @@
             localStorage.setItem('portfolio', JSON.stringify(data));
             document.getElementById('modal').classList.remove('show');
             render();
-            fetchPrice(h);
+            
+            if (!manualPrice) {
+                fetchPrice(h);
+            }
         };
         
         document.getElementById('deleteBtn').onclick = function() {
@@ -159,9 +168,11 @@
             var i = 0;
             function next() {
                 if (i < data.holdings.length) {
-                    fetchPrice(data.holdings[i]);
+                    if (!data.holdings[i].manualPrice) {
+                        fetchPrice(data.holdings[i]);
+                    }
                     i++;
-                    setTimeout(next, 200);
+                    setTimeout(next, 300);
                 } else {
                     data.lastUpdate = new Date().toISOString();
                     localStorage.setItem('portfolio', JSON.stringify(data));
@@ -190,12 +201,14 @@
             document.getElementById('name').value = h.name;
             document.getElementById('shares').value = h.shares;
             document.getElementById('cost').value = h.cost;
+            document.getElementById('currentPrice').value = h.price || '';
             document.getElementById('dividend').value = h.dividend;
             document.getElementById('type').value = h.type;
             document.getElementById('modal').classList.add('show');
         }
         
         function fetchPrice(h) {
+            // Method 1: Yahoo Finance Chart API
             fetch('https://query1.finance.yahoo.com/v8/finance/chart/' + h.ticker + '?interval=1d&range=1d')
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
@@ -203,11 +216,52 @@
                         var meta = d.chart.result[0].meta;
                         h.price = meta.regularMarketPrice || meta.previousClose;
                         h.priceError = false;
+                        localStorage.setItem('portfolio', JSON.stringify(data));
+                        render();
+                    } else {
+                        tryYahooQuote(h);
+                    }
+                })
+                .catch(function() {
+                    tryYahooQuote(h);
+                });
+        }
+        
+        function tryYahooQuote(h) {
+            // Method 2: Yahoo Finance Quote API
+            fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + h.ticker)
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.quoteResponse && d.quoteResponse.result && d.quoteResponse.result[0]) {
+                        var quote = d.quoteResponse.result[0];
+                        h.price = quote.regularMarketPrice || quote.previousClose;
+                        h.priceError = false;
+                        localStorage.setItem('portfolio', JSON.stringify(data));
+                        render();
+                    } else {
+                        tryFinnhub(h);
+                    }
+                })
+                .catch(function() {
+                    tryFinnhub(h);
+                });
+        }
+        
+        function tryFinnhub(h) {
+            // Method 3: Finnhub API (free tier, demo token)
+            fetch('https://finnhub.io/api/v1/quote?symbol=' + h.ticker + '&token=demo')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.c && d.c > 0) {
+                        h.price = d.c;
+                        h.priceError = false;
+                        localStorage.setItem('portfolio', JSON.stringify(data));
+                        render();
                     } else {
                         h.priceError = true;
+                        localStorage.setItem('portfolio', JSON.stringify(data));
+                        render();
                     }
-                    localStorage.setItem('portfolio', JSON.stringify(data));
-                    render();
                 })
                 .catch(function() {
                     h.priceError = true;
@@ -240,7 +294,9 @@
                     totalDiv += h.dividend * h.shares;
                     
                     var status = '';
-                    if (h.priceError) {
+                    if (h.manualPrice) {
+                        status = '<div class="status">📝 Manual price</div>';
+                    } else if (h.priceError) {
                         status = '<div class="status error">⚠️ Price unavailable</div>';
                     } else if (h.price) {
                         status = '<div class="status">✓ Live price</div>';
