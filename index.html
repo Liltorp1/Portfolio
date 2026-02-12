@@ -89,6 +89,7 @@
             background: rgba(0,0,0,0.9);
             padding: 20px;
             overflow-y: auto;
+            z-index: 1000;
         }
         
         .modal.show {
@@ -200,6 +201,20 @@
             font-size: 14px;
             cursor: pointer;
         }
+        
+        .nav-btn:active {
+            opacity: 0.7;
+        }
+        
+        .status {
+            font-size: 10px;
+            color: #00ff88;
+            margin-top: 3px;
+        }
+        
+        .error {
+            color: #ff4466;
+        }
     </style>
 </head>
 <body>
@@ -222,7 +237,7 @@
     
     <div class="section-title">
         <span>HOLDINGS</span>
-        <button class="btn btn-small" onclick="showModal()">+ Add</button>
+        <button class="btn btn-small" id="addBtn">+ Add</button>
     </div>
     
     <div id="holdings"></div>
@@ -231,7 +246,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add Holding</h2>
-                <button class="close" onclick="hideModal()">&times;</button>
+                <button class="close" id="closeBtn">&times;</button>
             </div>
             
             <label>Ticker</label>
@@ -256,20 +271,28 @@
                 <option>RSU</option>
             </select>
             
-            <button class="btn" onclick="save()">Save</button>
-            <button class="btn" id="deleteBtn" onclick="deleteHolding()" style="display:none;background:#ff4466;">Delete</button>
+            <button class="btn" id="saveBtn">Save</button>
+            <button class="btn" id="deleteBtn" style="display:none;background:#ff4466;">Delete</button>
         </div>
     </div>
     
     <div class="bottom-nav">
-        <button class="nav-btn">Dashboard</button>
-        <button class="nav-btn" onclick="refresh()">↻ Refresh</button>
-        <button class="nav-btn" onclick="exp()">Export</button>
+        <button class="nav-btn" id="dashBtn">Dashboard</button>
+        <button class="nav-btn" id="refreshBtn">↻ Refresh</button>
+        <button class="nav-btn" id="exportBtn">Export</button>
     </div>
     
     <script>
         let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
         let editing = null;
+        
+        // Setup event listeners
+        document.getElementById('addBtn').addEventListener('click', showModal);
+        document.getElementById('closeBtn').addEventListener('click', hideModal);
+        document.getElementById('saveBtn').addEventListener('click', save);
+        document.getElementById('deleteBtn').addEventListener('click', deleteHolding);
+        document.getElementById('refreshBtn').addEventListener('click', refreshPrices);
+        document.getElementById('exportBtn').addEventListener('click', exp);
         
         function showModal() {
             editing = null;
@@ -296,7 +319,8 @@
                 cost: parseFloat(document.getElementById('cost').value),
                 dividend: parseFloat(document.getElementById('dividend').value) || 0,
                 type: document.getElementById('type').value,
-                price: null
+                price: null,
+                priceError: false
             };
             
             if (editing) {
@@ -338,27 +362,44 @@
             try {
                 const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${h.ticker}?interval=1d&range=1d`);
                 const d = await r.json();
+                
                 if (d.chart && d.chart.result && d.chart.result[0]) {
                     h.price = d.chart.result[0].meta.regularMarketPrice;
+                    h.priceError = false;
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    render();
+                } else {
+                    h.priceError = true;
                     localStorage.setItem('portfolio', JSON.stringify(data));
                     render();
                 }
             } catch (e) {
-                console.error(e);
+                console.error('Price fetch error:', e);
+                h.priceError = true;
+                localStorage.setItem('portfolio', JSON.stringify(data));
+                render();
             }
         }
         
-        async function refresh() {
+        async function refreshPrices() {
+            const btn = document.getElementById('refreshBtn');
+            btn.textContent = 'Updating...';
+            btn.disabled = true;
+            
             for (const h of data.holdings) {
                 await fetchPrice(h);
-                await new Promise(r => setTimeout(r, 100));
+                await new Promise(r => setTimeout(r, 200));
             }
+            
             data.lastUpdate = new Date().toISOString();
             localStorage.setItem('portfolio', JSON.stringify(data));
+            
+            btn.textContent = '↻ Refresh';
+            btn.disabled = false;
         }
         
         function fmt(n) {
-            return new Intl.NumberFormat('da-DK').format(n) + ' DKK';
+            return new Intl.NumberFormat('da-DK').format(Math.round(n)) + ' DKK';
         }
         
         function render() {
@@ -369,7 +410,8 @@
                 html = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings yet<br><br><button class="btn" onclick="showModal()">Add Your First Holding</button></div>';
             } else {
                 data.holdings.forEach(h => {
-                    const val = (h.price || h.cost) * h.shares;
+                    const currentPrice = h.price || h.cost;
+                    const val = currentPrice * h.shares;
                     const cost = h.cost * h.shares;
                     const chg = val - cost;
                     const pct = (chg / cost * 100).toFixed(1);
@@ -379,6 +421,13 @@
                     totalCost += cost;
                     totalDiv += h.dividend * h.shares;
                     
+                    let status = '';
+                    if (h.priceError) {
+                        status = '<div class="status error">⚠️ Price unavailable</div>';
+                    } else if (h.price) {
+                        status = '<div class="status">✓ Live price</div>';
+                    }
+                    
                     html += `
                         <div class="holding" onclick="edit(${h.id})">
                             <div class="holding-header">
@@ -387,6 +436,7 @@
                             </div>
                             <div class="meta">${h.shares} shares · ${fmt(h.dividend)}/share</div>
                             <div class="meta ${cls}">${chg >= 0 ? '+' : ''}${fmt(chg)} (${chg >= 0 ? '+' : ''}${pct}%)</div>
+                            ${status}
                         </div>
                     `;
                 });
@@ -419,12 +469,30 @@
             a.click();
         }
         
+        // Initial render
         render();
         
-        // Auto-load prices on start
+        // Auto-load prices on first visit
         if (data.holdings.length > 0 && !data.lastUpdate) {
-            refresh();
+            refreshPrices();
         }
+        
+        // Auto-refresh every 5 minutes (300000 milliseconds)
+        setInterval(function() {
+            if (data.holdings.length > 0) {
+                console.log('Auto-refreshing prices...');
+                refreshPrices();
+            }
+        }, 300000);
+        
+        // Update "last updated" timestamp every minute
+        setInterval(function() {
+            if (data.lastUpdate) {
+                const diff = Date.now() - new Date(data.lastUpdate);
+                const min = Math.floor(diff / 60000);
+                document.getElementById('lastUpdate').textContent = min < 1 ? 'Just now' : min < 60 ? min + 'm ago' : Math.floor(min/60) + 'h ago';
+            }
+        }, 60000);
     </script>
 </body>
 </html>
