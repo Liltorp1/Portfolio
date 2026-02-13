@@ -480,9 +480,7 @@
         
             try {
                 let symbol = h.ticker.toUpperCase();
-                if (symbol.endsWith('.CO')) {
-                    symbol = symbol.replace('.CO', '.CSE');
-                }
+                // Removed the incorrect replacement: // if (symbol.endsWith('.CO')) symbol = symbol.replace('.CO', '.CSE');
         
                 const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1d`);
                 const json = await response.json();
@@ -702,4 +700,4 @@
     </script>
 </body>
 </html>
-```4px
+``` → Low
