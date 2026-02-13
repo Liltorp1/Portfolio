@@ -36,6 +36,9 @@
         .currency-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .currency-row input { flex: 2; margin-bottom: 0; }
         .currency-row select { flex: 1; margin-bottom: 0; }
+        .live { color: #00ff88; }
+        .manual-price { color: #ffc044; }
+        .failed { color: #ff4466; }
     </style>
 </head>
 <body>
@@ -82,9 +85,9 @@
                     <option value="USD">USD</option>
                 </select>
             </div>
-            <label>Current Price - optional</label>
+            <label>Current Price (optional - auto-fetch if blank)</label>
             <div class="currency-row">
-                <input type="number" step="0.01" id="currentPrice">
+                <input type="number" step="0.01" id="currentPrice" placeholder="Leave blank for auto-update">
                 <select id="priceCurrency">
                     <option value="DKK">DKK</option>
                     <option value="EUR">EUR</option>
@@ -114,8 +117,9 @@
     <script>
         var data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
         var editing = null;
+        var isRefreshing = false;
         
-        // Exchange rates (approximate, you can update these manually)
+        // Exchange rates (update these periodically)
         var rates = {
             'DKK': 1,
             'EUR': 7.46,  // 1 EUR = 7.46 DKK
@@ -124,6 +128,10 @@
         
         function convertToDKK(amount, currency) {
             return amount * rates[currency];
+        }
+        
+        function convertFromDKK(amountDKK, currency) {
+            return amountDKK / rates[currency];
         }
         
         // Add button
@@ -168,7 +176,10 @@
                 price: priceInDKK,
                 priceOriginal: priceAmount || null,
                 priceCurrency: priceCurrency,
-                manual: priceInDKK ? true : false
+                manualPrice: priceAmount ? true : false,
+                autoFetch: !priceAmount,
+                lastFetched: null,
+                fetchError: false
             };
             
             if (editing) {
@@ -185,6 +196,11 @@
             localStorage.setItem('portfolio', JSON.stringify(data));
             document.getElementById('modal').classList.remove('show');
             render();
+            
+            // Auto-fetch price if not manual
+            if (!priceAmount) {
+                fetchPriceForHolding(h);
+            }
         };
         
         // Delete button
@@ -203,12 +219,39 @@
             }
         };
         
-        // Refresh button
+        // Refresh button - WORKING VERSION
         document.getElementById('refreshBtn').onclick = function() {
-            alert('For at opdatere priser på danske aktier: tryk på aktien og indtast nuværende pris manuelt.');
-            data.lastUpdate = new Date().toISOString();
-            localStorage.setItem('portfolio', JSON.stringify(data));
-            render();
+            if (isRefreshing) return;
+            
+            var btn = this;
+            btn.textContent = 'Updating...';
+            btn.disabled = true;
+            isRefreshing = true;
+            
+            var index = 0;
+            
+            function fetchNext() {
+                if (index >= data.holdings.length) {
+                    data.lastUpdate = new Date().toISOString();
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    btn.textContent = '↻ Refresh';
+                    btn.disabled = false;
+                    isRefreshing = false;
+                    render();
+                    return;
+                }
+                
+                var h = data.holdings[index];
+                index++;
+                
+                if (h.autoFetch && !h.manualPrice) {
+                    fetchPriceForHolding(h, fetchNext);
+                } else {
+                    setTimeout(fetchNext, 100);
+                }
+            }
+            
+            fetchNext();
         };
         
         // Export button
@@ -221,6 +264,51 @@
             a.download = 'portfolio.json';
             a.click();
         };
+        
+        // Fetch price for a holding
+        function fetchPriceForHolding(holding, callback) {
+            fetch('https://query1.finance.yahoo.com/v8/finance/chart/' + holding.ticker + '?interval=1d&range=1d')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.chart && d.chart.result && d.chart.result[0]) {
+                        var meta = d.chart.result[0].meta;
+                        var fetchedPrice = meta.regularMarketPrice || meta.previousClose;
+                        
+                        if (fetchedPrice && fetchedPrice > 0) {
+                            // Determine currency from ticker
+                            var fetchCurrency = 'DKK';
+                            if (holding.ticker.indexOf('.CO') > -1) {
+                                fetchCurrency = 'DKK';
+                            } else if (holding.priceCurrency) {
+                                fetchCurrency = holding.priceCurrency;
+                            } else {
+                                fetchCurrency = 'USD'; // Default to USD for US stocks
+                            }
+                            
+                            holding.price = convertToDKK(fetchedPrice, fetchCurrency);
+                            holding.priceOriginal = fetchedPrice;
+                            holding.priceCurrency = fetchCurrency;
+                            holding.fetchError = false;
+                            holding.lastFetched = new Date().toISOString();
+                        } else {
+                            holding.fetchError = true;
+                        }
+                    } else {
+                        holding.fetchError = true;
+                    }
+                    
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    render();
+                    if (callback) setTimeout(callback, 300);
+                })
+                .catch(function(e) {
+                    console.error('Failed to fetch ' + holding.ticker, e);
+                    holding.fetchError = true;
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    render();
+                    if (callback) setTimeout(callback, 300);
+                });
+        }
         
         function clearForm() {
             document.getElementById('ticker').value = '';
@@ -252,7 +340,7 @@
             document.getElementById('shares').value = h.shares;
             document.getElementById('cost').value = h.costOriginal || h.cost;
             document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
-            document.getElementById('currentPrice').value = h.priceOriginal || '';
+            document.getElementById('currentPrice').value = h.manualPrice ? (h.priceOriginal || '') : '';
             document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
             document.getElementById('dividend').value = h.dividendOriginal || h.dividend;
             document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
@@ -283,10 +371,28 @@
                     totalCost += costVal;
                     totalDiv += h.dividend * h.shares;
                     
-                    var status = h.manual ? '📝 Manual' : '💤 Using cost';
+                    var statusText = '';
+                    var statusClass = '';
+                    if (h.manualPrice) {
+                        statusText = '📝 Manual price';
+                        statusClass = 'manual-price';
+                    } else if (h.fetchError) {
+                        statusText = '⚠️ Auto-fetch failed - tap to set manually';
+                        statusClass = 'failed';
+                    } else if (h.lastFetched) {
+                        statusText = '✓ Live price';
+                        statusClass = 'live';
+                    } else if (h.autoFetch) {
+                        statusText = '⏳ Will auto-update';
+                        statusClass = '';
+                    } else {
+                        statusText = '💤 Using cost basis';
+                        statusClass = '';
+                    }
+                    
                     var color = chg >= 0 ? 'positive' : 'negative';
                     
-                    var costDisplay = h.costCurrency ? 
+                    var costDisplay = h.costCurrency && h.costCurrency !== 'DKK' ? 
                         Math.round(h.costOriginal).toLocaleString('da-DK') + ' ' + h.costCurrency + ' → ' + fmt(costVal) :
                         fmt(costVal);
                     
@@ -298,7 +404,7 @@
                     html += '<div class="meta">' + h.shares + ' shares · Cost: ' + costDisplay + '</div>';
                     html += '<div class="meta ' + color + '">' + (chg >= 0 ? '+' : '') + fmt(chg) + ' (' + (chg >= 0 ? '+' : '') + pct + '%)</div>';
                     html += '<div class="meta">Annual income: ' + fmt(annualYield) + '</div>';
-                    html += '<div class="status meta">' + status + '</div>';
+                    html += '<div class="status meta ' + statusClass + '">' + statusText + '</div>';
                     html += '</div>';
                 }
             }
@@ -324,7 +430,24 @@
             }
         }
         
+        // Initial render
         render();
+        
+        // Auto-fetch on load if needed
+        setTimeout(function() {
+            for (var i = 0; i < data.holdings.length; i++) {
+                if (data.holdings[i].autoFetch && !data.holdings[i].lastFetched) {
+                    fetchPriceForHolding(data.holdings[i]);
+                }
+            }
+        }, 1000);
+        
+        // Auto-refresh every 5 minutes
+        setInterval(function() {
+            if (!isRefreshing && data.holdings.length > 0) {
+                document.getElementById('refreshBtn').click();
+            }
+        }, 300000);
     </script>
 </body>
 </html>
