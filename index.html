@@ -91,9 +91,9 @@
             
             <label>Type</label>
             <select id="type">
-                <option value="stock">Stock</option>
-                <option value="fund">Fund (no ticker)</option>
-                <option value="rsu">RSU</option>
+                <option value="stock">Stock (auto-updates)</option>
+                <option value="fund">Fund (manual only)</option>
+                <option value="rsu">RSU (auto-updates)</option>
             </select>
             
             <div id="tickerField">
@@ -118,10 +118,11 @@
             </div>
             
             <div id="currentPriceField">
-                <label>Current Price <span id="priceLabel">(optional - will auto-update)</span></label>
-                <div class="info-text" id="priceInfo" style="display:none;">Funds don't auto-update - enter current NAV/price here</div>
+                <label>Current Price <span id="priceLabel">(optional - backup if auto-fetch fails)</span></label>
+                <div class="info-text" id="priceInfoStock" style="display:block;">Stocks/RSU: Auto-updates at 8:00 & 22:00 CET. Enter manually only as backup.</div>
+                <div class="info-text" id="priceInfoFund" style="display:none;">Funds: Required - will NOT auto-update. Update manually when needed.</div>
                 <div class="currency-row">
-                    <input type="number" step="0.01" id="currentPrice" placeholder="Auto-updates at 8:00 & 22:00 CET">
+                    <input type="number" step="0.01" id="currentPrice" placeholder="Optional for stocks/RSU, required for funds">
                     <select id="priceCurrency">
                         <option value="DKK">DKK</option>
                         <option value="EUR">EUR</option>
@@ -171,26 +172,21 @@
         // Calculate next scheduled update (8:00 or 22:00 CET)
         function getNextUpdateTime() {
             var now = new Date();
-            // Convert to CET (UTC+1)
-            var cetOffset = 60; // CET is UTC+1
+            var cetOffset = 60;
             var cetTime = new Date(now.getTime() + (cetOffset * 60000) + (now.getTimezoneOffset() * 60000));
             
             var hour = cetTime.getHours();
             var nextUpdate = new Date(cetTime);
             
             if (hour < 8) {
-                // Next update is today at 8:00
                 nextUpdate.setHours(8, 0, 0, 0);
             } else if (hour < 22) {
-                // Next update is today at 22:00
                 nextUpdate.setHours(22, 0, 0, 0);
             } else {
-                // Next update is tomorrow at 8:00
                 nextUpdate.setDate(nextUpdate.getDate() + 1);
                 nextUpdate.setHours(8, 0, 0, 0);
             }
             
-            // Convert back to local time
             return new Date(nextUpdate.getTime() - (cetOffset * 60000) - (now.getTimezoneOffset() * 60000));
         }
         
@@ -221,7 +217,6 @@
             var hour = cetTime.getHours();
             var minute = cetTime.getMinutes();
             
-            // Check if we're within 5 minutes of 8:00 or 22:00 CET
             var isUpdateTime = (hour === 8 || hour === 22) && minute < 5;
             
             if (isUpdateTime) {
@@ -229,7 +224,6 @@
                 var lastUpdate = lastScheduledUpdate ? lastScheduledUpdate.split('T')[0] : null;
                 var lastHour = lastScheduledUpdate ? parseInt(lastScheduledUpdate.split('T')[1].split(':')[0]) : null;
                 
-                // Only update if we haven't updated at this hour today
                 if (lastUpdate !== today || lastHour !== hour) {
                     console.log('Running scheduled update at ' + hour + ':00 CET');
                     localStorage.setItem('lastScheduledUpdate', cetTime.toISOString());
@@ -238,7 +232,7 @@
             }
         }
         
-        // Auto-refresh prices (stocks and RSU only)
+        // Auto-refresh prices (stocks and RSU only, ALWAYS attempt regardless of manual entry)
         function autoRefreshPrices() {
             if (isRefreshing || data.holdings.length === 0) return;
             
@@ -259,8 +253,8 @@
                 var h = data.holdings[index];
                 index++;
                 
-                // Only auto-fetch for stocks and RSU, not funds
-                if ((h.type === 'stock' || h.type === 'rsu') && h.ticker && !h.manualPrice) {
+                // ALWAYS auto-fetch for stocks and RSU with tickers, regardless of manual entry
+                if ((h.type === 'stock' || h.type === 'rsu') && h.ticker) {
                     fetchPriceForHolding(h, fetchNext);
                 } else {
                     setTimeout(fetchNext, 100);
@@ -308,9 +302,10 @@
         document.getElementById('type').onchange = function() {
             var isFund = this.value === 'fund';
             document.getElementById('tickerField').style.display = isFund ? 'none' : 'block';
-            document.getElementById('priceLabel').textContent = isFund ? '(required for funds)' : '(optional - will auto-update)';
-            document.getElementById('priceInfo').style.display = isFund ? 'block' : 'none';
-            document.getElementById('currentPrice').placeholder = isFund ? 'Enter current NAV/price' : 'Auto-updates at 8:00 & 22:00 CET';
+            document.getElementById('priceLabel').textContent = isFund ? '(required for funds)' : '(optional - backup if auto-fetch fails)';
+            document.getElementById('priceInfoStock').style.display = isFund ? 'none' : 'block';
+            document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
+            document.getElementById('currentPrice').placeholder = isFund ? 'Enter current NAV/price' : 'Optional for stocks/RSU, required for funds';
             
             if (isFund) {
                 document.getElementById('ticker').value = '';
@@ -345,7 +340,7 @@
             }
             
             if (!isFund && !ticker) {
-                alert('Please enter a ticker symbol for stocks');
+                alert('Please enter a ticker symbol for stocks/RSU');
                 return;
             }
             
@@ -381,8 +376,6 @@
                 price: priceInDKK,
                 priceOriginal: priceAmount || null,
                 priceCurrency: priceCurrency,
-                manualPrice: isFund ? true : (priceAmount ? true : false),
-                autoFetch: !isFund && !priceAmount,
                 lastFetched: null,
                 fetchError: false
             };
@@ -403,7 +396,7 @@
             render();
             
             // Immediately fetch price for new stock/RSU
-            if (!isFund && !priceAmount && ticker) {
+            if (!isFund && ticker) {
                 fetchPriceForHolding(h);
             }
         };
@@ -449,7 +442,8 @@
                 var h = data.holdings[index];
                 index++;
                 
-                if ((h.type === 'stock' || h.type === 'rsu') && h.ticker && !h.manualPrice) {
+                // ALWAYS attempt to fetch for stocks and RSU with tickers
+                if ((h.type === 'stock' || h.type === 'rsu') && h.ticker) {
                     fetchPriceForHolding(h, fetchNext);
                 } else {
                     setTimeout(fetchNext, 100);
@@ -470,7 +464,7 @@
             a.click();
         };
         
-        // Fetch price for a holding
+        // Fetch price for a holding - ALWAYS overwrites existing price for stocks/RSU
         function fetchPriceForHolding(holding, callback) {
             if (!holding.ticker || holding.type === 'fund') {
                 if (callback) callback();
@@ -485,18 +479,21 @@
                         var fetchedPrice = meta.regularMarketPrice || meta.previousClose;
                         
                         if (fetchedPrice && fetchedPrice > 0) {
-                            var fetchCurrency = 'USD'; // Default
+                            var fetchCurrency = 'USD';
                             if (holding.ticker.indexOf('.CO') > -1) {
                                 fetchCurrency = 'DKK';
                             } else if (holding.priceCurrency) {
                                 fetchCurrency = holding.priceCurrency;
                             }
                             
+                            // ALWAYS update the price, even if manual was entered before
                             holding.price = convertToDKK(fetchedPrice, fetchCurrency);
                             holding.priceOriginal = fetchedPrice;
                             holding.priceCurrency = fetchCurrency;
                             holding.fetchError = false;
                             holding.lastFetched = new Date().toISOString();
+                            
+                            console.log('Updated ' + holding.ticker + ' price to ' + fetchedPrice + ' ' + fetchCurrency);
                         } else {
                             holding.fetchError = true;
                         }
@@ -529,9 +526,10 @@
             document.getElementById('priceCurrency').value = 'DKK';
             document.getElementById('dividendCurrency').value = 'DKK';
             document.getElementById('tickerField').style.display = 'block';
-            document.getElementById('priceLabel').textContent = '(optional - will auto-update)';
-            document.getElementById('priceInfo').style.display = 'none';
-            document.getElementById('currentPrice').placeholder = 'Auto-updates at 8:00 & 22:00 CET';
+            document.getElementById('priceLabel').textContent = '(optional - backup if auto-fetch fails)';
+            document.getElementById('priceInfoStock').style.display = 'block';
+            document.getElementById('priceInfoFund').style.display = 'none';
+            document.getElementById('currentPrice').placeholder = 'Optional for stocks/RSU, required for funds';
         }
         
         function editHolding(id) {
@@ -551,8 +549,9 @@
             
             var isFund = h.type === 'fund';
             document.getElementById('tickerField').style.display = isFund ? 'none' : 'block';
-            document.getElementById('priceLabel').textContent = isFund ? '(required for funds)' : '(optional - will auto-update)';
-            document.getElementById('priceInfo').style.display = isFund ? 'block' : 'none';
+            document.getElementById('priceLabel').textContent = isFund ? '(required for funds)' : '(optional - backup if auto-fetch fails)';
+            document.getElementById('priceInfoStock').style.display = isFund ? 'none' : 'block';
+            document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
             
             document.getElementById('ticker').value = h.ticker || '';
             document.getElementById('name').value = h.name;
@@ -601,18 +600,15 @@
                     var statusText = '';
                     var statusClass = '';
                     if (isFund) {
-                        statusText = '💼 Fund - update manually';
-                        statusClass = 'manual-price';
-                    } else if (h.manualPrice) {
-                        statusText = '📝 Manual price';
+                        statusText = '💼 Fund - manual updates only';
                         statusClass = 'manual-price';
                     } else if (h.fetchError) {
-                        statusText = '⚠️ Auto-update failed';
+                        statusText = '⚠️ Auto-update failed - using ' + (h.price ? 'last known' : 'cost basis');
                         statusClass = 'failed';
                     } else if (h.lastFetched) {
                         var fetchTime = new Date(h.lastFetched);
                         var fetchStr = fetchTime.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
-                        statusText = '✓ Updated at ' + fetchStr;
+                        statusText = '✓ Auto-updated at ' + fetchStr;
                         statusClass = 'live';
                     } else {
                         statusText = '⏳ Will auto-update at 8:00 & 22:00';
@@ -675,19 +671,17 @@
         
         // Update next scheduled time display
         updateNextUpdateDisplay();
-        setInterval(updateNextUpdateDisplay, 60000); // Update every minute
+        setInterval(updateNextUpdateDisplay, 60000);
         
         // Check for scheduled updates every minute
         setInterval(checkScheduledUpdate, 60000);
-        
-        // Also check immediately on load
         checkScheduledUpdate();
         
-        // Fetch prices immediately on first load for stocks without prices
+        // Fetch prices immediately on first load for stocks/RSU without recent prices
         setTimeout(function() {
             for (var i = 0; i < data.holdings.length; i++) {
                 var h = data.holdings[i];
-                if ((h.type === 'stock' || h.type === 'rsu') && h.ticker && !h.lastFetched && !h.manualPrice) {
+                if ((h.type === 'stock' || h.type === 'rsu') && h.ticker && !h.lastFetched) {
                     fetchPriceForHolding(h);
                 }
             }
