@@ -135,7 +135,6 @@
     <div style="margin: 1rem 0; display: flex; gap: 1rem; flex-wrap: wrap;">
         <input type="text" id="searchInput" placeholder="Search by name/ticker..." style="padding: 0.5rem; flex: 1;">
         <select id="sortSelect">
-            <option value="name">Sort by Name</option>
             <option value="value-desc">Value (High → Low)</option>
             <option value="value-asc">Value (Low → High)</option>
             <option value="yield-desc">Yield (High → Low)</option>
@@ -338,7 +337,13 @@
             } else if (sortBy === 'value-asc') {
                 holdings.sort((a, b) => getHoldingValue(a) - getHoldingValue(b));
             } else if (sortBy === 'yield-desc') {
-                holdings.sort((a, b) => (b.annualDividendPercent || 0) - (a.annualDividendPercent || 0));
+                holdings.sort((a, b) => {
+                    const va = getHoldingValue(a);
+                    const vb = getHoldingValue(b);
+                    const ya = va > 0 ? convertToDKK((a.dividend || 0) * a.shares, a.dividendCurrency || 'DKK') / va : 0;
+                    const yb = vb > 0 ? convertToDKK((b.dividend || 0) * b.shares, b.dividendCurrency || 'DKK') / vb : 0;
+                    return yb - ya;
+                });
             } else { // name
                 holdings.sort((a, b) => a.name.localeCompare(b.name));
             }
@@ -428,10 +433,13 @@
             const holdingsDiv = document.getElementById('holdings');
             holdingsDiv.innerHTML = '';
         
-            filteredHoldings.forEach((h, i) => {
+            filteredHoldings.forEach((h) => {
                 const div = document.createElement('div');
                 div.className = 'holding';
-                div.onclick = () => editHolding(i);
+                div.onclick = () => {
+                    const originalIndex = data.holdings.indexOf(h);
+                    editHolding(originalIndex);
+                };
         
                 const value = getHoldingValue(h);
                 const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
@@ -480,7 +488,6 @@
         
             try {
                 let symbol = h.ticker.toUpperCase();
-                // Removed the incorrect replacement: // if (symbol.endsWith('.CO')) symbol = symbol.replace('.CO', '.CSE');
         
                 const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1d`);
                 const json = await response.json();
@@ -700,4 +707,4 @@
     </script>
 </body>
 </html>
-``` → Low
+```<span id
