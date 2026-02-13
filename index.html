@@ -240,13 +240,13 @@
             <div id="currentPriceField">
                 <label>Current Price <span id="priceLabel">(optional - backup if auto-fetch fails)</span></label>
                 <div class="info-text" id="priceInfoStock" style="display:block;">
-                    Stocks/RSU: Auto-updates via EODHD / Twelve Data. Enter manually only as backup.
+                    Auto-updates via EODHD / Twelve Data. Enter manually only as backup.
                 </div>
                 <div class="info-text" id="priceInfoFund" style="display:none;">
-                    Funds: Required - will NOT auto-update. Update manually when needed.
+                    Funds: Required - will NOT auto-update. Update manually.
                 </div>
                 <div class="currency-row">
-                    <input type="number" step="0.01" id="currentPrice" placeholder="Leave empty for auto-fetch">
+                    <input type="number" step="0.01" id="currentPrice" placeholder="Optional for stocks/RSU, required for funds">
                     <select id="priceCurrency">
                         <option value="DKK">DKK</option>
                         <option value="EUR">EUR</option>
@@ -277,10 +277,15 @@
     </div>
 
     <script>
-        // API KEYS
-        const EODHD_API_KEY = '698fa6d0d113a5.96289084';
+        // ────────────────────────────────────────────────
+        //  API KEYS (your provided keys)
+        // ────────────────────────────────────────────────
+        const EODHD_API_KEY     = '698fa6d0d113a5.96289084';
         const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
 
+        // ────────────────────────────────────────────────
+        //  Data & State
+        // ────────────────────────────────────────────────
         let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
         let editing = null;
         let isRefreshing = false;
@@ -292,7 +297,9 @@
 
         let allocationChart = null;
 
-        // Exchange Rates
+        // ────────────────────────────────────────────────
+        //  Exchange Rates (Frankfurter)
+        // ────────────────────────────────────────────────
         async function updateExchangeRates() {
             try {
                 const res = await fetch('https://api.frankfurter.app/latest?to=DKK,EUR,USD');
@@ -311,7 +318,9 @@
             return (amount || 0) * (exchangeRates[currency] || 1);
         }
 
-        // Time helpers
+        // ────────────────────────────────────────────────
+        //  Time helpers
+        // ────────────────────────────────────────────────
         function getNextUpdateTime() {
             const now = new Date();
             let cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
@@ -336,7 +345,9 @@
             document.getElementById('nextUpdate').textContent = `Next auto-update ${text} (${timeStr})`;
         }
 
-        // Theme toggle
+        // ────────────────────────────────────────────────
+        //  Theme toggle
+        // ────────────────────────────────────────────────
         const themeToggle = document.getElementById('theme-toggle');
         let currentTheme = localStorage.getItem('theme') || 'dark';
         document.body.className = currentTheme;
@@ -357,89 +368,94 @@
         };
 
         // ────────────────────────────────────────────────
-        //  IMPROVED PRICE FETCHING
+        //  Fetch current price – FIXED for EODHD response format
         // ────────────────────────────────────────────────
         async function fetchPriceForHolding(h) {
             if (h.type === 'fund' || !h.ticker) {
                 h.fetchError = true;
-                console.log(`Skipping fetch for fund or missing ticker: ${h.name}`);
                 return;
             }
 
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
-            console.log(`Trying to fetch price for: ${symbol}`);
-
-            // 1. EODHD (primary)
+            // 1. Try EODHD (primary – your test shows it works)
             if (EODHD_API_KEY) {
                 try {
                     const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
                     const response = await fetch(url);
-                    console.log(`EODHD HTTP status for ${symbol}: ${response.status}`);
-
                     if (response.ok) {
                         const json = await response.json();
-                        console.log(`EODHD full response for ${symbol}:`, json);
+                        console.log(`EODHD raw response for ${symbol}:`, json); // ← shows full data
 
-                        // Use fields that exist in your actual response
+                        // Use fields from your actual response
                         let price = json.close || json.previousClose || json.open || 0;
-
                         if (price > 0) {
                             h.currentPrice = price;
-                            h.priceCurrency = json.currency || 'DKK';  // .CO is DKK
+                            // Fallback currency based on ticker suffix (since not in response)
+                            if (symbol.endsWith('.CO')) {
+                                h.priceCurrency = 'DKK';
+                            } else if (symbol.endsWith('.MC')) {
+                                h.priceCurrency = 'EUR';
+                            } else {
+                                h.priceCurrency = json.currency || 'USD';
+                            }
                             h.fetchError = false;
                             fetched = true;
                             console.log(`EODHD SUCCESS: ${symbol} → ${price} ${h.priceCurrency}`);
                         } else {
-                            console.warn(`EODHD returned no valid price for ${symbol}`);
+                            console.warn(`EODHD no valid price in response for ${symbol}`);
                         }
                     } else {
                         console.warn(`EODHD HTTP error ${response.status} for ${symbol}`);
                     }
                 } catch (err) {
-                    console.error(`EODHD fetch error for ${symbol}:`, err.message);
+                    console.error(`EODHD fetch error for ${symbol}:`, err);
                 }
             }
 
-            // 2. Twelve Data fallback
+            // 2. Twelve Data fallback – try XCSE suffix for Copenhagen
             if (!fetched && TWELVEDATA_API_KEY) {
                 try {
-                    // Try both formats
-                    let attempts = [symbol, symbol.replace('.CO', ':XCSE')];
-                    for (let attempt of attempts) {
-                        const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(attempt)}&apikey=${TWELVEDATA_API_KEY}`;
-                        const response = await fetch(url);
-                        console.log(`Twelve Data attempt ${attempt} status: ${response.status}`);
+                    let tdSymbol = symbol;
+                    if (symbol.endsWith('.CO')) {
+                        tdSymbol = symbol.replace('.CO', ':XCSE');
+                    }
+                    const url = `https://api.twelvedata.com/quote?symbol=${tdSymbol}&apikey=${TWELVEDATA_API_KEY}`;
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const json = await response.json();
+                        console.log(`Twelve Data raw response for ${tdSymbol}:`, json);
 
-                        if (response.ok) {
-                            const json = await response.json();
-                            console.log(`Twelve Data response for ${attempt}:`, json);
-
-                            if (json.status === 'error' || json.code) continue;
-
-                            let price = json.close || json.previous_close || json.last || 0;
-                            if (price > 0) {
-                                h.currentPrice = price;
-                                h.priceCurrency = json.currency || 'USD';
-                                h.fetchError = false;
-                                fetched = true;
-                                console.log(`Twelve Data SUCCESS: ${attempt} → ${price} ${h.priceCurrency}`);
-                                break;
-                            }
+                        if (json.code === 400 || json.status === 'error') {
+                            throw new Error(json.message || 'API error');
                         }
+
+                        let price = json.close || json.previous_close || json.last || 0;
+                        if (price > 0) {
+                            h.currentPrice = price;
+                            h.priceCurrency = json.currency || 'USD';
+                            h.fetchError = false;
+                            fetched = true;
+                            console.log(`Twelve Data SUCCESS: ${tdSymbol} → ${price} ${h.priceCurrency}`);
+                        }
+                    } else {
+                        console.warn(`Twelve Data HTTP ${response.status} for ${tdSymbol}`);
                     }
                 } catch (err) {
-                    console.error(`Twelve Data error for ${symbol}:`, err.message);
+                    console.error(`Twelve Data error for ${symbol}:`, err);
                 }
             }
 
             if (!fetched) {
                 h.fetchError = true;
-                console.error(`All price sources failed for ${symbol} — using manual price if set`);
+                console.error(`All price sources failed for ${symbol} – using manual price if available`);
             }
         }
 
+        // ────────────────────────────────────────────────
+        //  Refresh all prices
+        // ────────────────────────────────────────────────
         async function refreshPrices() {
             if (isRefreshing) return;
             isRefreshing = true;
@@ -462,20 +478,29 @@
             document.getElementById('refreshBtn').textContent = 'Refresh';
         }
 
+        // ────────────────────────────────────────────────
+        //  Auto-update check (every minute)
+        // ────────────────────────────────────────────────
         function checkAutoUpdate() {
             const now = new Date();
             const last = data.lastUpdate ? new Date(data.lastUpdate) : new Date(0);
-            if (now - last > 3600000) {
+            if (now - last > 3600000) { // > 1 hour
                 const next = getNextUpdateTime();
                 if (now >= next) refreshPrices();
             }
         }
 
+        // ────────────────────────────────────────────────
+        //  Holding value calculation
+        // ────────────────────────────────────────────────
         function getHoldingValue(h) {
             const price = h.fetchError ? (h.manualPrice || 0) : (h.currentPrice || 0);
             return h.shares * convertToDKK(price, h.priceCurrency || 'DKK');
         }
 
+        // ────────────────────────────────────────────────
+        //  Filtering & Sorting
+        // ────────────────────────────────────────────────
         function getFilteredAndSortedHoldings() {
             let holdings = data.holdings.filter(h => {
                 if (activeFilter === 'all') return true;
@@ -509,6 +534,9 @@
             return holdings;
         }
 
+        // ────────────────────────────────────────────────
+        //  Pie chart
+        // ────────────────────────────────────────────────
         function renderAllocationChart(filtered) {
             const ctx = document.getElementById('allocationChart')?.getContext('2d');
             if (!ctx) return;
@@ -529,7 +557,7 @@
             allocationChart = new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: labels.map((l,i) => `${l} (${(dataPoints[i]/total*100 || 0).toFixed(1)}%)`),
+                    labels: labels.map((l,i) => `${l} (${(dataPoints[i]/total*100).toFixed(1)}%)`),
                     datasets: [{
                         data: dataPoints,
                         backgroundColor: ['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
@@ -549,6 +577,9 @@
             });
         }
 
+        // ────────────────────────────────────────────────
+        //  Main render
+        // ────────────────────────────────────────────────
         function render() {
             const filtered = getFilteredAndSortedHoldings();
 
@@ -583,7 +614,7 @@
             const container = document.getElementById('holdings');
             container.innerHTML = '';
 
-            filtered.forEach(h => {
+            filtered.forEach((h) => {
                 const div = document.createElement('div');
                 div.className = 'holding';
                 div.onclick = () => editHolding(data.holdings.indexOf(h));
@@ -629,7 +660,9 @@
             updateNextUpdateDisplay();
         }
 
-        // Modal & CRUD
+        // ────────────────────────────────────────────────
+        //  Modal & CRUD – FIXED for funds manual price check
+        // ────────────────────────────────────────────────
         function showModal() { document.getElementById('modal').classList.add('show'); }
         function hideModal() { document.getElementById('modal').classList.remove('show'); }
 
@@ -674,7 +707,7 @@
             const shares = parseFloat(document.getElementById('shares').value) || 0;
             const cost = parseFloat(document.getElementById('cost').value) || 0;
             const costCur = document.getElementById('costCurrency').value;
-            const manPrice = parseFloat(document.getElementById('currentPrice').value) || undefined;
+            const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0; // Changed: fallback to 0 if blank
             const priceCur = document.getElementById('priceCurrency').value;
             const div = parseFloat(document.getElementById('dividend').value) || 0;
             const divCur = document.getElementById('dividendCurrency').value;
@@ -687,8 +720,8 @@
                 alert('Ticker required for stocks/RSU.');
                 return;
             }
-            if (type === 'fund' && !manPrice) {
-                alert('Current price required for funds.');
+            if (type === 'fund' && manPrice <= 0) {
+                alert('Current price required for funds (must be > 0)');
                 return;
             }
 
@@ -699,7 +732,7 @@
                 shares,
                 cost,
                 costCurrency: costCur,
-                manualPrice: manPrice,
+                manualPrice: manPrice > 0 ? manPrice : undefined, // Don't store 0
                 priceCurrency: priceCur,
                 dividend: div,
                 dividendCurrency: divCur
@@ -732,7 +765,7 @@
             document.getElementById('tickerField').style.display = isFund ? 'none' : 'block';
             document.getElementById('priceInfoStock').style.display = isFund ? 'none' : 'block';
             document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
-            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds' : 'Leave empty for auto-fetch';
+            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds' : 'Optional (auto-fetch preferred)';
         }
 
         function exportData() {
@@ -745,7 +778,9 @@
             URL.revokeObjectURL(url);
         }
 
-        // Event Listeners
+        // ────────────────────────────────────────────────
+        //  Event Listeners
+        // ────────────────────────────────────────────────
         document.getElementById('addBtn').onclick = () => { editing = null; clearForm(); showModal(); };
         document.getElementById('closeBtn').onclick = hideModal;
         document.getElementById('saveBtn').onclick = saveHolding;
@@ -773,11 +808,13 @@
             render();
         };
 
-        // Init
+        // ────────────────────────────────────────────────
+        //  Init
+        // ────────────────────────────────────────────────
         updateExchangeRates();
         checkAutoUpdate();
         render();
-        setInterval(checkAutoUpdate, 60000);
+        setInterval(checkAutoUpdate, 60000); // check every minute
     </script>
 </body>
 </html>
