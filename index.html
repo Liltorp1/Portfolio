@@ -28,7 +28,7 @@
         .holding:active { background: #202840; }
         .holding-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .ticker { font-size: 18px; font-weight: 600; }
-        .meta { font-size: 12px; color: #9ba5b8; }
+        .meta { font-size: 12px; color: #9ba5b8; margin-top: 4px; }
         .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin: 20px 0 15px; display: flex; justify-content: space-between; align-items: center; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
         .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; border: none; }
@@ -151,9 +151,9 @@
             }
         };
         
-        // Refresh button - SIMPLIFIED
+        // Refresh button
         document.getElementById('refreshBtn').onclick = function() {
-            alert('Refresh clicked! For Danish stocks (ORSTED.CO, VWS.CO), please edit and enter current price manually. Auto-fetch works best for US stocks.');
+            alert('Refresh clicked! For Danish stocks (ORSTED.CO, VWS.CO, NOVO-B.CO), please edit and enter current price manually. Auto-fetch works best for US stocks.');
             data.lastUpdate = new Date().toISOString();
             localStorage.setItem('portfolio', JSON.stringify(data));
             render();
@@ -219,6 +219,7 @@
                     var costVal = h.cost * h.shares;
                     var chg = val - costVal;
                     var pct = (chg / costVal * 100).toFixed(1);
+                    var annualYield = h.dividend * h.shares;
                     
                     totalVal += val;
                     totalCost += costVal;
@@ -232,8 +233,9 @@
                     html += '<div class="ticker">' + h.ticker + '</div>';
                     html += '<div>' + fmt(val) + '</div>';
                     html += '</div>';
-                    html += '<div class="meta">' + h.shares + ' shares</div>';
+                    html += '<div class="meta">' + h.shares + ' shares · Cost basis: ' + fmt(costVal) + '</div>';
                     html += '<div class="meta ' + color + '">' + (chg >= 0 ? '+' : '') + fmt(chg) + ' (' + (chg >= 0 ? '+' : '') + pct + '%)</div>';
+                    html += '<div class="meta">Annual income: ' + fmt(annualYield) + '</div>';
                     html += '<div class="status meta">' + status + '</div>';
                     html += '</div>';
                 }
