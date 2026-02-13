@@ -33,6 +33,9 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
         .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; border: none; }
         .status { font-size: 10px; margin-top: 3px; }
+        .currency-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .currency-row input { flex: 2; margin-bottom: 0; }
+        .currency-row select { flex: 1; margin-bottom: 0; }
     </style>
 </head>
 <body>
@@ -70,12 +73,33 @@
             <input type="text" id="name">
             <label>Shares</label>
             <input type="number" step="0.01" id="shares">
-            <label>Average Cost per Share (DKK)</label>
-            <input type="number" step="0.01" id="cost">
-            <label>Current Price (DKK) - optional</label>
-            <input type="number" step="0.01" id="currentPrice">
-            <label>Annual Dividend (DKK per share)</label>
-            <input type="number" step="0.01" id="dividend">
+            <label>Average Cost per Share</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="cost">
+                <select id="costCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+            <label>Current Price - optional</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="currentPrice">
+                <select id="priceCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+            <label>Annual Dividend per Share</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="dividend">
+                <select id="dividendCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
             <button class="btn" id="saveBtn">Save</button>
             <button class="btn" id="deleteBtn" style="display:none;background:#ff4466;margin-top:10px;">Delete</button>
         </div>
@@ -90,6 +114,17 @@
     <script>
         var data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
         var editing = null;
+        
+        // Exchange rates (approximate, you can update these manually)
+        var rates = {
+            'DKK': 1,
+            'EUR': 7.46,  // 1 EUR = 7.46 DKK
+            'USD': 6.88   // 1 USD = 6.88 DKK
+        };
+        
+        function convertToDKK(amount, currency) {
+            return amount * rates[currency];
+        }
         
         // Add button
         document.getElementById('addBtn').onclick = function() {
@@ -107,16 +142,33 @@
         
         // Save button
         document.getElementById('saveBtn').onclick = function() {
-            var manual = parseFloat(document.getElementById('currentPrice').value);
+            var costAmount = parseFloat(document.getElementById('cost').value);
+            var costCurrency = document.getElementById('costCurrency').value;
+            var costInDKK = convertToDKK(costAmount, costCurrency);
+            
+            var priceAmount = parseFloat(document.getElementById('currentPrice').value);
+            var priceCurrency = document.getElementById('priceCurrency').value;
+            var priceInDKK = priceAmount ? convertToDKK(priceAmount, priceCurrency) : null;
+            
+            var divAmount = parseFloat(document.getElementById('dividend').value) || 0;
+            var divCurrency = document.getElementById('dividendCurrency').value;
+            var divInDKK = convertToDKK(divAmount, divCurrency);
+            
             var h = {
                 id: editing || Date.now(),
                 ticker: document.getElementById('ticker').value.toUpperCase(),
                 name: document.getElementById('name').value,
                 shares: parseFloat(document.getElementById('shares').value),
-                cost: parseFloat(document.getElementById('cost').value),
-                dividend: parseFloat(document.getElementById('dividend').value) || 0,
-                price: manual || null,
-                manual: manual ? true : false
+                cost: costInDKK,
+                costOriginal: costAmount,
+                costCurrency: costCurrency,
+                dividend: divInDKK,
+                dividendOriginal: divAmount,
+                dividendCurrency: divCurrency,
+                price: priceInDKK,
+                priceOriginal: priceAmount || null,
+                priceCurrency: priceCurrency,
+                manual: priceInDKK ? true : false
             };
             
             if (editing) {
@@ -153,7 +205,7 @@
         
         // Refresh button
         document.getElementById('refreshBtn').onclick = function() {
-            alert('Refresh clicked! For Danish stocks (ORSTED.CO, VWS.CO, NOVO-B.CO), please edit and enter current price manually. Auto-fetch works best for US stocks.');
+            alert('For at opdatere priser på danske aktier: tryk på aktien og indtast nuværende pris manuelt.');
             data.lastUpdate = new Date().toISOString();
             localStorage.setItem('portfolio', JSON.stringify(data));
             render();
@@ -177,6 +229,9 @@
             document.getElementById('cost').value = '';
             document.getElementById('currentPrice').value = '';
             document.getElementById('dividend').value = '';
+            document.getElementById('costCurrency').value = 'DKK';
+            document.getElementById('priceCurrency').value = 'DKK';
+            document.getElementById('dividendCurrency').value = 'DKK';
         }
         
         function editHolding(id) {
@@ -195,9 +250,12 @@
             document.getElementById('ticker').value = h.ticker;
             document.getElementById('name').value = h.name;
             document.getElementById('shares').value = h.shares;
-            document.getElementById('cost').value = h.cost;
-            document.getElementById('currentPrice').value = h.price || '';
-            document.getElementById('dividend').value = h.dividend;
+            document.getElementById('cost').value = h.costOriginal || h.cost;
+            document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
+            document.getElementById('currentPrice').value = h.priceOriginal || '';
+            document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
+            document.getElementById('dividend').value = h.dividendOriginal || h.dividend;
+            document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
             document.getElementById('modal').classList.add('show');
         }
         
@@ -228,12 +286,16 @@
                     var status = h.manual ? '📝 Manual' : '💤 Using cost';
                     var color = chg >= 0 ? 'positive' : 'negative';
                     
+                    var costDisplay = h.costCurrency ? 
+                        Math.round(h.costOriginal).toLocaleString('da-DK') + ' ' + h.costCurrency + ' → ' + fmt(costVal) :
+                        fmt(costVal);
+                    
                     html += '<div class="holding" onclick="editHolding(' + h.id + ')">';
                     html += '<div class="holding-header">';
                     html += '<div class="ticker">' + h.ticker + '</div>';
                     html += '<div>' + fmt(val) + '</div>';
                     html += '</div>';
-                    html += '<div class="meta">' + h.shares + ' shares · Cost basis: ' + fmt(costVal) + '</div>';
+                    html += '<div class="meta">' + h.shares + ' shares · Cost: ' + costDisplay + '</div>';
                     html += '<div class="meta ' + color + '">' + (chg >= 0 ? '+' : '') + fmt(chg) + ' (' + (chg >= 0 ? '+' : '') + pct + '%)</div>';
                     html += '<div class="meta">Annual income: ' + fmt(annualYield) + '</div>';
                     html += '<div class="status meta">' + status + '</div>';
