@@ -259,7 +259,7 @@
             <div id="currentPriceField">
                 <label>Current Price <span id="priceLabel">(required for funds, optional backup for others)</span></label>
                 <div class="info-text" id="priceInfoStock" style="display:block;">
-                    Stocks/RSU: Auto-updates via EODHD LIVE API. Enter manually only as backup.
+                    Stocks/RSU: Auto-updates via EODHD API. Enter manually only as backup.
                 </div>
                 <div class="info-text" id="priceInfoFund" style="display:none;">
                     Funds: Required field - will NOT auto-update. Must be > 0.
@@ -482,17 +482,18 @@
             themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
         };
 
-        // PRICE FETCHING - USING EODHD LIVE ENDPOINT FOR GLOBAL STOCKS
+        // PRICE FETCHING - FIXED FOR .CO AND .MC STOCKS
         async function fetchPriceForHolding(h) {
             if (h.type === 'fund' || !h.ticker) return;
 
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
-            // Try EODHD LIVE endpoint first (supports global exchanges including .CO and .MC)
+            // Try EODHD endpoint (supports .CO, .MC, and other global exchanges)
             if (EODHD_API_KEY) {
                 try {
-                    const url = `https://eodhd.com/api/real-time/live/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
+                    // Use /api/real-time/ (NOT /live/) for global exchanges
+                    const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
                     const response = await fetch(url);
                     
                     if (response.ok) {
@@ -500,48 +501,52 @@
                         
                         let price = 0;
                         
-                        // Check if data exists and has price
+                        // EODHD returns: close, previousClose, etc.
                         if (json && typeof json === 'object') {
-                            // LIVE endpoint may return: close, last, price, or previousClose
-                            price = json.close || json.last || json.price || json.previousClose || 0;
+                            price = json.close || json.previousClose || json.last || json.price || 0;
                         }
                         
                         if (price > 0) {
                             h.currentPrice = price;
                             
-                            // Determine currency based on exchange
-                            if (symbol.endsWith('.CO')) {
-                                h.priceCurrency = 'DKK'; // Copenhagen Stock Exchange
-                            } else if (symbol.endsWith('.MC')) {
-                                h.priceCurrency = 'EUR'; // Madrid Stock Exchange
-                            } else if (symbol.endsWith('.L')) {
-                                h.priceCurrency = 'GBP'; // London Stock Exchange
-                            } else if (symbol.endsWith('.PA')) {
-                                h.priceCurrency = 'EUR'; // Paris Stock Exchange
-                            } else if (symbol.endsWith('.DE')) {
-                                h.priceCurrency = 'EUR'; // Frankfurt Stock Exchange
-                            } else if (json.currency) {
+                            // Determine currency - use API currency first, then exchange-based fallback
+                            if (json.currency) {
                                 h.priceCurrency = json.currency;
+                            } else if (symbol.endsWith('.CO')) {
+                                h.priceCurrency = 'DKK';
+                            } else if (symbol.endsWith('.MC')) {
+                                h.priceCurrency = 'EUR';
+                            } else if (symbol.endsWith('.L')) {
+                                h.priceCurrency = 'GBP';
+                            } else if (symbol.endsWith('.PA')) {
+                                h.priceCurrency = 'EUR';
+                            } else if (symbol.endsWith('.DE')) {
+                                h.priceCurrency = 'EUR';
                             } else {
-                                h.priceCurrency = 'USD'; // Default
+                                h.priceCurrency = 'USD';
                             }
                             
                             h.fetchError = false;
                             fetched = true;
-                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (EODHD LIVE)`);
+                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (EODHD)`);
                         }
                     }
                 } catch (e) {
-                    console.warn(`⚠️ EODHD LIVE failed for ${symbol}:`, e.message);
+                    console.warn(`⚠️ EODHD failed for ${symbol}:`, e.message);
                 }
             }
 
-            // Fallback to Twelve Data if EODHD LIVE fails
+            // Fallback to Twelve Data only for exchanges EODHD doesn't support well
             if (!fetched && TWELVEDATA_API_KEY) {
                 try {
                     let tdSymbol = symbol;
+                    
+                    // TwelveData symbol conversion
                     if (symbol.endsWith('.CO')) tdSymbol = symbol.replace('.CO', ':XCSE');
-                    if (symbol.endsWith('.MC')) tdSymbol = symbol.replace('.MC', ':BME');
+                    else if (symbol.endsWith('.MC')) tdSymbol = symbol.replace('.MC', ':BME');
+                    else if (symbol.endsWith('.L')) tdSymbol = symbol.replace('.L', ':LSE');
+                    else if (symbol.endsWith('.PA')) tdSymbol = symbol.replace('.PA', ':EPA');
+                    else if (symbol.endsWith('.DE')) tdSymbol = symbol.replace('.DE', ':XETRA');
                     
                     const url = `https://api.twelvedata.com/quote?symbol=${tdSymbol}&apikey=${TWELVEDATA_API_KEY}`;
                     const response = await fetch(url);
