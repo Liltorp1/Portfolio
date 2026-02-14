@@ -18,7 +18,7 @@
         .btn { background: #4d94ff; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 16px; width: 100%; cursor: pointer; }
         .btn:active { opacity: 0.8; }
         .btn-small { width: auto; padding: 10px 20px; font-size: 14px; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); padding: 20px; overflow-y: auto; z-index: 1000; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); padding: 20px; overflow-y: auto; z-index: 1000; }
         .modal.show { display: block; }
         .modal-content { background: #1a2237; border-radius: 16px; padding: 24px; max-width: 500px; margin: 40px auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -32,7 +32,7 @@
         .meta { font-size: 12px; color: #9ba5b8; margin-top: 4px; }
         .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin: 20px 0 15px; display: flex; justify-content: space-between; align-items: center; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
-        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; }
+        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; border: none; }
         .status { font-size: 10px; margin-top: 3px; }
         .currency-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .currency-row input { flex: 2; margin-bottom: 0; }
@@ -51,6 +51,38 @@
         .error-list { background: #ff446620; border: 1px solid #ff4466; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 12px; }
         .error-item { margin: 4px 0; }
         .chart-container { position: relative; max-height: 250px; }
+        
+        /* Chat styles */
+        .chat-container { position: fixed; bottom: 80px; right: 20px; width: 380px; max-width: calc(100vw - 40px); height: 500px; background: #1a2237; border: 1px solid #2a3550; border-radius: 16px; display: none; flex-direction: column; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        .chat-container.show { display: flex; }
+        .chat-header { padding: 16px; border-bottom: 1px solid #2a3550; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h3 { font-size: 16px; margin: 0; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .chat-message { padding: 12px; border-radius: 8px; max-width: 85%; word-wrap: break-word; }
+        .chat-message.user { background: #4d94ff; color: white; align-self: flex-end; margin-left: auto; }
+        .chat-message.assistant { background: #2a3550; color: #e8edf4; align-self: flex-start; }
+        .chat-message.assistant ul, .chat-message.assistant ol { margin: 8px 0; padding-left: 20px; }
+        .chat-message.assistant li { margin: 4px 0; }
+        .chat-input-container { padding: 12px; border-top: 1px solid #2a3550; display: flex; gap: 8px; }
+        .chat-input { flex: 1; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 10px; color: #e8edf4; font-size: 14px; margin: 0; }
+        .chat-send-btn { background: #4d94ff; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; }
+        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .typing-indicator { padding: 12px; background: #2a3550; border-radius: 8px; align-self: flex-start; max-width: 85px; }
+        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9ba5b8; margin: 0 2px; animation: typing 1.4s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+        
+        /* Settings styles */
+        .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #2a3550; }
+        .settings-section:last-child { border-bottom: none; }
+        .settings-section h4 { margin-bottom: 10px; font-size: 14px; color: #e8edf4; }
+        .key-status { display: inline-block; margin-left: 10px; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .key-status.configured { background: #00ff8820; color: #00ff88; }
+        .key-status.missing { background: #ff446620; color: #ff4466; }
+        .btn-secondary { background: #2a3550; margin-top: 10px; }
+        .warning-text { color: #ffc044; font-size: 12px; margin-top: 5px; }
+        
         body.light { background: #f8f9fa; color: #212529; }
         body.light .card { background: #ffffff; border-color: #dee2e6; }
         body.light input, body.light select { background: #ffffff; color: #212529; border-color: #ced4da; }
@@ -61,6 +93,14 @@
         body.light .nav-btn { background: #ffffff; border-color: #dee2e6; color: #495057; }
         body.light .modal-content { background: #ffffff; }
         body.light .loading-indicator { background: #ffffff; border-color: #007bff; }
+        body.light .chat-container { background: #ffffff; border-color: #dee2e6; }
+        body.light .chat-header { border-color: #dee2e6; }
+        body.light .chat-message.assistant { background: #f8f9fa; color: #212529; }
+        body.light .chat-input { background: #ffffff; border-color: #ced4da; color: #212529; }
+        body.light .chat-input-container { border-color: #dee2e6; }
+        body.light .typing-indicator { background: #f8f9fa; }
+        body.light .settings-section { border-color: #dee2e6; }
+        
         #theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; padding: 0.5rem 1rem; background: #4d94ff; color: white; border: none; border-radius: 6px; cursor: pointer; }
         body.light #theme-toggle { background: #007bff; }
         input[type="file"] { display: none; }
@@ -126,6 +166,60 @@
 
     <div id="holdings"></div>
 
+    <!-- Chat Container -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <h3>💰 Passive Income Advisor</h3>
+            <button class="close" id="closeChatBtn">×</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message assistant">
+                👋 Hi! I'm your passive income investment advisor. I can help you with:
+                <ul>
+                    <li>Portfolio diversification strategies</li>
+                    <li>Dividend analysis & optimization</li>
+                    <li>Long-term wealth building advice</li>
+                    <li>Risk assessment</li>
+                </ul>
+                Ask me anything about your investments!
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your portfolio...">
+            <button class="chat-send-btn" id="chatSendBtn">Send</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button class="close" id="closeSettingsBtn">×</button>
+            </div>
+
+            <div class="settings-section">
+                <h4>Anthropic API Key 
+                    <span class="key-status" id="anthropicKeyStatus">Not configured</span>
+                </h4>
+                <div class="info-text">
+                    Required for AI chat advisor. Get your free key at <a href="https://console.anthropic.com/" target="_blank" style="color:#4d94ff;">console.anthropic.com</a>
+                </div>
+                <input type="password" id="anthropicApiKeyInput" placeholder="sk-ant-api03-...">
+                <div class="warning-text">⚠️ Your API key is stored locally in your browser only. Never shared.</div>
+                <button class="btn btn-secondary" id="saveAnthropicKey">Save API Key</button>
+                <button class="btn btn-secondary" id="removeAnthropicKey" style="background:#ff4466;display:none;">Remove API Key</button>
+            </div>
+
+            <div class="settings-section">
+                <h4>Data Management</h4>
+                <button class="btn btn-secondary" id="clearAllData">Clear All Portfolio Data</button>
+                <div class="warning-text">⚠️ This will delete all your holdings and settings. Export first!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding holdings -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -197,16 +291,21 @@
     <div class="bottom-nav">
         <button class="nav-btn" id="dashBtn">Dashboard</button>
         <button class="nav-btn" id="refreshBtn">↻ Refresh</button>
+        <button class="nav-btn" id="chatBtn">💬 Chat</button>
         <button class="nav-btn" id="exportBtn">Export</button>
-        <button class="nav-btn" id="importBtn">Import</button>
+        <button class="nav-btn" id="settingsBtn">⚙️ Settings</button>
     </div>
 
     <input type="file" id="importFile" accept=".json">
 
     <script>
-        // API KEYS
-        const EODHD_API_KEY     = '698fa6d0d113a5.96289084';
+        // API KEYS - Retrieved from localStorage
+        const EODHD_API_KEY = '698fa6d0d113a5.96289084';
         const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
+        
+        function getAnthropicApiKey() {
+            return localStorage.getItem('anthropic_api_key') || null;
+        }
 
         let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
         let editing = null;
@@ -215,23 +314,90 @@
         let searchTerm = '';
         let sortBy = 'value-desc';
         let fetchErrors = [];
+        let chatHistory = [];
 
         let exchangeRates = { DKK: 1, EUR: 7.46, USD: 6.88 };
         let allocationChart = null;
 
-        // DATA MIGRATION: Convert old format to new format
+        // SETTINGS MODAL
+        function showSettingsModal() {
+            updateSettingsUI();
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function hideSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function updateSettingsUI() {
+            const apiKey = getAnthropicApiKey();
+            const statusEl = document.getElementById('anthropicKeyStatus');
+            const removeBtn = document.getElementById('removeAnthropicKey');
+            const inputEl = document.getElementById('anthropicApiKeyInput');
+            
+            if (apiKey) {
+                statusEl.textContent = '✓ Configured';
+                statusEl.className = 'key-status configured';
+                removeBtn.style.display = 'block';
+                inputEl.placeholder = '••••••••••••••••';
+            } else {
+                statusEl.textContent = '✗ Not configured';
+                statusEl.className = 'key-status missing';
+                removeBtn.style.display = 'none';
+                inputEl.placeholder = 'sk-ant-api03-...';
+            }
+        }
+
+        document.getElementById('settingsBtn').onclick = showSettingsModal;
+        document.getElementById('closeSettingsBtn').onclick = hideSettingsModal;
+
+        document.getElementById('saveAnthropicKey').onclick = () => {
+            const keyInput = document.getElementById('anthropicApiKeyInput');
+            const key = keyInput.value.trim();
+            
+            if (!key) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            if (!key.startsWith('sk-ant-')) {
+                alert('Invalid Anthropic API key format. Should start with "sk-ant-"');
+                return;
+            }
+            
+            localStorage.setItem('anthropic_api_key', key);
+            keyInput.value = '';
+            updateSettingsUI();
+            alert('✅ API key saved successfully!');
+        };
+
+        document.getElementById('removeAnthropicKey').onclick = () => {
+            if (confirm('Remove your Anthropic API key? Chat advisor will stop working.')) {
+                localStorage.removeItem('anthropic_api_key');
+                updateSettingsUI();
+                alert('✅ API key removed');
+            }
+        };
+
+        document.getElementById('clearAllData').onclick = () => {
+            if (confirm('⚠️ Delete ALL portfolio data? This cannot be undone!\n\nMake sure you have exported your data first.')) {
+                if (confirm('Are you absolutely sure? This will delete all your holdings and settings.')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+        };
+
+        // DATA MIGRATION
         function migrateData() {
             let migrated = false;
             data.holdings = data.holdings.map(h => {
-                // Old format had: price, priceOriginal, manualPrice
-                // New format has: currentPrice, manualPrice, priceCurrency
                 if (h.price !== undefined && h.currentPrice === undefined) {
                     h.currentPrice = h.priceOriginal || h.price;
                     delete h.price;
                     delete h.priceOriginal;
                     migrated = true;
                 }
-                // Ensure all required fields exist
                 if (!h.priceCurrency) h.priceCurrency = h.costCurrency || 'DKK';
                 if (!h.dividendCurrency) h.dividendCurrency = h.costCurrency || 'DKK';
                 if (!h.costCurrency) h.costCurrency = 'DKK';
@@ -239,23 +405,21 @@
             });
             if (migrated) {
                 localStorage.setItem('portfolio', JSON.stringify(data));
-                console.log('✅ Data migrated to new format');
+                console.log('✅ Data migrated');
             }
         }
 
-        // EXCHANGE RATES: Fetch live rates
+        // EXCHANGE RATES
         async function updateExchangeRates() {
             try {
                 const res = await fetch('https://api.frankfurter.app/latest?from=DKK&to=EUR,USD');
-                if (!res.ok) throw new Error('Rate fetch failed');
+                if (!res.ok) throw new Error();
                 const json = await res.json();
-                // Frankfurter returns: how much EUR/USD you get for 1 DKK
-                // We need: how much DKK you get for 1 EUR/USD
-                exchangeRates.EUR = 1 / (json.rates.EUR || 0.134); // ~7.46
-                exchangeRates.USD = 1 / (json.rates.USD || 0.145); // ~6.88
-                console.log('✅ Exchange rates updated:', exchangeRates);
+                exchangeRates.EUR = 1 / (json.rates.EUR || 0.134);
+                exchangeRates.USD = 1 / (json.rates.USD || 0.145);
+                console.log('✅ Rates updated:', exchangeRates);
             } catch (e) {
-                console.warn('⚠️ Using fallback exchange rates');
+                console.warn('⚠️ Using fallback rates');
             }
         }
 
@@ -291,13 +455,12 @@
             const hour = cet.getHours();
             const minute = cet.getMinutes();
             
-            // Only trigger at 8:00-8:05 or 22:00-22:05 CET
             if ((hour === 8 || hour === 22) && minute < 5) {
                 const lastUpdate = data.lastScheduledUpdate;
                 const todayKey = cet.toISOString().split('T')[0] + '-' + hour;
                 
                 if (lastUpdate !== todayKey) {
-                    console.log('⏰ Running scheduled update at', hour + ':00 CET');
+                    console.log('⏰ Scheduled update at', hour + ':00 CET');
                     data.lastScheduledUpdate = todayKey;
                     localStorage.setItem('portfolio', JSON.stringify(data));
                     refreshPrices();
@@ -305,7 +468,7 @@
             }
         }
 
-        // THEME TOGGLE
+        // THEME
         const themeToggle = document.getElementById('theme-toggle');
         let currentTheme = localStorage.getItem('theme') || 'dark';
         document.body.className = currentTheme;
@@ -325,7 +488,6 @@
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
-            // Try EODHD first
             if (EODHD_API_KEY) {
                 try {
                     const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
@@ -338,15 +500,14 @@
                             h.priceCurrency = symbol.endsWith('.CO') ? 'DKK' : (symbol.endsWith('.MC') ? 'EUR' : (json.currency || 'USD'));
                             h.fetchError = false;
                             fetched = true;
-                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (EODHD)`);
+                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency}`);
                         }
                     }
                 } catch (e) {
-                    console.warn(`⚠️ EODHD failed for ${symbol}:`, e.message);
+                    console.warn(`⚠️ EODHD failed for ${symbol}`);
                 }
             }
 
-            // Try Twelve Data as fallback
             if (!fetched && TWELVEDATA_API_KEY) {
                 try {
                     let tdSymbol = symbol;
@@ -356,24 +517,24 @@
                     if (response.ok) {
                         const json = await response.json();
                         if (json.status !== 'error' && json.close) {
-                            let price = parseFloat(json.close) || parseFloat(json.previous_close) || 0;
+                            let price = parseFloat(json.close) || 0;
                             if (price > 0) {
                                 h.currentPrice = price;
                                 h.priceCurrency = json.currency || 'USD';
                                 h.fetchError = false;
                                 fetched = true;
-                                console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (TwelveData)`);
+                                console.log(`✅ ${symbol}: ${price} ${h.priceCurrency}`);
                             }
                         }
                     }
                 } catch (e) {
-                    console.warn(`⚠️ TwelveData failed for ${symbol}:`, e.message);
+                    console.warn(`⚠️ TwelveData failed for ${symbol}`);
                 }
             }
 
             if (!fetched) {
                 h.fetchError = true;
-                fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed - using ${h.manualPrice ? 'manual' : 'cost basis'} price`);
+                fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed`);
                 console.error(`❌ ${symbol}: All APIs failed`);
             }
         }
@@ -423,13 +584,182 @@
         function getHoldingValue(h) {
             let price = 0;
             if (h.type === 'fund') {
-                // Funds ALWAYS use manual price
                 price = h.manualPrice || 0;
             } else {
-                // Stocks/RSU: Use currentPrice (from API) or fallback to manual or cost
                 price = h.currentPrice || h.manualPrice || h.cost;
             }
             return h.shares * convertToDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
+        }
+
+        // CHAT FUNCTIONALITY
+        function toggleChat() {
+            const apiKey = getAnthropicApiKey();
+            if (!apiKey) {
+                if (confirm('Chat requires an Anthropic API key. Would you like to add one now?')) {
+                    showSettingsModal();
+                }
+                return;
+            }
+            
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.classList.toggle('show');
+            if (chatContainer.classList.contains('show')) {
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        function getPortfolioContext() {
+            const filtered = data.holdings;
+            let totalValue = 0, totalCost = 0, annualIncome = 0;
+            
+            const holdings = filtered.map(h => {
+                const value = getHoldingValue(h);
+                const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
+                const income = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
+                totalValue += value;
+                totalCost += cost;
+                annualIncome += income;
+                
+                const yld = value > 0 ? (income / value * 100) : 0;
+                
+                return {
+                    name: h.name,
+                    type: h.type,
+                    shares: h.shares,
+                    value: Math.round(value),
+                    cost: Math.round(cost),
+                    annualIncome: Math.round(income),
+                    yield: yld.toFixed(2) + '%'
+                };
+            });
+            
+            const yieldPct = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
+            
+            return {
+                totalValue: Math.round(totalValue),
+                totalCost: Math.round(totalCost),
+                totalGain: Math.round(totalValue - totalCost),
+                gainPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost * 100).toFixed(1) : 0,
+                annualIncome: Math.round(annualIncome),
+                portfolioYield: yieldPct.toFixed(2) + '%',
+                holdings: holdings,
+                holdingsCount: holdings.length
+            };
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const apiKey = getAnthropicApiKey();
+            if (!apiKey) {
+                addChatMessage('assistant', '⚠️ Please configure your Anthropic API key in Settings to use the chat feature.');
+                return;
+            }
+            
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+            
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            document.getElementById('chatMessages').appendChild(typingDiv);
+            typingDiv.scrollIntoView({ behavior: 'smooth' });
+            
+            const sendBtn = document.getElementById('chatSendBtn');
+            sendBtn.disabled = true;
+            
+            try {
+                const portfolio = getPortfolioContext();
+                
+                const systemPrompt = `You are a passive income investment advisor focused on long-term wealth building through dividend-paying stocks, index funds, and income-generating assets.
+
+Portfolio Context:
+- Total Value: ${portfolio.totalValue.toLocaleString()} DKK
+- Annual Income: ${portfolio.annualIncome.toLocaleString()} DKK
+- Portfolio Yield: ${portfolio.portfolioYield}
+- Total Gain: ${portfolio.totalGain.toLocaleString()} DKK (${portfolio.gainPercent}%)
+- Holdings: ${portfolio.holdingsCount} positions
+
+Holdings:
+${portfolio.holdings.map(h => `- ${h.name} (${h.type}): ${h.value.toLocaleString()} DKK, ${h.annualIncome.toLocaleString()} DKK/yr (${h.yield} yield)`).join('\n')}
+
+Guidelines:
+- Focus on long-term passive income generation
+- Emphasize dividend growth and stability
+- Encourage diversification across sectors and geographies
+- Warn against chasing high yields without fundamentals
+- Promote the power of compounding dividends
+- Discourage frequent trading and market timing
+- Be supportive and educational, not prescriptive
+- Keep responses concise (2-3 short paragraphs max)
+- Use bullet points when listing recommendations`;
+
+                chatHistory.push({
+                    role: 'user',
+                    content: message
+                });
+                
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1024,
+                        system: systemPrompt,
+                        messages: chatHistory
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
+                const result = await response.json();
+                const assistantMessage = result.content[0].text;
+                
+                chatHistory.push({
+                    role: 'assistant',
+                    content: assistantMessage
+                });
+                
+                // Keep only last 10 messages
+                if (chatHistory.length > 10) {
+                    chatHistory = chatHistory.slice(-10);
+                }
+                
+                typingDiv.remove();
+                addChatMessage('assistant', assistantMessage);
+                
+            } catch (error) {
+                typingDiv.remove();
+                addChatMessage('assistant', '❌ Sorry, I encountered an error. Please check your API key in Settings.');
+                console.error('Chat error:', error);
+            }
+            
+            sendBtn.disabled = false;
+        }
+
+        function addChatMessage(role, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+            
+            let formattedContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n- /g, '<br>• ')
+                .replace(/\n\n/g, '<br><br>');
+            
+            messageDiv.innerHTML = formattedContent;
+            messagesDiv.appendChild(messageDiv);
+            messageDiv.scrollIntoView({ behavior: 'smooth' });
         }
 
         // FILTERING & SORTING
@@ -485,11 +815,10 @@
             });
             const dataPoints = Object.values(types);
 
-            // Update existing chart instead of recreating
             if (allocationChart) {
                 allocationChart.data.labels = labels;
                 allocationChart.data.datasets[0].data = dataPoints;
-                allocationChart.update('none'); // 'none' = no animation, faster
+                allocationChart.update('none');
             } else {
                 allocationChart = new Chart(ctx, {
                     type: 'pie',
@@ -507,10 +836,7 @@
                             legend: { position: 'bottom' }, 
                             tooltip: { 
                                 callbacks: { 
-                                    label: ctx => {
-                                        const value = ctx.raw;
-                                        return `${Math.round(value).toLocaleString('da-DK')} DKK`;
-                                    }
+                                    label: ctx => `${Math.round(ctx.raw).toLocaleString('da-DK')} DKK`
                                 } 
                             } 
                         } 
@@ -680,12 +1006,11 @@
                 priceCurrency: priceCur,
                 dividend: div,
                 dividendCurrency: divCur,
-                currentPrice: undefined, // Will be filled by API
+                currentPrice: undefined,
                 fetchError: false
             };
 
             if (editing !== null) {
-                // Preserve currentPrice from API if editing
                 const old = data.holdings[editing];
                 if (old.currentPrice && type !== 'fund') {
                     holding.currentPrice = old.currentPrice;
@@ -701,7 +1026,6 @@
             clearForm();
             render();
             
-            // Fetch price immediately for new stock/RSU
             if (type !== 'fund' && ticker) {
                 const h = data.holdings[data.holdings.length - 1];
                 fetchPriceForHolding(h).then(() => {
@@ -758,7 +1082,7 @@
                     
                     if (confirm(`Import ${imported.holdings.length} holdings? This will replace your current portfolio.`)) {
                         data = imported;
-                        migrateData(); // Ensure imported data is in correct format
+                        migrateData();
                         localStorage.setItem('portfolio', JSON.stringify(data));
                         render();
                         alert('✅ Portfolio imported successfully!');
@@ -768,7 +1092,7 @@
                 }
             };
             reader.readAsText(file);
-            e.target.value = ''; // Reset file input
+            e.target.value = '';
         };
 
         // EVENT LISTENERS
@@ -778,8 +1102,14 @@
         document.getElementById('deleteBtn').onclick = deleteHolding;
         document.getElementById('refreshBtn').onclick = refreshPrices;
         document.getElementById('exportBtn').onclick = exportData;
-        document.getElementById('importBtn').onclick = importData;
+        document.getElementById('chatBtn').onclick = toggleChat;
+        document.getElementById('closeChatBtn').onclick = toggleChat;
         document.getElementById('type').onchange = togglePriceInfo;
+        
+        document.getElementById('chatSendBtn').onclick = sendChatMessage;
+        document.getElementById('chatInput').onkeypress = (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        };
 
         document.querySelectorAll('.filter-tab').forEach(tab => {
             tab.onclick = () => {
