@@ -482,7 +482,7 @@
             themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
         };
 
-        // PRICE FETCHING - UPDATED TO USE LIVE ENDPOINT
+        // PRICE FETCHING - USING EODHD LIVE ENDPOINT FOR GLOBAL STOCKS
         async function fetchPriceForHolding(h) {
             if (h.type === 'fund' || !h.ticker) return;
 
@@ -492,13 +492,12 @@
             // Try EODHD LIVE endpoint first (supports global exchanges including .CO and .MC)
             if (EODHD_API_KEY) {
                 try {
-                    const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
+                    const url = `https://eodhd.com/api/real-time/live/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
                     const response = await fetch(url);
                     
                     if (response.ok) {
                         const json = await response.json();
                         
-                        // LIVE endpoint returns different structure
                         let price = 0;
                         
                         // Check if data exists and has price
