@@ -486,36 +486,31 @@
             themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
         };
 
-        // PRICE FETCHING - USING EOD ENDPOINT (WORKS ON FREE TIER)
+        // PRICE FETCHING - FIXED: USING /real-time/ (NOT /real-time/live/)
         async function fetchPriceForHolding(h) {
             if (h.type === 'fund' || !h.ticker) return;
 
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
-            // Try EODHD EOD endpoint (works on free tier, supports global exchanges)
+            // FIXED: Use /api/real-time/ for global exchanges (.CO, .MC, .DE, etc.)
             if (EODHD_API_KEY) {
                 try {
-                    // Use EOD endpoint - gets yesterday's close price
-                    const url = `https://eodhd.com/api/eod/${symbol}?api_token=${EODHD_API_KEY}&fmt=json&period=d&order=d`;
+                    const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
                     const response = await fetch(url);
                     
                     if (response.ok) {
                         const json = await response.json();
                         
-                        let price = 0;
-                        
-                        // EOD endpoint returns an array with the most recent day first
-                        if (Array.isArray(json) && json.length > 0) {
-                            const latestData = json[0];
-                            price = latestData.close || latestData.adjusted_close || 0;
-                        }
+                        let price = json.close || json.previousClose || 0;
                         
                         if (price > 0) {
                             h.currentPrice = price;
                             
-                            // Determine currency based on exchange
-                            if (symbol.endsWith('.CO')) {
+                            // Use API currency if available, otherwise infer from exchange
+                            if (json.currency) {
+                                h.priceCurrency = json.currency;
+                            } else if (symbol.endsWith('.CO')) {
                                 h.priceCurrency = 'DKK';
                             } else if (symbol.endsWith('.MC')) {
                                 h.priceCurrency = 'EUR';
@@ -531,11 +526,11 @@
                             
                             h.fetchError = false;
                             fetched = true;
-                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (EODHD EOD)`);
+                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (EODHD)`);
                         }
                     }
                 } catch (e) {
-                    console.warn(`⚠️ EODHD EOD failed for ${symbol}:`, e.message);
+                    console.warn(`⚠️ EODHD failed for ${symbol}:`, e.message);
                 }
             }
 
