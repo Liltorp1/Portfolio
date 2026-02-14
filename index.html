@@ -259,7 +259,7 @@
             <div id="currentPriceField">
                 <label>Current Price <span id="priceLabel">(required for funds, optional backup for others)</span></label>
                 <div class="info-text" id="priceInfoStock" style="display:block;">
-                    Stocks/RSU: Auto-updates via EODHD / Twelve Data. Enter manually only as backup.
+                    Stocks/RSU: Auto-updates via EODHD LIVE API. Enter manually only as backup.
                 </div>
                 <div class="info-text" id="priceInfoFund" style="display:none;">
                     Funds: Required field - will NOT auto-update. Must be > 0.
@@ -389,9 +389,6 @@
             }
         };
 
-        // Rest of the code remains the same until CHAT FUNCTIONALITY section...
-        // (I'll continue with the chat changes in the next part)
-
         // DATA MIGRATION
         function migrateData() {
             let migrated = false;
@@ -485,60 +482,92 @@
             themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
         };
 
-        // PRICE FETCHING
+        // PRICE FETCHING - UPDATED TO USE LIVE ENDPOINT
         async function fetchPriceForHolding(h) {
             if (h.type === 'fund' || !h.ticker) return;
 
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
+            // Try EODHD LIVE endpoint first (supports global exchanges including .CO and .MC)
             if (EODHD_API_KEY) {
                 try {
                     const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
                     const response = await fetch(url);
+                    
                     if (response.ok) {
                         const json = await response.json();
-                        let price = json.close || json.previousClose || json.open || 0;
+                        
+                        // LIVE endpoint returns different structure
+                        let price = 0;
+                        
+                        // Check if data exists and has price
+                        if (json && typeof json === 'object') {
+                            // LIVE endpoint may return: close, last, price, or previousClose
+                            price = json.close || json.last || json.price || json.previousClose || 0;
+                        }
+                        
                         if (price > 0) {
                             h.currentPrice = price;
-                            h.priceCurrency = symbol.endsWith('.CO') ? 'DKK' : (symbol.endsWith('.MC') ? 'EUR' : (json.currency || 'USD'));
+                            
+                            // Determine currency based on exchange
+                            if (symbol.endsWith('.CO')) {
+                                h.priceCurrency = 'DKK'; // Copenhagen Stock Exchange
+                            } else if (symbol.endsWith('.MC')) {
+                                h.priceCurrency = 'EUR'; // Madrid Stock Exchange
+                            } else if (symbol.endsWith('.L')) {
+                                h.priceCurrency = 'GBP'; // London Stock Exchange
+                            } else if (symbol.endsWith('.PA')) {
+                                h.priceCurrency = 'EUR'; // Paris Stock Exchange
+                            } else if (symbol.endsWith('.DE')) {
+                                h.priceCurrency = 'EUR'; // Frankfurt Stock Exchange
+                            } else if (json.currency) {
+                                h.priceCurrency = json.currency;
+                            } else {
+                                h.priceCurrency = 'USD'; // Default
+                            }
+                            
                             h.fetchError = false;
                             fetched = true;
-                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency}`);
+                            console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (EODHD LIVE)`);
                         }
                     }
                 } catch (e) {
-                    console.warn(`⚠️ EODHD failed for ${symbol}`);
+                    console.warn(`⚠️ EODHD LIVE failed for ${symbol}:`, e.message);
                 }
             }
 
+            // Fallback to Twelve Data if EODHD LIVE fails
             if (!fetched && TWELVEDATA_API_KEY) {
                 try {
                     let tdSymbol = symbol;
                     if (symbol.endsWith('.CO')) tdSymbol = symbol.replace('.CO', ':XCSE');
+                    if (symbol.endsWith('.MC')) tdSymbol = symbol.replace('.MC', ':BME');
+                    
                     const url = `https://api.twelvedata.com/quote?symbol=${tdSymbol}&apikey=${TWELVEDATA_API_KEY}`;
                     const response = await fetch(url);
+                    
                     if (response.ok) {
                         const json = await response.json();
                         if (json.status !== 'error' && json.close) {
-                            let price = parseFloat(json.close) || 0;
+                            let price = parseFloat(json.close) || parseFloat(json.previous_close) || 0;
                             if (price > 0) {
                                 h.currentPrice = price;
                                 h.priceCurrency = json.currency || 'USD';
                                 h.fetchError = false;
                                 fetched = true;
-                                console.log(`✅ ${symbol}: ${price} ${h.priceCurrency}`);
+                                console.log(`✅ ${symbol}: ${price} ${h.priceCurrency} (TwelveData)`);
                             }
                         }
                     }
                 } catch (e) {
-                    console.warn(`⚠️ TwelveData failed for ${symbol}`);
+                    console.warn(`⚠️ TwelveData failed for ${symbol}:`, e.message);
                 }
             }
 
             if (!fetched) {
                 h.fetchError = true;
-                fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed`);
+                fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed - using ${h.manualPrice ? 'manual' : 'cost basis'} price`);
                 console.error(`❌ ${symbol}: All APIs failed`);
             }
         }
@@ -595,7 +624,7 @@
             return h.shares * convertToDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
         }
 
-        // CHAT FUNCTIONALITY - UPDATED FOR OPENROUTER
+        // CHAT FUNCTIONALITY
         function toggleChat() {
             const apiKey = getOpenRouterApiKey();
             if (!apiKey) {
@@ -653,7 +682,7 @@
 
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
-            const message = message.trim();
+            const message = input.value.trim();
             if (!message) return;
             
             const apiKey = getOpenRouterApiKey();
@@ -719,7 +748,7 @@ Guidelines:
                         'X-Title': 'Passive Income Portfolio'
                     },
                     body: JSON.stringify({
-                        model: 'anthropic/claude-3.5-sonnet',  // Using Claude via OpenRouter
+                        model: 'anthropic/claude-3.5-sonnet',
                         messages: messages,
                         max_tokens: 1024
                     })
@@ -737,8 +766,8 @@ Guidelines:
                 chatHistory.push({ role: 'user', content: message });
                 chatHistory.push({ role: 'assistant', content: assistantMessage });
                 
-                // Keep only last 10 messages
-                if (chatHistory.length > 20) {  // 10 exchanges = 20 messages
+                // Keep only last 10 exchanges (20 messages)
+                if (chatHistory.length > 20) {
                     chatHistory = chatHistory.slice(-20);
                 }
                 
@@ -769,24 +798,374 @@ Guidelines:
             messageDiv.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // [Continue with the rest of the unchanged code - filtering, chart, render, modal functions, etc.]
-        // The rest remains identical to the previous version...
+        // FILTERING & SORTING
+        function getFilteredAndSortedHoldings() {
+            let holdings = data.holdings.filter(h => {
+                if (activeFilter === 'all') return true;
+                return activeFilter.split(',').includes(h.type);
+            });
 
-Due to character limits, I'll note that the remaining code (FILTERING & SORTING, ALLOCATION CHART, RENDER, MODAL FUNCTIONS, EXPORT/IMPORT, EVENT LISTENERS, INITIALIZATION) stays exactly the same as in the previous version.
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                holdings = holdings.filter(h => 
+                    h.name.toLowerCase().includes(term) || 
+                    (h.ticker && h.ticker.toLowerCase().includes(term))
+                );
+            }
 
-**Key changes made:**
+            if (sortBy === 'value-desc') {
+                holdings.sort((a,b) => getHoldingValue(b) - getHoldingValue(a));
+            } else if (sortBy === 'value-asc') {
+                holdings.sort((a,b) => getHoldingValue(a) - getHoldingValue(b));
+            } else if (sortBy === 'yield-desc') {
+                holdings.sort((a,b) => {
+                    const va = getHoldingValue(a), vb = getHoldingValue(b);
+                    const ya = va > 0 ? convertToDKK((a.dividend||0)*a.shares, a.dividendCurrency||'DKK') / va : 0;
+                    const yb = vb > 0 ? convertToDKK((b.dividend||0)*b.shares, b.dividendCurrency||'DKK') / vb : 0;
+                    return yb - ya;
+                });
+            } else {
+                holdings.sort((a,b) => a.name.localeCompare(b.name));
+            }
 
-1. ✅ **Switched to OpenRouter** - Browser-friendly API
-2. ✅ **Updated UI text** - References OpenRouter instead of Anthropic
-3. ✅ **Fixed model name** - Using `anthropic/claude-3.5-sonnet`
-4. ✅ **Proper API format** - OpenAI-compatible format that OpenRouter expects
-5. ✅ **Better error handling** - Shows actual error messages
+            return holdings;
+        }
 
-**Setup instructions for users:**
+        // ALLOCATION CHART
+        function renderAllocationChart(filtered) {
+            const ctx = document.getElementById('allocationChart')?.getContext('2d');
+            if (!ctx) return;
 
-1. Go to https://openrouter.ai/keys
-2. Sign up (free)
-3. Create an API key
-4. Add it in Settings
+            const types = {};
+            let total = 0;
+            filtered.forEach(h => { 
+                const v = getHoldingValue(h); 
+                types[h.type] = (types[h.type] || 0) + v; 
+                total += v; 
+            });
 
-This will work in the browser with no CORS issues! 🎉​​​​​​​​​​​​​​​​
+            const labels = Object.keys(types).map((type, i) => {
+                const value = types[type];
+                const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
+                return `${type.charAt(0).toUpperCase() + type.slice(1)} (${pct}%)`;
+            });
+            const dataPoints = Object.values(types);
+
+            if (allocationChart) {
+                allocationChart.data.labels = labels;
+                allocationChart.data.datasets[0].data = dataPoints;
+                allocationChart.update('none');
+            } else {
+                allocationChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: { 
+                        labels: labels, 
+                        datasets: [{ 
+                            data: dataPoints, 
+                            backgroundColor: ['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40'] 
+                        }] 
+                    },
+                    options: { 
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { 
+                            legend: { position: 'bottom' }, 
+                            tooltip: { 
+                                callbacks: { 
+                                    label: ctx => `${Math.round(ctx.raw).toLocaleString('da-DK')} DKK`
+                                } 
+                            } 
+                        } 
+                    }
+                });
+            }
+        }
+
+        // RENDER
+        function render() {
+            const filtered = getFilteredAndSortedHoldings();
+
+            let totalValue = 0, totalCost = 0, annualIncome = 0;
+
+            filtered.forEach(h => {
+                const value = getHoldingValue(h);
+                const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
+                const income = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
+                totalValue += value;
+                totalCost += cost;
+                annualIncome += income;
+            });
+
+            const change = totalValue - totalCost;
+            const changePct = totalCost ? (change / totalCost * 100) : 0;
+            const yieldPct = totalValue ? (annualIncome / totalValue * 100) : 0;
+
+            document.getElementById('totalValue').textContent = Math.round(totalValue).toLocaleString('da-DK') + ' DKK';
+            
+            const changeEl = document.getElementById('totalChange');
+            changeEl.textContent = (change >= 0 ? '+' : '') + Math.round(change).toLocaleString('da-DK') + ' DKK (' + changePct.toFixed(1) + '%)';
+            changeEl.className = 'change ' + (change >= 0 ? 'positive' : change < 0 ? 'negative' : '');
+
+            document.getElementById('annualIncome').textContent = Math.round(annualIncome).toLocaleString('da-DK') + ' DKK';
+            document.getElementById('yieldPercent').textContent = yieldPct.toFixed(2) + '%';
+
+            const lbl = activeFilter === 'all' ? 'All' : activeFilter.split(',').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' + ');
+            document.getElementById('filterLabel').textContent = `(${lbl})`;
+            document.getElementById('incomeFilterLabel').textContent = `(${lbl})`;
+
+            const container = document.getElementById('holdings');
+            container.innerHTML = '';
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings found</div>';
+            } else {
+                filtered.forEach(h => {
+                    const div = document.createElement('div');
+                    div.className = 'holding';
+                    div.onclick = () => editHolding(data.holdings.indexOf(h));
+
+                    const value = getHoldingValue(h);
+                    const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
+                    const chg = value - cost;
+                    const chgPct = cost ? chg / cost * 100 : 0;
+                    const inc = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
+                    const yld = value ? inc / value * 100 : 0;
+
+                    let status = '';
+                    if (h.type === 'fund') {
+                        status = '<span class="status manual-price">💼 Fund - manual price</span>';
+                    } else if (h.fetchError) {
+                        status = '<span class="status failed">⚠️ Fetch failed - using ' + (h.manualPrice ? 'manual' : 'cost basis') + '</span>';
+                    } else if (h.currentPrice) {
+                        status = '<span class="status live">✓ Live price</span>';
+                    }
+
+                    const badge = h.type === 'fund' ? ' <span class="fund-badge">FUND</span>' : h.type === 'rsu' ? ' <span class="fund-badge">RSU</span>' : '';
+
+                    div.innerHTML = `
+                        <div class="holding-header">
+                            <span class="ticker">${h.name}${badge}</span>
+                            <span class="value">${Math.round(value).toLocaleString('da-DK')} DKK</span>
+                        </div>
+                        <div class="meta">${h.shares} shares @ ${h.cost.toFixed(2)} ${h.costCurrency} = ${Math.round(cost).toLocaleString('da-DK')} DKK cost</div>
+                        <div class="meta">Income: ${Math.round(inc).toLocaleString('da-DK')} DKK/yr (${yld.toFixed(1)}% yield)</div>
+                        <div class="meta ${chg>0?'positive':chg<0?'negative':''}">
+                            ${(chg>=0?'+':'') + Math.round(chg).toLocaleString('da-DK')} DKK (${chgPct.toFixed(1)}%)
+                        </div>
+                        ${status}
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            renderAllocationChart(filtered);
+
+            if (data.lastUpdate) {
+                const d = new Date(data.lastUpdate);
+                document.getElementById('lastUpdate').textContent = 'Last update: ' + d.toLocaleString('da-DK');
+            }
+
+            updateNextUpdateDisplay();
+        }
+
+        // MODAL FUNCTIONS
+        function showModal() { document.getElementById('modal').classList.add('show'); }
+        function hideModal() { document.getElementById('modal').classList.remove('show'); }
+
+        function clearForm() {
+            document.getElementById('type').value = 'stock';
+            document.getElementById('ticker').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('shares').value = '';
+            document.getElementById('cost').value = '';
+            document.getElementById('costCurrency').value = 'DKK';
+            document.getElementById('currentPrice').value = '';
+            document.getElementById('priceCurrency').value = 'DKK';
+            document.getElementById('dividend').value = '0';
+            document.getElementById('dividendCurrency').value = 'DKK';
+            document.getElementById('deleteBtn').style.display = 'none';
+            togglePriceInfo();
+        }
+
+        function editHolding(idx) {
+            editing = idx;
+            const h = data.holdings[idx];
+            document.getElementById('modalTitle').textContent = 'Edit Holding';
+            document.getElementById('type').value = h.type;
+            document.getElementById('ticker').value = h.ticker || '';
+            document.getElementById('name').value = h.name;
+            document.getElementById('shares').value = h.shares;
+            document.getElementById('cost').value = h.cost;
+            document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
+            document.getElementById('currentPrice').value = h.manualPrice || '';
+            document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
+            document.getElementById('dividend').value = h.dividend || 0;
+            document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
+            document.getElementById('deleteBtn').style.display = 'block';
+            togglePriceInfo();
+            showModal();
+        }
+
+        function saveHolding() {
+            const type = document.getElementById('type').value;
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const name = document.getElementById('name').value.trim();
+            const shares = parseFloat(document.getElementById('shares').value) || 0;
+            const cost = parseFloat(document.getElementById('cost').value) || 0;
+            const costCur = document.getElementById('costCurrency').value;
+            const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+            const priceCur = document.getElementById('priceCurrency').value;
+            const div = parseFloat(document.getElementById('dividend').value) || 0;
+            const divCur = document.getElementById('dividendCurrency').value;
+
+            if (!name || shares <= 0 || cost <= 0) {
+                alert('Name, Shares >0 and Cost >0 required.');
+                return;
+            }
+            if (type !== 'fund' && !ticker) {
+                alert('Ticker required for stocks/RSU.');
+                return;
+            }
+            if (type === 'fund' && manPrice <= 0) {
+                alert('Current price required for funds and must be > 0.');
+                return;
+            }
+
+            const holding = {
+                type,
+                ticker: type !== 'fund' ? ticker : undefined,
+                name,
+                shares,
+                cost,
+                costCurrency: costCur,
+                manualPrice: manPrice > 0 ? manPrice : undefined,
+                priceCurrency: priceCur,
+                dividend: div,
+                dividendCurrency: divCur,
+                currentPrice: undefined,
+                fetchError: false
+            };
+
+            if (editing !== null) {
+                const old = data.holdings[editing];
+                if (old.currentPrice && type !== 'fund') {
+                    holding.currentPrice = old.currentPrice;
+                }
+                data.holdings[editing] = holding;
+                editing = null;
+            } else {
+                data.holdings.push(holding);
+            }
+
+            localStorage.setItem('portfolio', JSON.stringify(data));
+            hideModal();
+            clearForm();
+            render();
+            
+            if (type !== 'fund' && ticker) {
+                const h = data.holdings[data.holdings.length - 1];
+                fetchPriceForHolding(h).then(() => {
+                    localStorage.setItem('portfolio', JSON.stringify(data));
+                    render();
+                });
+            }
+        }
+
+        function deleteHolding() {
+            if (!confirm('Delete this holding?')) return;
+            data.holdings.splice(editing, 1);
+            localStorage.setItem('portfolio', JSON.stringify(data));
+            hideModal();
+            clearForm();
+            render();
+        }
+
+        function togglePriceInfo() {
+            const isFund = document.getElementById('type').value === 'fund';
+            document.getElementById('tickerField').style.display = isFund ? 'none' : 'block';
+            document.getElementById('priceInfoStock').style.display = isFund ? 'none' : 'block';
+            document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
+            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds (>0)' : 'Optional (auto-fetch preferred)';
+        }
+
+        // EXPORT / IMPORT
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        document.getElementById('importFile').onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (!imported.holdings || !Array.isArray(imported.holdings)) {
+                        alert('Invalid portfolio file format');
+                        return;
+                    }
+                    
+                    if (confirm(`Import ${imported.holdings.length} holdings? This will replace your current portfolio.`)) {
+                        data = imported;
+                        migrateData();
+                        localStorage.setItem('portfolio', JSON.stringify(data));
+                        render();
+                        alert('✅ Portfolio imported successfully!');
+                    }
+                } catch (err) {
+                    alert('Error reading file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        // EVENT LISTENERS
+        document.getElementById('addBtn').onclick = () => { editing = null; clearForm(); showModal(); };
+        document.getElementById('closeBtn').onclick = hideModal;
+        document.getElementById('saveBtn').onclick = saveHolding;
+        document.getElementById('deleteBtn').onclick = deleteHolding;
+        document.getElementById('refreshBtn').onclick = refreshPrices;
+        document.getElementById('exportBtn').onclick = exportData;
+        document.getElementById('chatBtn').onclick = toggleChat;
+        document.getElementById('closeChatBtn').onclick = toggleChat;
+        document.getElementById('type').onchange = togglePriceInfo;
+        
+        document.getElementById('chatSendBtn').onclick = sendChatMessage;
+        document.getElementById('chatInput').onkeypress = (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        };
+
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeFilter = tab.dataset.filter;
+                render();
+            };
+        });
+
+        document.getElementById('searchInput').oninput = e => { searchTerm = e.target.value; render(); };
+        document.getElementById('sortSelect').onchange = e => { sortBy = e.target.value; render(); };
+
+        // INITIALIZATION
+        migrateData();
+        updateExchangeRates();
+        checkAutoUpdate();
+        render();
+        setInterval(checkAutoUpdate, 60000);
+        setInterval(updateNextUpdateDisplay, 60000);
+    </script>
+</body>
+</html>
