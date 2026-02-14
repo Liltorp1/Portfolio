@@ -7,107 +7,32 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: #0a0e1a; 
-            color: #e8edf4; 
-            padding: 20px 20px 100px; 
-            min-height: 100vh;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0e1a; color: #e8edf4; padding: 20px 20px 100px; min-height: 100vh; }
         h1 { font-size: 28px; margin-bottom: 10px; }
-        .card { 
-            background: #1a2237; 
-            border: 1px solid #2a3550; 
-            border-radius: 12px; 
-            padding: 20px; 
-            margin-bottom: 15px; 
-        }
+        .card { background: #1a2237; border: 1px solid #2a3550; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
         .label { font-size: 12px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 8px; }
         .value { font-size: 32px; font-weight: 300; margin-bottom: 5px; }
         .change { font-size: 14px; color: #9ba5b8; }
         .positive { color: #00ff88; }
         .negative { color: #ff4466; }
-        .btn { 
-            background: #4d94ff; 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            padding: 14px 24px; 
-            font-size: 16px; 
-            width: 100%; 
-            cursor: pointer; 
-        }
+        .btn { background: #4d94ff; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 16px; width: 100%; cursor: pointer; }
         .btn:active { opacity: 0.8; }
         .btn-small { width: auto; padding: 10px 20px; font-size: 14px; }
-        .modal { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.9); 
-            padding: 20px; 
-            overflow-y: auto; 
-            z-index: 1000; 
-        }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); padding: 20px; overflow-y: auto; z-index: 1000; }
         .modal.show { display: block; }
-        .modal-content { 
-            background: #1a2237; 
-            border-radius: 16px; 
-            padding: 24px; 
-            max-width: 500px; 
-            margin: 40px auto; 
-        }
+        .modal-content { background: #1a2237; border-radius: 16px; padding: 24px; max-width: 500px; margin: 40px auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close { font-size: 30px; color: #9ba5b8; cursor: pointer; background: none; border: none; }
-        input, select { 
-            width: 100%; 
-            background: #0a0e1a; 
-            border: 1px solid #2a3550; 
-            border-radius: 8px; 
-            padding: 12px; 
-            color: #e8edf4; 
-            font-size: 16px; 
-            margin-bottom: 15px; 
-        }
+        input, select { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; }
         label { display: block; font-size: 14px; color: #9ba5b8; margin-bottom: 5px; }
-        .holding { 
-            background: #1a2237; 
-            border: 1px solid #2a3550; 
-            border-radius: 10px; 
-            padding: 15px; 
-            margin-bottom: 10px; 
-            cursor: pointer; 
-        }
+        .holding { background: #1a2237; border: 1px solid #2a3550; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
         .holding:active { background: #202840; }
         .holding-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .ticker { font-size: 18px; font-weight: 600; }
         .meta { font-size: 12px; color: #9ba5b8; margin-top: 4px; }
-        .section-title { 
-            font-size: 12px; 
-            text-transform: uppercase; 
-            color: #9ba5b8; 
-            margin: 20px 0 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .bottom-nav { 
-            position: fixed; 
-            bottom: 0; left: 0; right: 0; 
-            background: #151b2e; 
-            padding: 12px; 
-            display: flex; 
-            gap: 8px; 
-        }
-        .nav-btn { 
-            flex: 1; 
-            padding: 12px; 
-            background: #1a2237; 
-            border: 1px solid #2a3550; 
-            border-radius: 8px; 
-            color: #9ba5b8; 
-            font-size: 14px; 
-            cursor: pointer; 
-        }
+        .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin: 20px 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
+        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; }
         .status { font-size: 10px; margin-top: 3px; }
         .currency-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .currency-row input { flex: 2; margin-bottom: 0; }
@@ -118,35 +43,17 @@
         .fund-badge { background: #2a3550; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 8px; }
         .info-text { font-size: 12px; color: #9ba5b8; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
         .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
-        .filter-tab { 
-            padding: 8px 16px; 
-            background: #1a2237; 
-            border: 1px solid #2a3550; 
-            border-radius: 8px; 
-            color: #9ba5b8; 
-            font-size: 13px; 
-            cursor: pointer; 
-            white-space: nowrap; 
-        }
+        .filter-tab { padding: 8px 16px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 13px; cursor: pointer; white-space: nowrap; }
         .filter-tab.active { background: #4d94ff; color: white; border-color: #4d94ff; }
         .next-update { font-size: 11px; color: #9ba5b8; margin-top: 5px; }
         body.light {
-            --bg: #f8f9fa;
-            --text: #212529;
-            --card-bg: #ffffff;
-            --border: #dee2e6;
-            --input-bg: #ffffff;
-            --input-text: #212529;
-            --btn-bg: #007bff;
-            --btn-text: white;
+            --bg: #f8f9fa; --text: #212529; --card-bg: #ffffff; --border: #dee2e6;
+            --input-bg: #ffffff; --input-text: #212529; --btn-bg: #007bff; --btn-text: white;
         }
         body.light .card { background: var(--card-bg); border-color: var(--border); }
         body.light input, body.light select { background: var(--input-bg); color: var(--input-text); border-color: #ced4da; }
         body.light button { background: var(--btn-bg); color: var(--btn-text); }
-        #theme-toggle {
-            position: fixed; top: 1rem; right: 1rem; z-index: 1000;
-            padding: 0.5rem 1rem; background: #444; color: white; border: none; border-radius: 6px; cursor: pointer;
-        }
+        #theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; padding: 0.5rem 1rem; background: #444; color: white; border: none; border-radius: 6px; cursor: pointer; }
         body.light #theme-toggle { background: #ddd; color: #333; }
     </style>
 </head>
@@ -238,15 +145,15 @@
             </div>
 
             <div id="currentPriceField">
-                <label>Current Price <span id="priceLabel">(optional - backup if auto-fetch fails)</span></label>
+                <label>Current Price <span id="priceLabel">(required for funds, optional backup for others)</span></label>
                 <div class="info-text" id="priceInfoStock" style="display:block;">
-                    Auto-updates via EODHD / Twelve Data. Enter manually only as backup.
+                    Stocks/RSU: Auto-updates via EODHD / Twelve Data. Enter manually only as backup.
                 </div>
                 <div class="info-text" id="priceInfoFund" style="display:none;">
-                    Funds: Required - will NOT auto-update. Update manually.
+                    Funds: Required field - will NOT auto-update. Must be > 0.
                 </div>
                 <div class="currency-row">
-                    <input type="number" step="0.01" id="currentPrice" placeholder="Optional for stocks/RSU, required for funds">
+                    <input type="number" step="0.01" id="currentPrice" placeholder="Required for funds, optional for stocks/RSU">
                     <select id="priceCurrency">
                         <option value="DKK">DKK</option>
                         <option value="EUR">EUR</option>
@@ -277,15 +184,10 @@
     </div>
 
     <script>
-        // ────────────────────────────────────────────────
-        //  API KEYS (your provided keys)
-        // ────────────────────────────────────────────────
+        // API KEYS
         const EODHD_API_KEY     = '698fa6d0d113a5.96289084';
         const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
 
-        // ────────────────────────────────────────────────
-        //  Data & State
-        // ────────────────────────────────────────────────
         let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null}');
         let editing = null;
         let isRefreshing = false;
@@ -294,44 +196,31 @@
         let sortBy = 'value-desc';
 
         let exchangeRates = { DKK: 1, EUR: 7.46, USD: 6.88 };
-
         let allocationChart = null;
 
-        // ────────────────────────────────────────────────
-        //  Exchange Rates (Frankfurter)
-        // ────────────────────────────────────────────────
         async function updateExchangeRates() {
             try {
                 const res = await fetch('https://api.frankfurter.app/latest?to=DKK,EUR,USD');
-                if (!res.ok) throw new Error('Rates fetch failed');
+                if (!res.ok) throw new Error();
                 const json = await res.json();
                 const rates = json.rates;
-                exchangeRates.EUR = rates.DKK ? rates.DKK : exchangeRates.EUR;
+                exchangeRates.EUR = rates.DKK || exchangeRates.EUR;
                 exchangeRates.USD = rates.USD ? rates.DKK / rates.USD : exchangeRates.USD;
-                console.log('Exchange rates updated:', exchangeRates);
-            } catch (err) {
-                console.error('Exchange rates failed:', err);
-            }
+            } catch {}
         }
 
         function convertToDKK(amount, currency) {
             return (amount || 0) * (exchangeRates[currency] || 1);
         }
 
-        // ────────────────────────────────────────────────
-        //  Time helpers
-        // ────────────────────────────────────────────────
         function getNextUpdateTime() {
             const now = new Date();
             let cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
             let h = cet.getHours();
             let next = new Date(cet);
-            if (h < 8)      next.setHours(8, 0, 0, 0);
-            else if (h < 22) next.setHours(22,0, 0, 0);
-            else {
-                next.setDate(next.getDate()+1);
-                next.setHours(8,0,0,0);
-            }
+            if (h < 8) next.setHours(8,0,0,0);
+            else if (h < 22) next.setHours(22,0,0,0);
+            else { next.setDate(next.getDate()+1); next.setHours(8,0,0,0); }
             return new Date(next.getTime() - (now.getTimezoneOffset() + 60) * 60000);
         }
 
@@ -345,117 +234,65 @@
             document.getElementById('nextUpdate').textContent = `Next auto-update ${text} (${timeStr})`;
         }
 
-        // ────────────────────────────────────────────────
-        //  Theme toggle
-        // ────────────────────────────────────────────────
         const themeToggle = document.getElementById('theme-toggle');
         let currentTheme = localStorage.getItem('theme') || 'dark';
         document.body.className = currentTheme;
         themeToggle.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
-
         themeToggle.onclick = () => {
-            if (document.body.classList.contains('dark')) {
-                document.body.classList.remove('dark');
-                document.body.classList.add('light');
-                localStorage.setItem('theme', 'light');
-                themeToggle.textContent = 'Dark Mode';
-            } else {
-                document.body.classList.remove('light');
-                document.body.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                themeToggle.textContent = 'Light Mode';
-            }
+            document.body.classList.toggle('dark');
+            document.body.classList.toggle('light');
+            currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+            themeToggle.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
         };
 
-        // ────────────────────────────────────────────────
-        //  Fetch current price – FIXED for EODHD response format
-        // ────────────────────────────────────────────────
         async function fetchPriceForHolding(h) {
-            if (h.type === 'fund' || !h.ticker) {
-                h.fetchError = true;
-                return;
-            }
+            if (h.type === 'fund' || !h.ticker) return; // Funds never fetch
 
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
-            // 1. Try EODHD (primary – your test shows it works)
             if (EODHD_API_KEY) {
                 try {
                     const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
                     const response = await fetch(url);
                     if (response.ok) {
                         const json = await response.json();
-                        console.log(`EODHD raw response for ${symbol}:`, json); // ← shows full data
-
-                        // Use fields from your actual response
                         let price = json.close || json.previousClose || json.open || 0;
                         if (price > 0) {
                             h.currentPrice = price;
-                            // Fallback currency based on ticker suffix (since not in response)
-                            if (symbol.endsWith('.CO')) {
-                                h.priceCurrency = 'DKK';
-                            } else if (symbol.endsWith('.MC')) {
-                                h.priceCurrency = 'EUR';
-                            } else {
-                                h.priceCurrency = json.currency || 'USD';
-                            }
+                            h.priceCurrency = symbol.endsWith('.CO') ? 'DKK' : (symbol.endsWith('.MC') ? 'EUR' : (json.currency || 'USD'));
                             h.fetchError = false;
                             fetched = true;
-                            console.log(`EODHD SUCCESS: ${symbol} → ${price} ${h.priceCurrency}`);
-                        } else {
-                            console.warn(`EODHD no valid price in response for ${symbol}`);
                         }
-                    } else {
-                        console.warn(`EODHD HTTP error ${response.status} for ${symbol}`);
                     }
-                } catch (err) {
-                    console.error(`EODHD fetch error for ${symbol}:`, err);
-                }
+                } catch {}
             }
 
-            // 2. Twelve Data fallback – try XCSE suffix for Copenhagen
             if (!fetched && TWELVEDATA_API_KEY) {
                 try {
                     let tdSymbol = symbol;
-                    if (symbol.endsWith('.CO')) {
-                        tdSymbol = symbol.replace('.CO', ':XCSE');
-                    }
+                    if (symbol.endsWith('.CO')) tdSymbol = symbol.replace('.CO', ':XCSE');
                     const url = `https://api.twelvedata.com/quote?symbol=${tdSymbol}&apikey=${TWELVEDATA_API_KEY}`;
                     const response = await fetch(url);
                     if (response.ok) {
                         const json = await response.json();
-                        console.log(`Twelve Data raw response for ${tdSymbol}:`, json);
-
-                        if (json.code === 400 || json.status === 'error') {
-                            throw new Error(json.message || 'API error');
+                        if (json.status !== 'error') {
+                            let price = json.close || json.previous_close || json.last || 0;
+                            if (price > 0) {
+                                h.currentPrice = price;
+                                h.priceCurrency = json.currency || 'USD';
+                                h.fetchError = false;
+                                fetched = true;
+                            }
                         }
-
-                        let price = json.close || json.previous_close || json.last || 0;
-                        if (price > 0) {
-                            h.currentPrice = price;
-                            h.priceCurrency = json.currency || 'USD';
-                            h.fetchError = false;
-                            fetched = true;
-                            console.log(`Twelve Data SUCCESS: ${tdSymbol} → ${price} ${h.priceCurrency}`);
-                        }
-                    } else {
-                        console.warn(`Twelve Data HTTP ${response.status} for ${tdSymbol}`);
                     }
-                } catch (err) {
-                    console.error(`Twelve Data error for ${symbol}:`, err);
-                }
+                } catch {}
             }
 
-            if (!fetched) {
-                h.fetchError = true;
-                console.error(`All price sources failed for ${symbol} – using manual price if available`);
-            }
+            if (!fetched) h.fetchError = true;
         }
 
-        // ────────────────────────────────────────────────
-        //  Refresh all prices
-        // ────────────────────────────────────────────────
         async function refreshPrices() {
             if (isRefreshing) return;
             isRefreshing = true;
@@ -463,66 +300,48 @@
 
             await updateExchangeRates();
 
-            const promises = data.holdings
-                .filter(h => h.type !== 'fund' && h.ticker)
-                .map(h => fetchPriceForHolding(h));
-
-            await Promise.all(promises);
+            await Promise.all(data.holdings.filter(h => h.type !== 'fund' && h.ticker).map(fetchPriceForHolding));
 
             data.lastUpdate = new Date().toISOString();
             localStorage.setItem('portfolio', JSON.stringify(data));
 
             render();
-
             isRefreshing = false;
             document.getElementById('refreshBtn').textContent = 'Refresh';
         }
 
-        // ────────────────────────────────────────────────
-        //  Auto-update check (every minute)
-        // ────────────────────────────────────────────────
         function checkAutoUpdate() {
             const now = new Date();
             const last = data.lastUpdate ? new Date(data.lastUpdate) : new Date(0);
-            if (now - last > 3600000) { // > 1 hour
+            if (now - last > 3600000) {
                 const next = getNextUpdateTime();
                 if (now >= next) refreshPrices();
             }
         }
 
-        // ────────────────────────────────────────────────
-        //  Holding value calculation
-        // ────────────────────────────────────────────────
         function getHoldingValue(h) {
-            const price = h.fetchError ? (h.manualPrice || 0) : (h.currentPrice || 0);
+            let price = 0;
+            if (h.type === 'fund' || h.fetchError) {
+                price = h.manualPrice || 0;  // Funds + failed fetches ALWAYS use manualPrice
+            } else {
+                price = h.currentPrice || h.manualPrice || 0;  // Live wins, manual as backup
+            }
             return h.shares * convertToDKK(price, h.priceCurrency || 'DKK');
         }
 
-        // ────────────────────────────────────────────────
-        //  Filtering & Sorting
-        // ────────────────────────────────────────────────
         function getFilteredAndSortedHoldings() {
-            let holdings = data.holdings.filter(h => {
-                if (activeFilter === 'all') return true;
-                return activeFilter.split(',').includes(h.type);
-            });
+            let holdings = data.holdings.filter(h => activeFilter === 'all' || activeFilter.split(',').includes(h.type));
 
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
-                holdings = holdings.filter(h =>
-                    h.name.toLowerCase().includes(term) ||
-                    (h.ticker && h.ticker.toLowerCase().includes(term))
-                );
+                holdings = holdings.filter(h => h.name.toLowerCase().includes(term) || (h.ticker && h.ticker.toLowerCase().includes(term)));
             }
 
-            if (sortBy === 'value-desc') {
-                holdings.sort((a,b) => getHoldingValue(b) - getHoldingValue(a));
-            } else if (sortBy === 'value-asc') {
-                holdings.sort((a,b) => getHoldingValue(a) - getHoldingValue(b));
-            } else if (sortBy === 'yield-desc') {
+            if (sortBy === 'value-desc') holdings.sort((a,b) => getHoldingValue(b) - getHoldingValue(a));
+            else if (sortBy === 'value-asc') holdings.sort((a,b) => getHoldingValue(a) - getHoldingValue(b));
+            else if (sortBy === 'yield-desc') {
                 holdings.sort((a,b) => {
-                    const va = getHoldingValue(a);
-                    const vb = getHoldingValue(b);
+                    const va = getHoldingValue(a), vb = getHoldingValue(b);
                     const ya = va > 0 ? convertToDKK((a.dividend||0)*a.shares, a.dividendCurrency||'DKK') / va : 0;
                     const yb = vb > 0 ? convertToDKK((b.dividend||0)*b.shares, b.dividendCurrency||'DKK') / vb : 0;
                     return yb - ya;
@@ -534,20 +353,13 @@
             return holdings;
         }
 
-        // ────────────────────────────────────────────────
-        //  Pie chart
-        // ────────────────────────────────────────────────
         function renderAllocationChart(filtered) {
             const ctx = document.getElementById('allocationChart')?.getContext('2d');
             if (!ctx) return;
 
             const types = {};
             let total = 0;
-            filtered.forEach(h => {
-                const v = getHoldingValue(h);
-                types[h.type] = (types[h.type] || 0) + v;
-                total += v;
-            });
+            filtered.forEach(h => { const v = getHoldingValue(h); types[h.type] = (types[h.type] || 0) + v; total += v; });
 
             const labels = Object.keys(types);
             const dataPoints = Object.values(types);
@@ -556,30 +368,11 @@
 
             allocationChart = new Chart(ctx, {
                 type: 'pie',
-                data: {
-                    labels: labels.map((l,i) => `${l} (${(dataPoints[i]/total*100).toFixed(1)}%)`),
-                    datasets: [{
-                        data: dataPoints,
-                        backgroundColor: ['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => `${ctx.label}: ${Math.round(ctx.raw).toLocaleString()} DKK`
-                            }
-                        }
-                    }
-                }
+                data: { labels: labels.map((l,i) => `${l} (${(dataPoints[i]/total*100).toFixed(1)}%)`), datasets: [{ data: dataPoints, backgroundColor: ['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${Math.round(ctx.raw).toLocaleString()} DKK` } } } }
             });
         }
 
-        // ────────────────────────────────────────────────
-        //  Main render
-        // ────────────────────────────────────────────────
         function render() {
             const filtered = getFilteredAndSortedHoldings();
 
@@ -587,9 +380,8 @@
 
             filtered.forEach(h => {
                 const value = getHoldingValue(h);
-                const cost  = convertToDKK(h.cost * h.shares, h.costCurrency);
+                const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
                 const income = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
-
                 totalValue += value;
                 totalCost += cost;
                 annualIncome += income;
@@ -600,8 +392,7 @@
             const yieldPct = totalValue ? (annualIncome / totalValue * 100) : 0;
 
             document.getElementById('totalValue').textContent = Math.round(totalValue).toLocaleString('da-DK') + ' DKK';
-            document.getElementById('totalChange').textContent =
-                (change > 0 ? '+' : '') + Math.round(change).toLocaleString('da-DK') + ' DKK (' + changePct.toFixed(1) + '%)';
+            document.getElementById('totalChange').textContent = (change > 0 ? '+' : '') + Math.round(change).toLocaleString('da-DK') + ' DKK (' + changePct.toFixed(1) + '%)';
             document.getElementById('totalChange').className = 'change ' + (change > 0 ? 'positive' : change < 0 ? 'negative' : '');
 
             document.getElementById('annualIncome').textContent = Math.round(annualIncome).toLocaleString('da-DK') + ' DKK';
@@ -614,7 +405,7 @@
             const container = document.getElementById('holdings');
             container.innerHTML = '';
 
-            filtered.forEach((h) => {
+            filtered.forEach(h => {
                 const div = document.createElement('div');
                 div.className = 'holding';
                 div.onclick = () => editHolding(data.holdings.indexOf(h));
@@ -627,13 +418,9 @@
                 const yld = value ? inc / value * 100 : 0;
 
                 let status = '';
-                if (h.type === 'fund') {
-                    status = '<span class="status manual-price">Manual price</span>';
-                } else if (h.fetchError) {
-                    status = '<span class="status failed">Fetch failed - using manual</span>';
-                } else if (h.currentPrice) {
-                    status = '<span class="status live">Live price</span>';
-                }
+                if (h.type === 'fund') status = '<span class="status manual-price">Manual price</span>';
+                else if (h.fetchError) status = '<span class="status failed">Fetch failed - using manual</span>';
+                else if (h.currentPrice) status = '<span class="status live">Live price</span>';
 
                 div.innerHTML = `
                     <div class="holding-header">
@@ -660,9 +447,6 @@
             updateNextUpdateDisplay();
         }
 
-        // ────────────────────────────────────────────────
-        //  Modal & CRUD – FIXED for funds manual price check
-        // ────────────────────────────────────────────────
         function showModal() { document.getElementById('modal').classList.add('show'); }
         function hideModal() { document.getElementById('modal').classList.remove('show'); }
 
@@ -707,7 +491,7 @@
             const shares = parseFloat(document.getElementById('shares').value) || 0;
             const cost = parseFloat(document.getElementById('cost').value) || 0;
             const costCur = document.getElementById('costCurrency').value;
-            const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0; // Changed: fallback to 0 if blank
+            const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
             const priceCur = document.getElementById('priceCurrency').value;
             const div = parseFloat(document.getElementById('dividend').value) || 0;
             const divCur = document.getElementById('dividendCurrency').value;
@@ -721,7 +505,7 @@
                 return;
             }
             if (type === 'fund' && manPrice <= 0) {
-                alert('Current price required for funds (must be > 0)');
+                alert('Current price required for funds and must be > 0.');
                 return;
             }
 
@@ -732,7 +516,7 @@
                 shares,
                 cost,
                 costCurrency: costCur,
-                manualPrice: manPrice > 0 ? manPrice : undefined, // Don't store 0
+                manualPrice: manPrice,
                 priceCurrency: priceCur,
                 dividend: div,
                 dividendCurrency: divCur
@@ -765,7 +549,7 @@
             document.getElementById('tickerField').style.display = isFund ? 'none' : 'block';
             document.getElementById('priceInfoStock').style.display = isFund ? 'none' : 'block';
             document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
-            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds' : 'Optional (auto-fetch preferred)';
+            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds (>0)' : 'Optional (auto-fetch preferred)';
         }
 
         function exportData() {
@@ -773,14 +557,11 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'portfolio-backup.json';
+            a.download = 'portfolio.json';
             a.click();
             URL.revokeObjectURL(url);
         }
 
-        // ────────────────────────────────────────────────
-        //  Event Listeners
-        // ────────────────────────────────────────────────
         document.getElementById('addBtn').onclick = () => { editing = null; clearForm(); showModal(); };
         document.getElementById('closeBtn').onclick = hideModal;
         document.getElementById('saveBtn').onclick = saveHolding;
@@ -798,23 +579,13 @@
             };
         });
 
-        document.getElementById('searchInput').oninput = e => {
-            searchTerm = e.target.value;
-            render();
-        };
+        document.getElementById('searchInput').oninput = e => { searchTerm = e.target.value; render(); };
+        document.getElementById('sortSelect').onchange = e => { sortBy = e.target.value; render(); };
 
-        document.getElementById('sortSelect').onchange = e => {
-            sortBy = e.target.value;
-            render();
-        };
-
-        // ────────────────────────────────────────────────
-        //  Init
-        // ────────────────────────────────────────────────
         updateExchangeRates();
         checkAutoUpdate();
         render();
-        setInterval(checkAutoUpdate, 60000); // check every minute
+        setInterval(checkAutoUpdate, 60000);
     </script>
 </body>
 </html>
