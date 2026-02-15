@@ -23,7 +23,8 @@
         .modal-content { background: #1a2237; border-radius: 16px; padding: 24px; max-width: 500px; margin: 40px auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close { font-size: 30px; color: #9ba5b8; cursor: pointer; background: none; border: none; }
-        input, select { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; }
+        textarea { min-height: 60px; resize: vertical; font-family: inherit; }
         label { display: block; font-size: 14px; color: #9ba5b8; margin-bottom: 5px; }
         .holding { background: #1a2237; border: 1px solid #2a3550; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
         .holding:active { background: #202840; }
@@ -41,6 +42,7 @@
         .manual-price { color: #ffc044; }
         .failed { color: #ff4466; }
         .fund-badge { background: #2a3550; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 8px; }
+        .property-badge { background: #4d94ff; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 8px; }
         .info-text { font-size: 12px; color: #9ba5b8; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
         .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
         .filter-tab { padding: 8px 16px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 13px; cursor: pointer; white-space: nowrap; }
@@ -51,8 +53,11 @@
         .error-list { background: #ff446620; border: 1px solid #ff4466; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 12px; }
         .error-item { margin: 4px 0; }
         .chart-container { position: relative; max-height: 250px; }
+        .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .cost-item { display: flex; flex-direction: column; }
+        .cost-item label { font-size: 12px; margin-bottom: 5px; }
+        .cost-item input { margin-bottom: 0; }
         
-        /* Currency selector */
         .currency-selector { 
             display: flex; 
             align-items: center; 
@@ -76,7 +81,6 @@
             font-size: 14px;
         }
         
-        /* Chat styles */
         .chat-container { position: fixed; bottom: 80px; right: 20px; width: 380px; max-width: calc(100vw - 40px); height: 500px; background: #1a2237; border: 1px solid #2a3550; border-radius: 16px; display: none; flex-direction: column; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
         .chat-container.show { display: flex; }
         .chat-header { padding: 16px; border-bottom: 1px solid #2a3550; display: flex; justify-content: space-between; align-items: center; }
@@ -97,7 +101,6 @@
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
         
-        /* Settings styles */
         .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #2a3550; }
         .settings-section:last-child { border-bottom: none; }
         .settings-section h4 { margin-bottom: 10px; font-size: 14px; color: #e8edf4; }
@@ -108,7 +111,7 @@
         
         body.light { background: #f8f9fa; color: #212529; }
         body.light .card { background: #ffffff; border-color: #dee2e6; }
-        body.light input, body.light select { background: #ffffff; color: #212529; border-color: #ced4da; }
+        body.light input, body.light select, body.light textarea { background: #ffffff; color: #212529; border-color: #ced4da; }
         body.light .holding { background: #ffffff; border-color: #dee2e6; }
         body.light .filter-tab { background: #ffffff; border-color: #dee2e6; }
         body.light .filter-tab.active { background: #007bff; color: white; }
@@ -144,7 +147,6 @@
 
     <div id="errorContainer"></div>
 
-    <!-- Currency Selector -->
     <div class="currency-selector">
         <label for="displayCurrency">Display Currency:</label>
         <select id="displayCurrency">
@@ -178,9 +180,9 @@
         <div class="filter-tab" data-filter="stock">Stocks</div>
         <div class="filter-tab" data-filter="fund">Funds</div>
         <div class="filter-tab" data-filter="rsu">RSU</div>
+        <div class="filter-tab" data-filter="property">Property</div>
         <div class="filter-tab" data-filter="stock,fund">Stocks + Funds</div>
         <div class="filter-tab" data-filter="stock,rsu">Stocks + RSU</div>
-        <div class="filter-tab" data-filter="fund,rsu">Funds + RSU</div>
     </div>
 
     <div class="section-title">
@@ -200,7 +202,6 @@
 
     <div id="holdings"></div>
 
-    <!-- Chat Container -->
     <div class="chat-container" id="chatContainer">
         <div class="chat-header">
             <h3>💰 Passive Income Advisor</h3>
@@ -224,7 +225,6 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -251,7 +251,6 @@
         </div>
     </div>
 
-    <!-- Modal for adding holdings -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -264,6 +263,7 @@
                 <option value="stock">Stock (auto-updates)</option>
                 <option value="fund">Fund (manual only)</option>
                 <option value="rsu">RSU (auto-updates)</option>
+                <option value="property">Property (real estate)</option>
             </select>
 
             <div id="tickerField">
@@ -271,20 +271,41 @@
                 <input type="text" id="ticker" placeholder="e.g., ASTK.CO, FLYW, IBE.MC">
             </div>
 
+            <div id="addressField" style="display:none;">
+                <label>Address</label>
+                <textarea id="address" placeholder="e.g., Vestergade 12, 1456 København K"></textarea>
+            </div>
+
             <label>Name</label>
             <input type="text" id="name" placeholder="e.g., Asetek A/S">
 
-            <label>Shares / Units</label>
-            <input type="number" step="0.01" id="shares">
+            <div id="sharesField">
+                <label>Shares / Units</label>
+                <input type="number" step="0.01" id="shares">
+            </div>
 
-            <label>Average Cost per Share/Unit</label>
-            <div class="currency-row">
-                <input type="number" step="0.01" id="cost">
-                <select id="costCurrency">
-                    <option value="DKK">DKK</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                </select>
+            <div id="costField">
+                <label>Average Cost per Share/Unit</label>
+                <div class="currency-row">
+                    <input type="number" step="0.01" id="cost">
+                    <select id="costCurrency">
+                        <option value="DKK">DKK</option>
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="propertyValueField" style="display:none;">
+                <label>Property Value</label>
+                <div class="currency-row">
+                    <input type="number" step="0.01" id="propertyValue">
+                    <select id="propertyCurrency">
+                        <option value="DKK">DKK</option>
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
             </div>
 
             <div id="currentPriceField">
@@ -305,10 +326,47 @@
                 </div>
             </div>
 
-            <label>Annual Dividend/Distribution per Share</label>
-            <div class="currency-row">
-                <input type="number" step="0.01" id="dividend" placeholder="0 if none">
-                <select id="dividendCurrency">
+            <div id="dividendField">
+                <label>Annual Dividend/Distribution per Share</label>
+                <div class="currency-row">
+                    <input type="number" step="0.01" id="dividend" placeholder="0 if none">
+                    <select id="dividendCurrency">
+                        <option value="DKK">DKK</option>
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="propertyCostsField" style="display:none;">
+                <label>Annual Property Costs</label>
+                <div class="cost-grid">
+                    <div class="cost-item">
+                        <label>Property Tax</label>
+                        <input type="number" step="0.01" id="costTax" placeholder="0">
+                    </div>
+                    <div class="cost-item">
+                        <label>Power</label>
+                        <input type="number" step="0.01" id="costPower" placeholder="0">
+                    </div>
+                    <div class="cost-item">
+                        <label>Water</label>
+                        <input type="number" step="0.01" id="costWater" placeholder="0">
+                    </div>
+                    <div class="cost-item">
+                        <label>Gas</label>
+                        <input type="number" step="0.01" id="costGas" placeholder="0">
+                    </div>
+                    <div class="cost-item">
+                        <label>Internet</label>
+                        <input type="number" step="0.01" id="costInternet" placeholder="0">
+                    </div>
+                    <div class="cost-item">
+                        <label>Other</label>
+                        <input type="number" step="0.01" id="costOther" placeholder="0">
+                    </div>
+                </div>
+                <select id="propertyCostsCurrency" style="margin-top: 10px;">
                     <option value="DKK">DKK</option>
                     <option value="EUR">EUR</option>
                     <option value="USD">USD</option>
@@ -330,8 +388,6 @@
     <input type="file" id="importFile" accept=".json">
 
     <script>
-        // API KEYS
-        const EODHD_API_KEY = '698fa6d0d113a5.96289084';
         const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
 
         let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
@@ -346,11 +402,9 @@
         let exchangeRates = { DKK: 1, EUR: 7.46, USD: 6.88, GBP: 8.65 };
         let allocationChart = null;
         
-        // Display currency preference
         let displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
         document.getElementById('displayCurrency').value = displayCurrency;
 
-        // Currency conversion functions
         function convertToDKK(amount, currency) {
             return (amount || 0) * (exchangeRates[currency] || 1);
         }
@@ -366,14 +420,12 @@
             return `${rounded.toLocaleString('da-DK')} ${symbols[currency] || currency}`;
         }
 
-        // Currency selector change handler
         document.getElementById('displayCurrency').onchange = (e) => {
             displayCurrency = e.target.value;
             localStorage.setItem('displayCurrency', displayCurrency);
             render();
         };
 
-        // SETTINGS MODAL
         function showSettingsModal() {
             document.getElementById('settingsModal').classList.add('show');
         }
@@ -382,11 +434,9 @@
             document.getElementById('settingsModal').classList.remove('show');
         }
 
-        // SETTINGS EVENT LISTENERS
         setTimeout(() => {
             document.getElementById('settingsBtn').onclick = showSettingsModal;
             document.getElementById('closeSettingsBtn').onclick = hideSettingsModal;
-
             document.getElementById('exportBtn').onclick = exportData;
             document.getElementById('importBtn').onclick = importData;
 
@@ -400,7 +450,6 @@
             };
         }, 100);
 
-        // DATA MIGRATION
         function migrateData() {
             let migrated = false;
             data.holdings = data.holdings.map(h => {
@@ -417,11 +466,9 @@
             });
             if (migrated) {
                 localStorage.setItem('portfolio', JSON.stringify(data));
-                console.log('✅ Data migrated');
             }
         }
 
-        // EXCHANGE RATES
         async function updateExchangeRates() {
             try {
                 const res = await fetch('https://api.frankfurter.app/latest?from=DKK&to=EUR,USD,GBP');
@@ -430,13 +477,9 @@
                 exchangeRates.EUR = 1 / (json.rates.EUR || 0.134);
                 exchangeRates.USD = 1 / (json.rates.USD || 0.145);
                 exchangeRates.GBP = 1 / (json.rates.GBP || 0.116);
-                console.log('✅ Rates updated:', exchangeRates);
-            } catch (e) {
-                console.warn('⚠️ Using fallback rates');
-            }
+            } catch (e) {}
         }
 
-        // SCHEDULED UPDATES
         function getNextUpdateTime() {
             const now = new Date();
             let cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
@@ -469,7 +512,6 @@
                 const todayKey = cet.toISOString().split('T')[0] + '-' + hour;
                 
                 if (lastUpdate !== todayKey) {
-                    console.log('⏰ Scheduled update at', hour + ':00 CET');
                     data.lastScheduledUpdate = todayKey;
                     localStorage.setItem('portfolio', JSON.stringify(data));
                     refreshPrices();
@@ -477,7 +519,6 @@
             }
         }
 
-        // THEME
         const themeToggle = document.getElementById('theme-toggle');
         let currentTheme = localStorage.getItem('theme') || 'dark';
         document.body.className = currentTheme;
@@ -490,16 +531,12 @@
             themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
         };
 
-        // FIXED PRICE FETCHING - Using your exact solution
         async function fetchPriceForHolding(h) {
-            if (h.type === 'fund' || !h.ticker) return;
+            if (h.type === 'fund' || h.type === 'property' || !h.ticker) return;
 
             const symbol = h.ticker.toUpperCase();
-            let fetched = false;
-
-            // 1. US stocks → TwelveData
-            const isUS = !symbol.includes(".");
-            if (isUS) {
+            
+            if (!symbol.includes('.')) {
                 try {
                     const url = `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${TWELVEDATA_API_KEY}`;
                     const response = await fetch(url);
@@ -509,46 +546,13 @@
                         h.currentPrice = parseFloat(json.close || json.previous_close);
                         h.priceCurrency = json.currency || "USD";
                         h.fetchError = false;
-                        fetched = true;
-                        console.log(`✅ ${symbol}: ${h.currentPrice} ${h.priceCurrency} (TwelveData)`);
                         return;
                     }
-                } catch (e) {
-                    console.warn(`⚠️ TwelveData failed for ${symbol}:`, e.message);
-                }
+                } catch (e) {}
             }
 
-            // 2. Non-US stocks → EODHD /real-time/ (supports .CO, .MC, .PA, .DE, .L)
-            if (!fetched) {
-                try {
-                    const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
-                    const response = await fetch(url);
-                    const json = await response.json();
-
-                    if (json.close) {
-                        h.currentPrice = json.close;
-                        h.priceCurrency = json.currency || (
-                            symbol.endsWith(".CO") ? "DKK" :
-                            symbol.endsWith(".MC") ? "EUR" :
-                            symbol.endsWith(".PA") ? "EUR" :
-                            symbol.endsWith(".DE") ? "EUR" :
-                            symbol.endsWith(".L")  ? "GBP" :
-                            "USD"
-                        );
-                        h.fetchError = false;
-                        fetched = true;
-                        console.log(`✅ ${symbol}: ${h.currentPrice} ${h.priceCurrency} (EODHD)`);
-                        return;
-                    }
-                } catch (e) {
-                    console.warn(`⚠️ EODHD failed for ${symbol}:`, e.message);
-                }
-            }
-
-            // 3. If both fail → mark as failed
             h.fetchError = true;
             fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed - using ${h.manualPrice ? 'manual' : 'cost basis'} price`);
-            console.error(`❌ ${symbol}: All APIs failed`);
         }
 
         async function refreshPrices() {
@@ -562,7 +566,7 @@
 
             await updateExchangeRates();
 
-            const stocksToFetch = data.holdings.filter(h => h.type !== 'fund' && h.ticker);
+            const stocksToFetch = data.holdings.filter(h => h.type !== 'fund' && h.type !== 'property' && h.ticker);
             await Promise.all(stocksToFetch.map(h => fetchPriceForHolding(h)));
 
             data.lastUpdate = new Date().toISOString();
@@ -592,8 +596,11 @@
             container.innerHTML = html;
         }
 
-        // VALUE CALCULATION
         function getHoldingValue(h) {
+            if (h.type === 'property') {
+                return convertToDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
+            }
+            
             let price = 0;
             if (h.type === 'fund') {
                 price = h.manualPrice || 0;
@@ -603,7 +610,16 @@
             return h.shares * convertToDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
         }
 
-        // FREE CHAT FUNCTIONALITY
+        function getHoldingIncome(h) {
+            if (h.type === 'property') {
+                const costs = (h.propertyCosts || {});
+                const totalCost = (costs.tax || 0) + (costs.power || 0) + (costs.water || 0) + 
+                                (costs.gas || 0) + (costs.internet || 0) + (costs.other || 0);
+                return -convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK');
+            }
+            return convertToDKK((h.dividend || 0) * h.shares, h.dividendCurrency || 'DKK');
+        }
+
         function toggleChat() {
             const chatContainer = document.getElementById('chatContainer');
             chatContainer.classList.toggle('show');
@@ -618,8 +634,8 @@
             
             const holdings = filtered.map(h => {
                 const value = getHoldingValue(h);
-                const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
-                const income = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
+                const cost = h.type === 'property' ? value : convertToDKK(h.cost * h.shares, h.costCurrency);
+                const income = getHoldingIncome(h);
                 totalValue += value;
                 totalCost += cost;
                 annualIncome += income;
@@ -713,7 +729,6 @@
             } catch (error) {
                 typingDiv.remove();
                 addChatMessage('assistant', `I'm currently unavailable. This is a free AI service that may have rate limits. Please try again in a moment.`);
-                console.error('Chat error:', error);
             }
             
             sendBtn.disabled = false;
@@ -734,7 +749,6 @@
             messageDiv.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // FILTERING & SORTING
         function getFilteredAndSortedHoldings() {
             let holdings = data.holdings.filter(h => {
                 if (activeFilter === 'all') return true;
@@ -745,7 +759,8 @@
                 const term = searchTerm.toLowerCase();
                 holdings = holdings.filter(h => 
                     h.name.toLowerCase().includes(term) || 
-                    (h.ticker && h.ticker.toLowerCase().includes(term))
+                    (h.ticker && h.ticker.toLowerCase().includes(term)) ||
+                    (h.address && h.address.toLowerCase().includes(term))
                 );
             }
 
@@ -756,8 +771,8 @@
             } else if (sortBy === 'yield-desc') {
                 holdings.sort((a,b) => {
                     const va = getHoldingValue(a), vb = getHoldingValue(b);
-                    const ya = va > 0 ? convertToDKK((a.dividend||0)*a.shares, a.dividendCurrency||'DKK') / va : 0;
-                    const yb = vb > 0 ? convertToDKK((b.dividend||0)*b.shares, b.dividendCurrency||'DKK') / vb : 0;
+                    const ya = va > 0 ? getHoldingIncome(a) / va : 0;
+                    const yb = vb > 0 ? getHoldingIncome(b) / vb : 0;
                     return yb - ya;
                 });
             } else {
@@ -767,7 +782,6 @@
             return holdings;
         }
 
-        // ALLOCATION CHART
         function renderAllocationChart(filtered) {
             const ctx = document.getElementById('allocationChart')?.getContext('2d');
             if (!ctx) return;
@@ -821,7 +835,6 @@
             }
         }
 
-        // RENDER
         function render() {
             const filtered = getFilteredAndSortedHoldings();
 
@@ -829,15 +842,14 @@
 
             filtered.forEach(h => {
                 const value = getHoldingValue(h);
-                const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
-                const income = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
+                const cost = h.type === 'property' ? value : convertToDKK(h.cost * h.shares, h.costCurrency);
+                const income = getHoldingIncome(h);
                 totalValue += value;
                 totalCost += cost;
                 annualIncome += income;
             });
 
             const displayValue = convertFromDKK(totalValue, displayCurrency);
-            const displayCost = convertFromDKK(totalCost, displayCurrency);
             const displayIncome = convertFromDKK(annualIncome, displayCurrency);
             const change = totalValue - totalCost;
             const displayChange = convertFromDKK(change, displayCurrency);
@@ -870,36 +882,57 @@
 
                     const value = getHoldingValue(h);
                     const displayHoldingValue = convertFromDKK(value, displayCurrency);
-                    const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
-                    const displayHoldingCost = convertFromDKK(cost, displayCurrency);
-                    const chg = value - cost;
-                    const displayHoldingChange = convertFromDKK(chg, displayCurrency);
-                    const chgPct = cost ? chg / cost * 100 : 0;
-                    const inc = convertToDKK((h.dividend||0) * h.shares, h.dividendCurrency || 'DKK');
-                    const displayHoldingIncome = convertFromDKK(inc, displayCurrency);
-                    const yld = value ? inc / value * 100 : 0;
+                    const income = getHoldingIncome(h);
+                    const displayHoldingIncome = convertFromDKK(income, displayCurrency);
+                    const yld = value ? (income / value * 100) : 0;
 
+                    let badge = '';
+                    let meta = '';
                     let status = '';
-                    if (h.type === 'fund') {
-                        status = '<span class="status manual-price">💼 Fund - manual price</span>';
-                    } else if (h.fetchError) {
-                        status = '<span class="status failed">⚠️ Fetch failed - using ' + (h.manualPrice ? 'manual' : 'cost basis') + '</span>';
-                    } else if (h.currentPrice) {
-                        status = '<span class="status live">✓ Price updated</span>';
+
+                    if (h.type === 'property') {
+                        badge = ' <span class="property-badge">PROPERTY</span>';
+                        meta = `<div class="meta">${h.address || 'No address'}</div>`;
+                        const costs = h.propertyCosts || {};
+                        const totalCost = (costs.tax||0) + (costs.power||0) + (costs.water||0) + (costs.gas||0) + (costs.internet||0) + (costs.other||0);
+                        meta += `<div class="meta">Annual costs: ${formatCurrency(convertFromDKK(convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK'), displayCurrency), displayCurrency)}</div>`;
+                    } else {
+                        const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
+                        const displayHoldingCost = convertFromDKK(cost, displayCurrency);
+                        const chg = value - cost;
+                        const displayHoldingChange = convertFromDKK(chg, displayCurrency);
+                        const chgPct = cost ? chg / cost * 100 : 0;
+
+                        if (h.type === 'fund') {
+                            badge = ' <span class="fund-badge">FUND</span>';
+                            status = '<span class="status manual-price">💼 Fund - manual price</span>';
+                        } else if (h.type === 'rsu') {
+                            badge = ' <span class="fund-badge">RSU</span>';
+                        }
+
+                        if (h.type !== 'fund') {
+                            if (h.fetchError) {
+                                status = '<span class="status failed">⚠️ Fetch failed - using ' + (h.manualPrice ? 'manual' : 'cost basis') + '</span>';
+                            } else if (h.currentPrice) {
+                                status = '<span class="status live">✓ Price updated</span>';
+                            }
+                        }
+
+                        meta = `<div class="meta">${h.shares} shares @ ${h.cost.toFixed(2)} ${h.costCurrency} = ${formatCurrency(displayHoldingCost, displayCurrency)} cost</div>`;
+                        meta += `<div class="meta ${chg>0?'positive':chg<0?'negative':''}">`;
+                        meta += `${(chg>=0?'+':'') + formatCurrency(displayHoldingChange, displayCurrency)} (${chgPct.toFixed(1)}%)`;
+                        meta += `</div>`;
                     }
 
-                    const badge = h.type === 'fund' ? ' <span class="fund-badge">FUND</span>' : h.type === 'rsu' ? ' <span class="fund-badge">RSU</span>' : '';
+                    const incomeLabel = income >= 0 ? 'Income' : 'Costs';
 
                     div.innerHTML = `
                         <div class="holding-header">
                             <span class="ticker">${h.name}${badge}</span>
                             <span class="value">${formatCurrency(displayHoldingValue, displayCurrency)}</span>
                         </div>
-                        <div class="meta">${h.shares} shares @ ${h.cost.toFixed(2)} ${h.costCurrency} = ${formatCurrency(displayHoldingCost, displayCurrency)} cost</div>
-                        <div class="meta">Income: ${formatCurrency(displayHoldingIncome, displayCurrency)}/yr (${yld.toFixed(1)}% yield)</div>
-                        <div class="meta ${chg>0?'positive':chg<0?'negative':''}">
-                            ${(chg>=0?'+':'') + formatCurrency(displayHoldingChange, displayCurrency)} (${chgPct.toFixed(1)}%)
-                        </div>
+                        ${meta}
+                        <div class="meta">${incomeLabel}: ${formatCurrency(Math.abs(displayHoldingIncome), displayCurrency)}/yr (${yld.toFixed(1)}% yield)</div>
                         ${status}
                     `;
                     container.appendChild(div);
@@ -916,13 +949,13 @@
             updateNextUpdateDisplay();
         }
 
-        // MODAL FUNCTIONS
         function showModal() { document.getElementById('modal').classList.add('show'); }
         function hideModal() { document.getElementById('modal').classList.remove('show'); }
 
         function clearForm() {
             document.getElementById('type').value = 'stock';
             document.getElementById('ticker').value = '';
+            document.getElementById('address').value = '';
             document.getElementById('name').value = '';
             document.getElementById('shares').value = '';
             document.getElementById('cost').value = '';
@@ -931,8 +964,36 @@
             document.getElementById('priceCurrency').value = 'DKK';
             document.getElementById('dividend').value = '0';
             document.getElementById('dividendCurrency').value = 'DKK';
+            document.getElementById('propertyValue').value = '';
+            document.getElementById('propertyCurrency').value = 'DKK';
+            document.getElementById('costTax').value = '0';
+            document.getElementById('costPower').value = '0';
+            document.getElementById('costWater').value = '0';
+            document.getElementById('costGas').value = '0';
+            document.getElementById('costInternet').value = '0';
+            document.getElementById('costOther').value = '0';
+            document.getElementById('propertyCostsCurrency').value = 'DKK';
             document.getElementById('deleteBtn').style.display = 'none';
-            togglePriceInfo();
+            toggleFields();
+        }
+
+        function toggleFields() {
+            const type = document.getElementById('type').value;
+            const isProperty = type === 'property';
+            const isFund = type === 'fund';
+
+            document.getElementById('tickerField').style.display = isProperty ? 'none' : 'block';
+            document.getElementById('addressField').style.display = isProperty ? 'block' : 'none';
+            document.getElementById('sharesField').style.display = isProperty ? 'none' : 'block';
+            document.getElementById('costField').style.display = isProperty ? 'none' : 'block';
+            document.getElementById('propertyValueField').style.display = isProperty ? 'block' : 'none';
+            document.getElementById('currentPriceField').style.display = isProperty ? 'none' : 'block';
+            document.getElementById('dividendField').style.display = isProperty ? 'none' : 'block';
+            document.getElementById('propertyCostsField').style.display = isProperty ? 'block' : 'none';
+
+            document.getElementById('priceInfoStock').style.display = isFund || isProperty ? 'none' : 'block';
+            document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
+            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds (>0)' : 'Optional (auto-fetch preferred)';
         }
 
         function editHolding(idx) {
@@ -941,62 +1002,105 @@
             document.getElementById('modalTitle').textContent = 'Edit Holding';
             document.getElementById('type').value = h.type;
             document.getElementById('ticker').value = h.ticker || '';
+            document.getElementById('address').value = h.address || '';
             document.getElementById('name').value = h.name;
-            document.getElementById('shares').value = h.shares;
-            document.getElementById('cost').value = h.cost;
+            document.getElementById('shares').value = h.shares || '';
+            document.getElementById('cost').value = h.cost || '';
             document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
             document.getElementById('currentPrice').value = h.manualPrice || '';
             document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
             document.getElementById('dividend').value = h.dividend || 0;
             document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
+            
+            if (h.type === 'property') {
+                document.getElementById('propertyValue').value = h.propertyValue || '';
+                document.getElementById('propertyCurrency').value = h.propertyCurrency || 'DKK';
+                const costs = h.propertyCosts || {};
+                document.getElementById('costTax').value = costs.tax || 0;
+                document.getElementById('costPower').value = costs.power || 0;
+                document.getElementById('costWater').value = costs.water || 0;
+                document.getElementById('costGas').value = costs.gas || 0;
+                document.getElementById('costInternet').value = costs.internet || 0;
+                document.getElementById('costOther').value = costs.other || 0;
+                document.getElementById('propertyCostsCurrency').value = h.propertyCostsCurrency || 'DKK';
+            }
+            
             document.getElementById('deleteBtn').style.display = 'block';
-            togglePriceInfo();
+            toggleFields();
             showModal();
         }
 
         function saveHolding() {
             const type = document.getElementById('type').value;
             const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const address = document.getElementById('address').value.trim();
             const name = document.getElementById('name').value.trim();
-            const shares = parseFloat(document.getElementById('shares').value) || 0;
-            const cost = parseFloat(document.getElementById('cost').value) || 0;
-            const costCur = document.getElementById('costCurrency').value;
-            const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
-            const priceCur = document.getElementById('priceCurrency').value;
-            const div = parseFloat(document.getElementById('dividend').value) || 0;
-            const divCur = document.getElementById('dividendCurrency').value;
 
-            if (!name || shares <= 0 || cost <= 0) {
-                alert('Name, Shares >0 and Cost >0 required.');
-                return;
-            }
-            if (type !== 'fund' && !ticker) {
-                alert('Ticker required for stocks/RSU.');
-                return;
-            }
-            if (type === 'fund' && manPrice <= 0) {
-                alert('Current price required for funds and must be > 0.');
+            if (!name) {
+                alert('Name is required.');
                 return;
             }
 
-            const holding = {
-                type,
-                ticker: type !== 'fund' ? ticker : undefined,
-                name,
-                shares,
-                cost,
-                costCurrency: costCur,
-                manualPrice: manPrice > 0 ? manPrice : undefined,
-                priceCurrency: priceCur,
-                dividend: div,
-                dividendCurrency: divCur,
-                currentPrice: undefined,
-                fetchError: false
-            };
+            let holding = { type, name };
+
+            if (type === 'property') {
+                const propertyValue = parseFloat(document.getElementById('propertyValue').value) || 0;
+                const propertyCurrency = document.getElementById('propertyCurrency').value;
+
+                if (propertyValue <= 0) {
+                    alert('Property value must be > 0.');
+                    return;
+                }
+
+                holding.address = address;
+                holding.propertyValue = propertyValue;
+                holding.propertyCurrency = propertyCurrency;
+                holding.propertyCosts = {
+                    tax: parseFloat(document.getElementById('costTax').value) || 0,
+                    power: parseFloat(document.getElementById('costPower').value) || 0,
+                    water: parseFloat(document.getElementById('costWater').value) || 0,
+                    gas: parseFloat(document.getElementById('costGas').value) || 0,
+                    internet: parseFloat(document.getElementById('costInternet').value) || 0,
+                    other: parseFloat(document.getElementById('costOther').value) || 0
+                };
+                holding.propertyCostsCurrency = document.getElementById('propertyCostsCurrency').value;
+            } else {
+                const shares = parseFloat(document.getElementById('shares').value) || 0;
+                const cost = parseFloat(document.getElementById('cost').value) || 0;
+                const costCur = document.getElementById('costCurrency').value;
+                const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+                const priceCur = document.getElementById('priceCurrency').value;
+                const div = parseFloat(document.getElementById('dividend').value) || 0;
+                const divCur = document.getElementById('dividendCurrency').value;
+
+                if (shares <= 0 || cost <= 0) {
+                    alert('Shares >0 and Cost >0 required.');
+                    return;
+                }
+                if (type !== 'fund' && !ticker) {
+                    alert('Ticker required for stocks/RSU.');
+                    return;
+                }
+                if (type === 'fund' && manPrice <= 0) {
+                    alert('Current price required for funds and must be > 0.');
+                    return;
+                }
+
+                holding.ticker = type !== 'fund' ? ticker : undefined;
+                holding.shares = shares;
+                holding.cost = cost;
+                holding.costCurrency = costCur;
+                holding.manualPrice = manPrice > 0 ? manPrice : undefined;
+                holding.priceCurrency = priceCur;
+                holding.dividend = div;
+                holding.dividendCurrency = divCur;
+                holding.currentPrice = undefined;
+                holding.fetchError = false;
+            }
 
             if (editing !== null) {
                 const old = data.holdings[editing];
-                if (old.currentPrice && type !== 'fund') {
+                if (old.currentPrice && type !== 'fund' && type !== 'property') {
                     holding.currentPrice = old.currentPrice;
                 }
                 data.holdings[editing] = holding;
@@ -1010,7 +1114,7 @@
             clearForm();
             render();
             
-            if (type !== 'fund' && ticker) {
+            if (type !== 'fund' && type !== 'property' && ticker) {
                 const h = data.holdings[data.holdings.length - 1];
                 fetchPriceForHolding(h).then(() => {
                     localStorage.setItem('portfolio', JSON.stringify(data));
@@ -1028,15 +1132,6 @@
             render();
         }
 
-        function togglePriceInfo() {
-            const isFund = document.getElementById('type').value === 'fund';
-            document.getElementById('tickerField').style.display = isFund ? 'none' : 'block';
-            document.getElementById('priceInfoStock').style.display = isFund ? 'none' : 'block';
-            document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
-            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds (>0)' : 'Optional (auto-fetch preferred)';
-        }
-
-        // EXPORT / IMPORT
         function exportData() {
             const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
@@ -1051,7 +1146,6 @@
             document.getElementById('importFile').click();
         }
 
-        // EVENT LISTENERS
         document.getElementById('addBtn').onclick = () => { editing = null; clearForm(); showModal(); };
         document.getElementById('closeBtn').onclick = hideModal;
         document.getElementById('saveBtn').onclick = saveHolding;
@@ -1059,7 +1153,7 @@
         document.getElementById('refreshBtn').onclick = refreshPrices;
         document.getElementById('chatBtn').onclick = toggleChat;
         document.getElementById('closeChatBtn').onclick = toggleChat;
-        document.getElementById('type').onchange = togglePriceInfo;
+        document.getElementById('type').onchange = toggleFields;
         
         document.getElementById('chatSendBtn').onclick = sendChatMessage;
         document.getElementById('chatInput').onkeypress = (e) => {
@@ -1106,7 +1200,6 @@
         document.getElementById('searchInput').oninput = e => { searchTerm = e.target.value; render(); };
         document.getElementById('sortSelect').onchange = e => { sortBy = e.target.value; render(); };
 
-        // INITIALIZATION
         migrateData();
         updateExchangeRates();
         checkAutoUpdate();
