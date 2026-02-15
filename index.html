@@ -101,9 +101,6 @@
         .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #2a3550; }
         .settings-section:last-child { border-bottom: none; }
         .settings-section h4 { margin-bottom: 10px; font-size: 14px; color: #e8edf4; }
-        .key-status { display: inline-block; margin-left: 10px; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .key-status.configured { background: #00ff8820; color: #00ff88; }
-        .key-status.missing { background: #ff446620; color: #ff4466; }
         .btn-secondary { background: #2a3550; margin-top: 10px; }
         .warning-text { color: #ffc044; font-size: 12px; margin-top: 5px; }
         
@@ -209,7 +206,7 @@
         </div>
         <div class="chat-messages" id="chatMessages">
             <div class="chat-message assistant">
-                👋 Hi! I'm your passive income investment advisor. I can help you with:
+                👋 Hi! I'm your FREE passive income investment advisor. I can help you with:
                 <ul>
                     <li>Portfolio diversification strategies</li>
                     <li>Dividend analysis & optimization</li>
@@ -231,20 +228,6 @@
             <div class="modal-header">
                 <h2>⚙️ Settings</h2>
                 <button class="close" id="closeSettingsBtn">×</button>
-            </div>
-
-            <div class="settings-section">
-                <h4>OpenRouter API Key 
-                    <span class="key-status" id="openrouterKeyStatus">Not configured</span>
-                </h4>
-                <div class="info-text">
-                    Required for AI chat advisor. Get your free key at <a href="https://openrouter.ai/keys" target="_blank" style="color:#4d94ff;">openrouter.ai/keys</a>
-                    <br>OpenRouter provides access to Claude and other models with browser support.
-                </div>
-                <input type="password" id="openrouterApiKeyInput" placeholder="sk-or-v1-...">
-                <div class="warning-text">⚠️ Your API key is stored locally in your browser only. Never shared.</div>
-                <button class="btn btn-secondary" id="saveOpenrouterKey">Save API Key</button>
-                <button class="btn btn-secondary" id="removeOpenrouterKey" style="background:#ff4466;display:none;">Remove API Key</button>
             </div>
 
             <div class="settings-section">
@@ -339,10 +322,6 @@
         // API KEYS
         const EODHD_API_KEY = '698fa6d0d113a5.96289084';
         const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
-        
-        function getOpenRouterApiKey() {
-            return localStorage.getItem('openrouter_api_key') || null;
-        }
 
         let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
         let editing = null;
@@ -385,7 +364,6 @@
 
         // SETTINGS MODAL
         function showSettingsModal() {
-            updateSettingsUI();
             document.getElementById('settingsModal').classList.add('show');
         }
 
@@ -393,57 +371,10 @@
             document.getElementById('settingsModal').classList.remove('show');
         }
 
-        function updateSettingsUI() {
-            const apiKey = getOpenRouterApiKey();
-            const statusEl = document.getElementById('openrouterKeyStatus');
-            const removeBtn = document.getElementById('removeOpenrouterKey');
-            const inputEl = document.getElementById('openrouterApiKeyInput');
-            
-            if (apiKey) {
-                statusEl.textContent = '✓ Configured';
-                statusEl.className = 'key-status configured';
-                removeBtn.style.display = 'block';
-                inputEl.placeholder = '••••••••••••••••';
-            } else {
-                statusEl.textContent = '✗ Not configured';
-                statusEl.className = 'key-status missing';
-                removeBtn.style.display = 'none';
-                inputEl.placeholder = 'sk-or-v1-...';
-            }
-        }
-
         // SETTINGS EVENT LISTENERS
         setTimeout(() => {
             document.getElementById('settingsBtn').onclick = showSettingsModal;
             document.getElementById('closeSettingsBtn').onclick = hideSettingsModal;
-
-            document.getElementById('saveOpenrouterKey').onclick = () => {
-                const keyInput = document.getElementById('openrouterApiKeyInput');
-                const key = keyInput.value.trim();
-                
-                if (!key) {
-                    alert('Please enter an API key');
-                    return;
-                }
-                
-                if (!key.startsWith('sk-or-')) {
-                    alert('Invalid OpenRouter API key format. Should start with "sk-or-"');
-                    return;
-                }
-                
-                localStorage.setItem('openrouter_api_key', key);
-                keyInput.value = '';
-                updateSettingsUI();
-                alert('✅ API key saved successfully!');
-            };
-
-            document.getElementById('removeOpenrouterKey').onclick = () => {
-                if (confirm('Remove your OpenRouter API key? Chat advisor will stop working.')) {
-                    localStorage.removeItem('openrouter_api_key');
-                    updateSettingsUI();
-                    alert('✅ API key removed');
-                }
-            };
 
             document.getElementById('clearAllData').onclick = () => {
                 if (confirm('⚠️ Delete ALL portfolio data? This cannot be undone!\n\nMake sure you have exported your data first.')) {
@@ -551,7 +482,6 @@
             const symbol = h.ticker.toUpperCase();
             let fetched = false;
 
-            // FIXED: Use /api/real-time/ for global exchanges (.CO, .MC, .DE, etc.)
             if (EODHD_API_KEY) {
                 try {
                     const url = `https://eodhd.com/api/real-time/${symbol}?api_token=${EODHD_API_KEY}&fmt=json`;
@@ -565,7 +495,6 @@
                         if (price > 0) {
                             h.currentPrice = price;
                             
-                            // Use API currency if available, otherwise infer from exchange
                             if (json.currency) {
                                 h.priceCurrency = json.currency;
                             } else if (symbol.endsWith('.CO')) {
@@ -592,7 +521,6 @@
                 }
             }
 
-            // Fallback to Twelve Data
             if (!fetched && TWELVEDATA_API_KEY) {
                 try {
                     let tdSymbol = symbol;
@@ -683,16 +611,8 @@
             return h.shares * convertToDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
         }
 
-        // CHAT FUNCTIONALITY
+        // FREE CHAT FUNCTIONALITY - NO API KEY REQUIRED
         function toggleChat() {
-            const apiKey = getOpenRouterApiKey();
-            if (!apiKey) {
-                if (confirm('Chat requires an OpenRouter API key. Would you like to add one now?')) {
-                    showSettingsModal();
-                }
-                return;
-            }
-            
             const chatContainer = document.getElementById('chatContainer');
             chatContainer.classList.toggle('show');
             if (chatContainer.classList.contains('show')) {
@@ -739,16 +659,11 @@
             };
         }
 
+        // FREE CHATBOT - Uses HuggingFace Inference API (completely free, no signup)
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             if (!message) return;
-            
-            const apiKey = getOpenRouterApiKey();
-            if (!apiKey) {
-                addChatMessage('assistant', '⚠️ Please configure your OpenRouter API key in Settings to use the chat feature.');
-                return;
-            }
             
             addChatMessage('user', message);
             input.value = '';
@@ -765,63 +680,42 @@
             try {
                 const portfolio = getPortfolioContext();
                 
-                const systemPrompt = `You are a passive income investment advisor focused on long-term wealth building through dividend-paying stocks, index funds, and income-generating assets.
+                const systemPrompt = `You are a passive income investment advisor. Portfolio: ${portfolio.totalValue.toLocaleString()} DKK value, ${portfolio.annualIncome.toLocaleString()} DKK annual income, ${portfolio.portfolioYield} yield. Focus on long-term dividend growth, diversification, and avoiding market timing. Keep responses brief and actionable.`;
 
-Portfolio Context:
-- Total Value: ${portfolio.totalValue.toLocaleString()} DKK
-- Annual Income: ${portfolio.annualIncome.toLocaleString()} DKK
-- Portfolio Yield: ${portfolio.portfolioYield}
-- Total Gain: ${portfolio.totalGain.toLocaleString()} DKK (${portfolio.gainPercent}%)
-- Holdings: ${portfolio.holdingsCount} positions
-
-Holdings:
-${portfolio.holdings.map(h => `- ${h.name} (${h.type}): ${h.value.toLocaleString()} DKK, ${h.annualIncome.toLocaleString()} DKK/yr (${h.yield} yield)`).join('\n')}
-
-Guidelines:
-- Focus on long-term passive income generation
-- Emphasize dividend growth and stability
-- Encourage diversification across sectors and geographies
-- Warn against chasing high yields without fundamentals
-- Promote the power of compounding dividends
-- Discourage frequent trading and market timing
-- Be supportive and educational, not prescriptive
-- Keep responses concise (2-3 short paragraphs max)
-- Use bullet points when listing recommendations`;
-
-                const messages = [
-                    { role: 'system', content: systemPrompt },
-                    ...chatHistory,
-                    { role: 'user', content: message }
-                ];
+                const conversationContext = chatHistory.slice(-6).map(m => `${m.role}: ${m.content}`).join('\n');
+                const fullPrompt = `${systemPrompt}\n\n${conversationContext}\nuser: ${message}\nassistant:`;
                 
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                // Use HuggingFace Inference API (FREE, no API key needed)
+                const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${apiKey}`,
                         'Content-Type': 'application/json',
-                        'HTTP-Referer': window.location.href,
-                        'X-Title': 'Passive Income Portfolio'
                     },
                     body: JSON.stringify({
-                        model: 'anthropic/claude-3.5-sonnet',
-                        messages: messages,
-                        max_tokens: 1024
+                        inputs: fullPrompt,
+                        parameters: {
+                            max_new_tokens: 300,
+                            temperature: 0.7,
+                            return_full_text: false
+                        }
                     })
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || 'API request failed');
+                    throw new Error('Chat service temporarily unavailable');
                 }
                 
                 const result = await response.json();
-                const assistantMessage = result.choices[0].message.content;
+                let assistantMessage = result[0]?.generated_text || "I'm having trouble responding right now. Please try again.";
+                
+                // Clean up the response
+                assistantMessage = assistantMessage.trim();
                 
                 chatHistory.push({ role: 'user', content: message });
                 chatHistory.push({ role: 'assistant', content: assistantMessage });
                 
-                if (chatHistory.length > 20) {
-                    chatHistory = chatHistory.slice(-20);
+                if (chatHistory.length > 12) {
+                    chatHistory = chatHistory.slice(-12);
                 }
                 
                 typingDiv.remove();
@@ -829,7 +723,7 @@ Guidelines:
                 
             } catch (error) {
                 typingDiv.remove();
-                addChatMessage('assistant', `❌ Error: ${error.message}. Please check your API key in Settings.`);
+                addChatMessage('assistant', `I'm currently unavailable. This is a free AI service that may have rate limits. Please try again in a moment.`);
                 console.error('Chat error:', error);
             }
             
@@ -953,7 +847,6 @@ Guidelines:
                 annualIncome += income;
             });
 
-            // Convert to display currency
             const displayValue = convertFromDKK(totalValue, displayCurrency);
             const displayCost = convertFromDKK(totalCost, displayCurrency);
             const displayIncome = convertFromDKK(annualIncome, displayCurrency);
