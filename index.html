@@ -1029,6 +1029,8 @@ Focus on long-term wealth building, diversification, and realistic expectations.
         function editHolding(idx) {
             editing = idx;
             const h = data.holdings[idx];
+            document.getElementById('rentalIncome').value = h.rentalIncome || 0;
+            document.getElementById('rentalIncomeCurrency').value = h.rentalIncomeCurrency || 'DKK';
             document.getElementById('modalTitle').textContent = 'Edit Holding';
             document.getElementById('type').value = h.type;
             document.getElementById('ticker').value = h.ticker || '';
