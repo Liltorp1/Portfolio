@@ -1076,8 +1076,8 @@ Focus on long-term wealth building, diversification, and realistic expectations.
             let holding = { type, name };
 
             if (type === 'property') {
-                const propertyValue = parseFloat(document.getElementById('propertyValue').value) || 0;
-                const propertyCurrency = document.getElementById('propertyCurrency').value;
+                holding.rentalIncome = parseFloat(document.getElementById('rentalIncome').value) || 0;
+                holding.rentalIncomeCurrency = document.getElementById('rentalIncomeCurrency').value;
 
                 if (propertyValue <= 0) {
                     alert('Property value must be > 0.');
