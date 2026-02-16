@@ -339,6 +339,18 @@
             </div>
 
             <div id="propertyCostsField" style="display:none;">
+                <div id="rentalIncomeField" style="display:none;">
+    <label>Annual Rental Income (Optional)</label>
+    <div class="currency-row">
+        <input type="number" step="0.01" id="rentalIncome" placeholder="0 if not rented">
+        <select id="rentalIncomeCurrency">
+            <option value="DKK">DKK</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+        </select>
+    </div>
+    <div class="info-text">💡 If property is rented out</div>
+</div>
                 <label>Annual Property Costs</label>
                 <div class="cost-grid">
                     <div class="cost-item">
