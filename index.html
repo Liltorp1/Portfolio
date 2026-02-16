@@ -623,15 +623,16 @@
         }
 
         function getHoldingIncome(h) {
-            if (h.type === 'property') {
-                const costs = (h.propertyCosts || {});
-                const totalCost = (costs.tax || 0) + (costs.power || 0) + (costs.water || 0) + 
-                                (costs.gas || 0) + (costs.internet || 0) + (costs.other || 0);
-                return -convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK');
-            }
-            return convertToDKK((h.dividend || 0) * h.shares, h.dividendCurrency || 'DKK');
-        }
-
+    if (h.type === 'property') {
+        const rental = convertToDKK(h.rentalIncome || 0, h.rentalIncomeCurrency || 'DKK');
+        const costs = (h.propertyCosts || {});
+        const totalCost = (costs.tax || 0) + (costs.power || 0) + (costs.water || 0) + 
+                        (costs.gas || 0) + (costs.internet || 0) + (costs.other || 0);
+        const totalCostDKK = convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK');
+        return rental - totalCostDKK;
+    }
+    return convertToDKK((h.dividend || 0) * h.shares, h.dividendCurrency || 'DKK');
+}
         function toggleChat() {
             const chatContainer = document.getElementById('chatContainer');
             chatContainer.classList.toggle('show');
