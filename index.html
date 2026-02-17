@@ -157,16 +157,14 @@
 <div style="margin:1rem 0;display:flex;gap:1rem;flex-wrap:wrap;">
     <input type="text" id="searchInput" placeholder="Search..." style="flex:1;min-width:150px;padding:0.5rem;">
     <select id="sortSelect" style="width:auto;min-width:150px;">
-        <option value="value-desc">Value (High→Low)</option>
-        <option value="value-asc">Value (Low→High)</option>
-        <option value="yield-desc">Yield (High→Low)</option>
+        <option value="value-desc">Value (High to Low)</option>
+        <option value="value-asc">Value (Low to High)</option>
+        <option value="yield-desc">Yield (High to Low)</option>
         <option value="name">Name (A-Z)</option>
     </select>
 </div>
 
 <div id="holdings"></div>
-
-<!-- CHAT -->
 
 <div class="chat-container" id="chatContainer">
     <div class="chat-header">
@@ -175,7 +173,7 @@
     </div>
     <div class="chat-messages" id="chatMessages">
         <div class="chat-message assistant">
-            👋 Hi! I'm your passive income advisor. Ask me about your portfolio, dividends, property valuations, or savings rates!
+            👋 Hi! I am your passive income advisor. Ask me about your portfolio, dividends, property valuations, or savings rates!
         </div>
     </div>
     <div class="chat-input-container">
@@ -184,30 +182,26 @@
     </div>
 </div>
 
-<!-- SETTINGS MODAL -->
-
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>⚙️ Settings</h2>
+            <h2>Settings</h2>
             <button class="close" id="closeSettingsBtn">×</button>
         </div>
         <div class="settings-section">
             <h4>Import / Export</h4>
             <div class="btn-group">
-                <button class="btn btn-secondary" id="exportBtn">📥 Export</button>
-                <button class="btn btn-secondary" id="importBtn">📤 Import</button>
+                <button class="btn btn-secondary" id="exportBtn">Export</button>
+                <button class="btn btn-secondary" id="importBtn">Import</button>
             </div>
         </div>
         <div class="settings-section">
             <h4>Data Management</h4>
             <button class="btn" id="clearAllData" style="background:#ff4466;">Clear All Data</button>
-            <div class="warning-text">⚠️ This deletes everything. Export first!</div>
+            <div class="warning-text">This deletes everything. Export first!</div>
         </div>
     </div>
 </div>
-
-<!-- ADD/EDIT MODAL -->
 
 <div class="modal" id="modal">
     <div class="modal-content">
@@ -229,7 +223,6 @@
     <label>Name</label>
     <input type="text" id="name" placeholder="e.g. Apple, Copenhagen Apt, Savings Account">
 
-    <!-- STOCK / FUND / RSU fields -->
     <div id="stockFields">
         <div id="tickerWrap">
             <label>Ticker Symbol</label>
@@ -243,8 +236,8 @@
             <select id="costCurrency"><option>DKK</option><option>EUR</option><option>USD</option></select>
         </div>
         <label>Current Price (required for funds, optional for stocks)</label>
-        <div id="priceHint" class="info-text">Stocks/RSU auto-update. Enter only as backup.</div>
-        <div id="fundHint" class="info-text" style="display:none;">Funds: Required — will not auto-update.</div>
+        <div id="priceHint" class="info-text">Stocks and RSU auto-update. Enter only as backup.</div>
+        <div id="fundHint" class="info-text" style="display:none;">Funds: Required, will not auto-update.</div>
         <div class="currency-row">
             <input type="number" step="0.01" id="currentPrice" placeholder="Current price">
             <select id="priceCurrency"><option>DKK</option><option>EUR</option><option>USD</option></select>
@@ -256,10 +249,9 @@
         </div>
     </div>
 
-    <!-- PROPERTY fields -->
     <div id="propertyFields" style="display:none;">
         <label>Address</label>
-        <textarea id="address" placeholder="e.g. Vestergade 12, 1456 København K"></textarea>
+        <textarea id="address" placeholder="e.g. Vestergade 12, 1456 Kobenhavn K"></textarea>
         <label>Property Value</label>
         <div class="currency-row">
             <input type="number" step="0.01" id="propertyValue" placeholder="Market value">
@@ -283,7 +275,6 @@
         <select id="costsCurrency"><option>DKK</option><option>EUR</option><option>USD</option></select>
     </div>
 
-    <!-- SAVINGS fields -->
     <div id="savingsFields" style="display:none;">
         <label>Amount Saved</label>
         <div class="currency-row">
@@ -292,7 +283,7 @@
         </div>
         <label>Annual Interest Rate % (0 if none)</label>
         <input type="number" step="0.01" id="interestRate" placeholder="e.g. 3.5">
-        <div class="info-text">💡 Enter 3.5 for 3.5% interest per year</div>
+        <div class="info-text">Enter 3.5 for 3.5 percent interest per year</div>
     </div>
 
     <button class="btn" id="saveBtn" style="margin-top:10px;">Save</button>
@@ -304,469 +295,574 @@
 
 <div class="bottom-nav">
     <button class="nav-btn" id="dashBtn">Dashboard</button>
-    <button class="nav-btn" id="refreshBtn">↻ Refresh</button>
-    <button class="nav-btn" id="chatBtn">💬 Chat</button>
-    <button class="nav-btn" id="settingsBtn">⚙️ Settings</button>
+    <button class="nav-btn" id="refreshBtn">Refresh</button>
+    <button class="nav-btn" id="chatBtn">Chat</button>
+    <button class="nav-btn" id="settingsBtn">Settings</button>
 </div>
 
 <input type="file" id="importFile" accept=".json">
 
 <script>
-    // ── CONFIG ──────────────────────────────────────────────────────────────
-    const API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
+var API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
+var portfolio = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
+var editingIdx = null;
+var isRefreshing = false;
+var activeFilter = 'all';
+var searchTerm = '';
+var sortBy = 'value-desc';
+var fetchErrors = [];
+var chatHistory = [];
+var allocationChart = null;
+var rates = { DKK: 1, EUR: 7.46, USD: 6.88 };
+var displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
+document.getElementById('displayCurrency').value = displayCurrency;
 
-    // ── STATE ────────────────────────────────────────────────────────────────
-    let portfolio = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
-    let editingIdx = null;
-    let isRefreshing = false;
-    let activeFilter = 'all';
-    let searchTerm = '';
-    let sortBy = 'value-desc';
-    let fetchErrors = [];
-    let chatHistory = [];
-    let allocationChart = null;
-    let rates = { DKK: 1, EUR: 7.46, USD: 6.88 };
-    let displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
-    document.getElementById('displayCurrency').value = displayCurrency;
+function toDKK(amount, currency) {
+    return (amount || 0) * (rates[currency] || 1);
+}
 
-    // ── HELPERS ──────────────────────────────────────────────────────────────
-    function toDKK(amount, currency) {
-        return (amount || 0) * (rates[currency] || 1);
-    }
-    function fromDKK(dkk, currency) {
-        return currency === 'DKK' ? dkk : dkk / (rates[currency] || 1);
-    }
-    function fmt(amount, currency) {
-        const syms = { DKK: 'DKK', EUR: '€', USD: '$' };
-        return Math.round(amount).toLocaleString('da-DK') + ' ' + (syms[currency] || currency);
-    }
-    function save() {
-        localStorage.setItem('portfolio', JSON.stringify(portfolio));
-    }
+function fromDKK(dkk, currency) {
+    if (currency === 'DKK') return dkk;
+    return dkk / (rates[currency] || 1);
+}
 
-    // ── HOLDING VALUE & INCOME ────────────────────────────────────────────────
-    function holdingValue(h) {
-        if (h.type === 'property') {
-            return toDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
-        }
-        if (h.type === 'savings') {
-            return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
-        }
-        // stock / fund / rsu
-        const price = h.type === 'fund'
-            ? (h.manualPrice || 0)
-            : (h.currentPrice || h.manualPrice || h.cost || 0);
-        return (h.shares || 0) * toDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
+function fmt(amount, currency) {
+    var syms = { DKK: 'DKK', EUR: 'EUR', USD: 'USD' };
+    return Math.round(amount).toLocaleString('da-DK') + ' ' + (syms[currency] || currency);
+}
+
+function save() {
+    localStorage.setItem('portfolio', JSON.stringify(portfolio));
+}
+
+function holdingValue(h) {
+    if (h.type === 'property') {
+        return toDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
     }
-
-    function holdingIncome(h) {
-        if (h.type === 'property') {
-            const rental = toDKK(h.rentalIncome || 0, h.rentalCurrency || 'DKK');
-            const c = h.costs || {};
-            const totalCosts = toDKK(
-                (c.tax||0)+(c.power||0)+(c.water||0)+(c.gas||0)+(c.internet||0)+(c.other||0),
-                h.costsCurrency || 'DKK'
-            );
-            return rental - totalCosts;
-        }
-        if (h.type === 'savings') {
-            const amount = toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
-            return amount * ((h.interestRate || 0) / 100);
-        }
-        // stock / fund / rsu
-        return toDKK((h.dividend || 0) * (h.shares || 0), h.dividendCurrency || h.costCurrency || 'DKK');
+    if (h.type === 'savings') {
+        return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
     }
+    var price = h.type === 'fund'
+        ? (h.manualPrice || 0)
+        : (h.currentPrice || h.manualPrice || h.cost || 0);
+    return (h.shares || 0) * toDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
+}
 
-    // ── DISPLAY CURRENCY ──────────────────────────────────────────────────────
-    document.getElementById('displayCurrency').onchange = e => {
-        displayCurrency = e.target.value;
-        localStorage.setItem('displayCurrency', displayCurrency);
-        render();
-    };
+function holdingIncome(h) {
+    if (h.type === 'property') {
+        var rental = toDKK(h.rentalIncome || 0, h.rentalCurrency || 'DKK');
+        var c = h.costs || {};
+        var tc = toDKK((c.tax||0)+(c.power||0)+(c.water||0)+(c.gas||0)+(c.internet||0)+(c.other||0), h.costsCurrency || 'DKK');
+        return rental - tc;
+    }
+    if (h.type === 'savings') {
+        return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK') * ((h.interestRate || 0) / 100);
+    }
+    return toDKK((h.dividend || 0) * (h.shares || 0), h.dividendCurrency || h.costCurrency || 'DKK');
+}
 
-    // ── THEME ─────────────────────────────────────────────────────────────────
-    let theme = localStorage.getItem('theme') || 'dark';
+document.getElementById('displayCurrency').onchange = function(e) {
+    displayCurrency = e.target.value;
+    localStorage.setItem('displayCurrency', displayCurrency);
+    render();
+};
+
+var theme = localStorage.getItem('theme') || 'dark';
+document.body.className = theme;
+var themeBtn = document.getElementById('theme-toggle');
+themeBtn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+themeBtn.onclick = function() {
+    theme = theme === 'dark' ? 'light' : 'dark';
     document.body.className = theme;
-    const themeBtn = document.getElementById('theme-toggle');
-    themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-    themeBtn.onclick = () => {
-        theme = theme === 'dark' ? 'light' : 'dark';
-        document.body.className = theme;
-        localStorage.setItem('theme', theme);
-        themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
-    };
+    localStorage.setItem('theme', theme);
+    themeBtn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+};
 
-    // ── EXCHANGE RATES ────────────────────────────────────────────────────────
-    async function updateRates() {
-        try {
-            const r = await fetch('https://api.frankfurter.app/latest?from=DKK&to=EUR,USD');
-            if (!r.ok) return;
-            const j = await r.json();
-            rates.EUR = 1 / j.rates.EUR;
-            rates.USD = 1 / j.rates.USD;
-        } catch(e) {}
-    }
+function updateRates() {
+    return fetch('https://api.frankfurter.app/latest?from=DKK&to=EUR,USD')
+        .then(function(r) { return r.json(); })
+        .then(function(j) { rates.EUR = 1/j.rates.EUR; rates.USD = 1/j.rates.USD; })
+        .catch(function() {});
+}
 
-    // ── AUTO UPDATE ───────────────────────────────────────────────────────────
-    function getNextUpdate() {
-        const now = new Date();
-        const cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
-        const h = cet.getHours();
-        const next = new Date(cet);
-        if (h < 8) next.setHours(8,0,0,0);
-        else if (h < 22) next.setHours(22,0,0,0);
-        else { next.setDate(next.getDate()+1); next.setHours(8,0,0,0); }
-        return new Date(next.getTime() - (now.getTimezoneOffset() + 60) * 60000);
-    }
+function getNextUpdate() {
+    var now = new Date();
+    var cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
+    var h = cet.getHours();
+    var next = new Date(cet);
+    if (h < 8) next.setHours(8,0,0,0);
+    else if (h < 22) next.setHours(22,0,0,0);
+    else { next.setDate(next.getDate()+1); next.setHours(8,0,0,0); }
+    return new Date(next.getTime() - (now.getTimezoneOffset() + 60) * 60000);
+}
 
-    function updateNextDisplay() {
-        const next = getNextUpdate();
-        const diff = next - Date.now();
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const t = next.toLocaleTimeString('da-DK', {hour:'2-digit',minute:'2-digit'});
-        document.getElementById('nextUpdate').textContent =
-            `Next auto-update ${h < 1 ? 'in '+m+' min' : 'in '+h+'h '+m+'m'} at ${t}`;
-    }
+function updateNextDisplay() {
+    var next = getNextUpdate();
+    var diff = next - Date.now();
+    var h = Math.floor(diff / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var t = next.toLocaleTimeString('da-DK', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('nextUpdate').textContent = 'Next auto-update ' + (h < 1 ? 'in '+m+' min' : 'in '+h+'h '+m+'m') + ' at ' + t;
+}
 
-    function checkAutoUpdate() {
-        const now = new Date();
-        const cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
-        const hour = cet.getHours();
-        const min = cet.getMinutes();
-        if ((hour === 8 || hour === 22) && min < 5) {
-            const key = cet.toISOString().split('T')[0] + '-' + hour;
-            if (portfolio.lastScheduledUpdate !== key) {
-                portfolio.lastScheduledUpdate = key;
-                save();
-                refreshPrices();
-            }
+function checkAutoUpdate() {
+    var now = new Date();
+    var cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
+    var hour = cet.getHours();
+    var min = cet.getMinutes();
+    if ((hour === 8 || hour === 22) && min < 5) {
+        var key = cet.toISOString().split('T')[0] + '-' + hour;
+        if (portfolio.lastScheduledUpdate !== key) {
+            portfolio.lastScheduledUpdate = key;
+            save();
+            refreshPrices();
         }
     }
+}
 
-    // ── PRICE FETCH ───────────────────────────────────────────────────────────
-    async function fetchPrice(h) {
-        if (!h.ticker || h.type === 'fund' || h.type === 'property' || h.type === 'savings') return;
-        const sym = h.ticker.toUpperCase();
-        if (sym.includes('.')) { h.fetchError = true; return; }
-        try {
-            const r = await fetch(`https://api.twelvedata.com/quote?symbol=${sym}&apikey=${API_KEY}`);
-            const j = await r.json();
+function fetchPrice(h) {
+    if (!h.ticker || h.type === 'fund' || h.type === 'property' || h.type === 'savings') {
+        return Promise.resolve();
+    }
+    var sym = h.ticker.toUpperCase();
+    if (sym.indexOf('.') !== -1) { h.fetchError = true; return Promise.resolve(); }
+    return fetch('https://api.twelvedata.com/quote?symbol=' + sym + '&apikey=' + API_KEY)
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
             if (j.close || j.previous_close) {
                 h.currentPrice = parseFloat(j.close || j.previous_close);
                 h.priceCurrency = j.currency || 'USD';
                 h.fetchError = false;
-                return;
+            } else {
+                h.fetchError = true;
+                fetchErrors.push(h.name + ': fetch failed');
             }
-        } catch(e) {}
-        h.fetchError = true;
-        fetchErrors.push(`${h.name} (${sym}): fetch failed`);
-    }
+        })
+        .catch(function() { h.fetchError = true; fetchErrors.push(h.name + ': fetch failed'); });
+}
 
-    async function refreshPrices() {
-        if (isRefreshing) return;
-        isRefreshing = true;
-        fetchErrors = [];
-        document.getElementById('loadingIndicator').classList.add('show');
-        document.getElementById('refreshBtn').textContent = 'Updating...';
-        document.getElementById('refreshBtn').disabled = true;
-        await updateRates();
-        await Promise.all(portfolio.holdings.map(fetchPrice));
+function refreshPrices() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    fetchErrors = [];
+    document.getElementById('loadingIndicator').classList.add('show');
+    document.getElementById('refreshBtn').textContent = 'Updating...';
+    document.getElementById('refreshBtn').disabled = true;
+    updateRates().then(function() {
+        return Promise.all(portfolio.holdings.map(fetchPrice));
+    }).then(function() {
         portfolio.lastUpdate = new Date().toISOString();
         save();
-        const ec = document.getElementById('errorContainer');
-        ec.innerHTML = fetchErrors.length
-            ? '<div class="error-list"><strong>⚠️ Some prices failed:</strong>' + fetchErrors.map(e=>`<div>• ${e}</div>`).join('') + '</div>'
-            : '';
+        var ec = document.getElementById('errorContainer');
+        ec.innerHTML = fetchErrors.length ? '<div class="error-list"><strong>Some prices failed:</strong>' + fetchErrors.map(function(e){ return '<div>' + e + '</div>'; }).join('') + '</div>' : '';
         render();
         document.getElementById('loadingIndicator').classList.remove('show');
-        document.getElementById('refreshBtn').textContent = '↻ Refresh';
+        document.getElementById('refreshBtn').textContent = 'Refresh';
         document.getElementById('refreshBtn').disabled = false;
         isRefreshing = false;
-    }
-
-    // ── TOGGLE FIELDS ─────────────────────────────────────────────────────────
-    function toggleFields() {
-        const type = document.getElementById('type').value;
-        document.getElementById('stockFields').style.display   = (type === 'stock' || type === 'fund' || type === 'rsu') ? 'block' : 'none';
-        document.getElementById('propertyFields').style.display = type === 'property' ? 'block' : 'none';
-        document.getElementById('savingsFields').style.display  = type === 'savings'  ? 'block' : 'none';
-        document.getElementById('tickerWrap').style.display     = type === 'fund'     ? 'none'  : 'block';
-        document.getElementById('priceHint').style.display      = type === 'fund'     ? 'none'  : 'block';
-        document.getElementById('fundHint').style.display       = type === 'fund'     ? 'block' : 'none';
-    }
-
-    // ── FORM CLEAR ────────────────────────────────────────────────────────────
-    function clearForm() {
-        ['ticker','name','shares','cost','currentPrice','dividend','address',
-         'propertyValue','rentalIncome','costTax','costPower','costWater',
-         'costGas','costInternet','costOther','savingsAmount','interestRate'
-        ].forEach(id => { document.getElementById(id).value = ''; });
-        document.getElementById('type').value = 'stock';
-        document.getElementById('costCurrency').value = 'DKK';
-        document.getElementById('priceCurrency').value = 'DKK';
-        document.getElementById('dividendCurrency').value = 'DKK';
-        document.getElementById('propertyCurrency').value = 'DKK';
-        document.getElementById('rentalCurrency').value = 'DKK';
-        document.getElementById('costsCurrency').value = 'DKK';
-        document.getElementById('savingsCurrency').value = 'DKK';
-        document.getElementById('deleteBtn').style.display = 'none';
-        toggleFields();
-    }
-
-    // ── EDIT HOLDING ──────────────────────────────────────────────────────────
-    function editHolding(idx) {
-        editingIdx = idx;
-        const h = portfolio.holdings[idx];
-        document.getElementById('modalTitle').textContent = 'Edit Holding';
-        document.getElementById('type').value = h.type;
-        document.getElementById('name').value = h.name || '';
-        toggleFields();
-
-        if (h.type === 'savings') {
-            document.getElementById('savingsAmount').value = h.savingsAmount || '';
-            document.getElementById('savingsCurrency').value = h.savingsCurrency || 'DKK';
-            document.getElementById('interestRate').value = h.interestRate || '';
-        } else if (h.type === 'property') {
-            document.getElementById('address').value = h.address || '';
-            document.getElementById('propertyValue').value = h.propertyValue || '';
-            document.getElementById('propertyCurrency').value = h.propertyCurrency || 'DKK';
-            document.getElementById('rentalIncome').value = h.rentalIncome || '';
-            document.getElementById('rentalCurrency').value = h.rentalCurrency || 'DKK';
-            const c = h.costs || {};
-            document.getElementById('costTax').value = c.tax || '';
-            document.getElementById('costPower').value = c.power || '';
-            document.getElementById('costWater').value = c.water || '';
-            document.getElementById('costGas').value = c.gas || '';
-            document.getElementById('costInternet').value = c.internet || '';
-            document.getElementById('costOther').value = c.other || '';
-            document.getElementById('costsCurrency').value = h.costsCurrency || 'DKK';
-        } else {
-            document.getElementById('ticker').value = h.ticker || '';
-            document.getElementById('shares').value = h.shares || '';
-            document.getElementById('cost').value = h.cost || '';
-            document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
-            document.getElementById('currentPrice').value = h.manualPrice || '';
-            document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
-            document.getElementById('dividend').value = h.dividend || '';
-            document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
-        }
-
-        document.getElementById('deleteBtn').style.display = 'block';
-        document.getElementById('modal').classList.add('show');
-    }
-
-    // ── SAVE HOLDING ──────────────────────────────────────────────────────────
-    function saveHolding() {
-        const type = document.getElementById('type').value;
-        const name = document.getElementById('name').value.trim();
-        if (!name) { alert('Name is required.'); return; }
-
-        let h = { type, name };
-
-        if (type === 'savings') {
-            const amt = parseFloat(document.getElementById('savingsAmount').value) || 0;
-            if (amt <= 0) { alert('Savings amount must be greater than 0.'); return; }
-            h.savingsAmount = amt;
-            h.savingsCurrency = document.getElementById('savingsCurrency').value;
-            h.interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
-
-        } else if (type === 'property') {
-            const val = parseFloat(document.getElementById('propertyValue').value) || 0;
-            if (val <= 0) { alert('Property value must be greater than 0.'); return; }
-            h.address = document.getElementById('address').value.trim();
-            h.propertyValue = val;
-            h.propertyCurrency = document.getElementById('propertyCurrency').value;
-            h.rentalIncome = parseFloat(document.getElementById('rentalIncome').value) || 0;
-            h.rentalCurrency = document.getElementById('rentalCurrency').value;
-            h.costs = {
-                tax:      parseFloat(document.getElementById('costTax').value)      || 0,
-                power:    parseFloat(document.getElementById('costPower').value)    || 0,
-                water:    parseFloat(document.getElementById('costWater').value)    || 0,
-                gas:      parseFloat(document.getElementById('costGas').value)      || 0,
-                internet: parseFloat(document.getElementById('costInternet').value) || 0,
-                other:    parseFloat(document.getElementById('costOther').value)    || 0
-            };
-            h.costsCurrency = document.getElementById('costsCurrency').value;
-
-        } else {
-            // stock / fund / rsu
-            const shares = parseFloat(document.getElementById('shares').value) || 0;
-            const cost   = parseFloat(document.getElementById('cost').value)   || 0;
-            if (shares <= 0 || cost <= 0) { alert('Shares and cost must be greater than 0.'); return; }
-            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
-            if (type !== 'fund' && !ticker) { alert('Ticker is required for stocks and RSU.'); return; }
-            const manualPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
-            if (type === 'fund' && manualPrice <= 0) { alert('Current price is required for funds.'); return; }
-            h.ticker         = type !== 'fund' ? ticker : undefined;
-            h.shares         = shares;
-            h.cost           = cost;
-            h.costCurrency   = document.getElementById('costCurrency').value;
-            h.manualPrice    = manualPrice > 0 ? manualPrice : undefined;
-            h.priceCurrency  = document.getElementById('priceCurrency').value;
-            h.dividend       = parseFloat(document.getElementById('dividend').value) || 0;
-            h.dividendCurrency = document.getElementById('dividendCurrency').value;
-            // preserve live price if editing
-            if (editingIdx !== null && portfolio.holdings[editingIdx].currentPrice) {
-                h.currentPrice = portfolio.holdings[editingIdx].currentPrice;
-            }
-        }
-
-        if (editingIdx !== null) {
-            portfolio.holdings[editingIdx] = h;
-            editingIdx = null;
-        } else {
-            portfolio.holdings.push(h);
-        }
-
-        save();
-        document.getElementById('modal').classList.remove('show');
-        clearForm();
-        render();
-
-        // auto-fetch price for new stocks/rsu
-        if ((type === 'stock' || type === 'rsu') && h.ticker) {
-            const idx = portfolio.holdings.length - 1;
-            fetchPrice(portfolio.holdings[idx]).then(() => { save(); render(); });
-        }
-    }
-
-    // ── DELETE ────────────────────────────────────────────────────────────────
-    function deleteHolding() {
-        if (!confirm('Delete this holding?')) return;
-        portfolio.holdings.splice(editingIdx, 1);
-        editingIdx = null;
-        save();
-        document.getElementById('modal').classList.remove('show');
-        clearForm();
-        render();
-    }
-
-    // ── EXPORT / IMPORT ───────────────────────────────────────────────────────
-    function exportData() {
-        const blob = new Blob([JSON.stringify(portfolio, null, 2)], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    document.getElementById('importFile').onchange = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-            try {
-                const imp = JSON.parse(ev.target.result);
-                if (!Array.isArray(imp.holdings)) { alert('Invalid file.'); return; }
-                if (confirm(`Import ${imp.holdings.length} holdings? This replaces current data.`)) {
-                    portfolio = imp;
-                    save();
-                    render();
-                    alert('✅ Imported!');
-                }
-            } catch(err) { alert('Error: ' + err.message); }
-        };
-        reader.readAsText(file);
-        e.target.value = '';
-    };
-
-    // ── CHAT ──────────────────────────────────────────────────────────────────
-    function toggleChat() {
-        const c = document.getElementById('chatContainer');
-        c.classList.toggle('show');
-        if (c.classList.contains('show')) document.getElementById('chatInput').focus();
-    }
-
-    function addMsg(role, text) {
-        const msgs = document.getElementById('chatMessages');
-        const d = document.createElement('div');
-        d.className = 'chat-message ' + role;
-        d.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-        msgs.appendChild(d);
-        d.scrollIntoView({behavior:'smooth'});
-    }
-
-    async function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const msg = input.value.trim();
-        if (!msg) return;
-        addMsg('user', msg);
-        input.value = '';
-        const btn = document.getElementById('chatSendBtn');
-        btn.disabled = true;
-
-        const typing = document.createElement('div');
-        typing.className = 'typing-indicator';
-        typing.innerHTML = '<span></span><span></span><span></span>';
-        document.getElementById('chatMessages').appendChild(typing);
-        typing.scrollIntoView({behavior:'smooth'});
-
-        try {
-            let totalVal = 0, totalInc = 0;
-            portfolio.holdings.forEach(h => { totalVal += holdingValue(h); totalInc += holdingIncome(h); });
-            const yld = totalVal > 0 ? (totalInc/totalVal*100).toFixed(2) : 0;
-
-            const systemMsg = 'You are a helpful passive income investment advisor. The user has a portfolio worth ' + Math.round(totalVal).toLocaleString() + ' DKK with ' + Math.round(totalInc).toLocaleString() + ' DKK annual income (' + yld + '% yield). Holdings: ' + portfolio.holdings.map(h=>h.name+' ('+h.type+')').join(', ') + '. Give concise, practical advice. For Danish property valuations, recommend Boligsiden.dk.';
-
-            const messages = [{ role: 'system', content: systemMsg }];
-            chatHistory.slice(-6).forEach(m => messages.push(m));
-            messages.push({ role: 'user', content: msg });
-
-            const res = await fetch('https://text.pollinations.ai/openai', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'openai',
-                    messages: messages,
-                    max_tokens: 400,
-                    temperature: 0.7
-                })
-            });
-
-            if (!res.ok) throw new Error('Status ' + res.status);
-            const data = await res.json();
-            const reply = data.choices?.[0]?.message?.content?.trim() || 'Sorry, could not get a response.';
-
-            chatHistory.push({role:'user',content:msg},{role:'assistant',content:reply});
-            if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
-            typing.remove();
-            addMsg('assistant', reply);
-        } catch(err) {
-            typing.remove();
-            addMsg('assistant', 'Chat unavailable right now. Please try again in a moment.');
-        }
-        btn.disabled = false;
-    }
-
-    document.getElementById('chatSendBtn').onclick = sendChatMessage;
-    document.getElementById('chatInput').onkeypress = e => { if (e.key==='Enter') sendChatMessage(); };
-    document.getElementById('settingsBtn').onclick = () => document.getElementById('settingsModal').classList.add('show');
-    document.getElementById('closeSettingsBtn').onclick = () => document.getElementById('settingsModal').classList.remove('show');
-    document.getElementById('exportBtn').onclick = exportData;
-    document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
-    document.getElementById('clearAllData').onclick = () => {
-        if (confirm('Delete ALL data? This cannot be undone!')) { localStorage.clear(); location.reload(); }
-    };
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.onclick = () => {
-            document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
-            tab.classList.add('active');
-            activeFilter = tab.dataset.filter;
-            render();
-        };
     });
-    document.getElementById('searchInput').oninput = e => { searchTerm=e.target.value; render(); };
-    document.getElementById('sortSelect').onchange = e => { sortBy=e.target.value; render(); };
+}
 
-    // ── INIT ──────────────────────────────────────────────────────────────────
-    updateRates();
-    checkAutoUpdate();
+function toggleFields() {
+    var type = document.getElementById('type').value;
+    document.getElementById('stockFields').style.display = (type==='stock'||type==='fund'||type==='rsu') ? 'block' : 'none';
+    document.getElementById('propertyFields').style.display = type==='property' ? 'block' : 'none';
+    document.getElementById('savingsFields').style.display = type==='savings' ? 'block' : 'none';
+    document.getElementById('tickerWrap').style.display = type==='fund' ? 'none' : 'block';
+    document.getElementById('priceHint').style.display = type==='fund' ? 'none' : 'block';
+    document.getElementById('fundHint').style.display = type==='fund' ? 'block' : 'none';
+}
+
+function clearForm() {
+    ['ticker','name','shares','cost','currentPrice','dividend','address','propertyValue','rentalIncome','costTax','costPower','costWater','costGas','costInternet','costOther','savingsAmount','interestRate'].forEach(function(id) {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('type').value = 'stock';
+    document.getElementById('costCurrency').value = 'DKK';
+    document.getElementById('priceCurrency').value = 'DKK';
+    document.getElementById('dividendCurrency').value = 'DKK';
+    document.getElementById('propertyCurrency').value = 'DKK';
+    document.getElementById('rentalCurrency').value = 'DKK';
+    document.getElementById('costsCurrency').value = 'DKK';
+    document.getElementById('savingsCurrency').value = 'DKK';
+    document.getElementById('deleteBtn').style.display = 'none';
+    toggleFields();
+}
+
+function editHolding(idx) {
+    editingIdx = idx;
+    var h = portfolio.holdings[idx];
+    document.getElementById('modalTitle').textContent = 'Edit Holding';
+    document.getElementById('type').value = h.type;
+    document.getElementById('name').value = h.name || '';
+    toggleFields();
+    if (h.type === 'savings') {
+        document.getElementById('savingsAmount').value = h.savingsAmount || '';
+        document.getElementById('savingsCurrency').value = h.savingsCurrency || 'DKK';
+        document.getElementById('interestRate').value = h.interestRate || '';
+    } else if (h.type === 'property') {
+        document.getElementById('address').value = h.address || '';
+        document.getElementById('propertyValue').value = h.propertyValue || '';
+        document.getElementById('propertyCurrency').value = h.propertyCurrency || 'DKK';
+        document.getElementById('rentalIncome').value = h.rentalIncome || '';
+        document.getElementById('rentalCurrency').value = h.rentalCurrency || 'DKK';
+        var c = h.costs || {};
+        document.getElementById('costTax').value = c.tax || '';
+        document.getElementById('costPower').value = c.power || '';
+        document.getElementById('costWater').value = c.water || '';
+        document.getElementById('costGas').value = c.gas || '';
+        document.getElementById('costInternet').value = c.internet || '';
+        document.getElementById('costOther').value = c.other || '';
+        document.getElementById('costsCurrency').value = h.costsCurrency || 'DKK';
+    } else {
+        document.getElementById('ticker').value = h.ticker || '';
+        document.getElementById('shares').value = h.shares || '';
+        document.getElementById('cost').value = h.cost || '';
+        document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
+        document.getElementById('currentPrice').value = h.manualPrice || '';
+        document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
+        document.getElementById('dividend').value = h.dividend || '';
+        document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
+    }
+    document.getElementById('deleteBtn').style.display = 'block';
+    document.getElementById('modal').classList.add('show');
+}
+
+function saveHolding() {
+    var type = document.getElementById('type').value;
+    var name = document.getElementById('name').value.trim();
+    if (!name) { alert('Name is required.'); return; }
+    var h = { type: type, name: name };
+    if (type === 'savings') {
+        var amt = parseFloat(document.getElementById('savingsAmount').value) || 0;
+        if (amt <= 0) { alert('Savings amount must be greater than 0.'); return; }
+        h.savingsAmount = amt;
+        h.savingsCurrency = document.getElementById('savingsCurrency').value;
+        h.interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+    } else if (type === 'property') {
+        var val = parseFloat(document.getElementById('propertyValue').value) || 0;
+        if (val <= 0) { alert('Property value must be greater than 0.'); return; }
+        h.address = document.getElementById('address').value.trim();
+        h.propertyValue = val;
+        h.propertyCurrency = document.getElementById('propertyCurrency').value;
+        h.rentalIncome = parseFloat(document.getElementById('rentalIncome').value) || 0;
+        h.rentalCurrency = document.getElementById('rentalCurrency').value;
+        h.costs = {
+            tax: parseFloat(document.getElementById('costTax').value) || 0,
+            power: parseFloat(document.getElementById('costPower').value) || 0,
+            water: parseFloat(document.getElementById('costWater').value) || 0,
+            gas: parseFloat(document.getElementById('costGas').value) || 0,
+            internet: parseFloat(document.getElementById('costInternet').value) || 0,
+            other: parseFloat(document.getElementById('costOther').value) || 0
+        };
+        h.costsCurrency = document.getElementById('costsCurrency').value;
+    } else {
+        var shares = parseFloat(document.getElementById('shares').value) || 0;
+        var cost = parseFloat(document.getElementById('cost').value) || 0;
+        if (shares <= 0 || cost <= 0) { alert('Shares and cost must be greater than 0.'); return; }
+        var ticker = document.getElementById('ticker').value.trim().toUpperCase();
+        if (type !== 'fund' && !ticker) { alert('Ticker is required for stocks and RSU.'); return; }
+        var manualPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+        if (type === 'fund' && manualPrice <= 0) { alert('Current price is required for funds.'); return; }
+        h.ticker = type !== 'fund' ? ticker : undefined;
+        h.shares = shares;
+        h.cost = cost;
+        h.costCurrency = document.getElementById('costCurrency').value;
+        h.manualPrice = manualPrice > 0 ? manualPrice : undefined;
+        h.priceCurrency = document.getElementById('priceCurrency').value;
+        h.dividend = parseFloat(document.getElementById('dividend').value) || 0;
+        h.dividendCurrency = document.getElementById('dividendCurrency').value;
+        if (editingIdx !== null && portfolio.holdings[editingIdx] && portfolio.holdings[editingIdx].currentPrice) {
+            h.currentPrice = portfolio.holdings[editingIdx].currentPrice;
+        }
+    }
+    if (editingIdx !== null) {
+        portfolio.holdings[editingIdx] = h;
+        editingIdx = null;
+    } else {
+        portfolio.holdings.push(h);
+    }
+    save();
+    document.getElementById('modal').classList.remove('show');
+    clearForm();
     render();
-    setInterval(checkAutoUpdate, 60000);
-    setInterval(updateNextDisplay, 60000);
+    if ((type === 'stock' || type === 'rsu') && h.ticker) {
+        var newIdx = portfolio.holdings.length - 1;
+        fetchPrice(portfolio.holdings[newIdx]).then(function() { save(); render(); });
+    }
+}
+
+function deleteHolding() {
+    if (!confirm('Delete this holding?')) return;
+    portfolio.holdings.splice(editingIdx, 1);
+    editingIdx = null;
+    save();
+    document.getElementById('modal').classList.remove('show');
+    clearForm();
+    render();
+}
+
+function exportData() {
+    var blob = new Blob([JSON.stringify(portfolio, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById('importFile').onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        try {
+            var imp = JSON.parse(ev.target.result);
+            if (!Array.isArray(imp.holdings)) { alert('Invalid file.'); return; }
+            if (confirm('Import ' + imp.holdings.length + ' holdings? This replaces current data.')) {
+                portfolio = imp;
+                save();
+                render();
+                alert('Imported successfully!');
+            }
+        } catch(err) { alert('Error: ' + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+};
+
+function toggleChat() {
+    var c = document.getElementById('chatContainer');
+    c.classList.toggle('show');
+    if (c.classList.contains('show')) document.getElementById('chatInput').focus();
+}
+
+function addMsg(role, text) {
+    var msgs = document.getElementById('chatMessages');
+    var d = document.createElement('div');
+    d.className = 'chat-message ' + role;
+    d.textContent = text;
+    msgs.appendChild(d);
+    d.scrollIntoView({behavior:'smooth'});
+}
+
+function sendChatMessage() {
+    var input = document.getElementById('chatInput');
+    var msg = input.value.trim();
+    if (!msg) return;
+    addMsg('user', msg);
+    input.value = '';
+    var btn = document.getElementById('chatSendBtn');
+    btn.disabled = true;
+
+    var typing = document.createElement('div');
+    typing.className = 'typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    document.getElementById('chatMessages').appendChild(typing);
+    typing.scrollIntoView({behavior:'smooth'});
+
+    var totalVal = 0;
+    var totalInc = 0;
+    portfolio.holdings.forEach(function(h) { totalVal += holdingValue(h); totalInc += holdingIncome(h); });
+    var yld = totalVal > 0 ? (totalInc/totalVal*100).toFixed(2) : '0.00';
+    var names = portfolio.holdings.map(function(h){ return h.name + ' (' + h.type + ')'; }).join(', ') || 'none yet';
+
+    var systemMsg = 'You are a helpful passive income investment advisor. ' +
+        'Portfolio value: ' + Math.round(totalVal).toLocaleString() + ' DKK. ' +
+        'Annual income: ' + Math.round(totalInc).toLocaleString() + ' DKK (' + yld + '% yield). ' +
+        'Holdings: ' + names + '. ' +
+        'Give concise practical advice. For Danish property valuations recommend Boligsiden.dk.';
+
+    var messages = [{ role: 'system', content: systemMsg }];
+    for (var i = Math.max(0, chatHistory.length-6); i < chatHistory.length; i++) {
+        messages.push(chatHistory[i]);
+    }
+    messages.push({ role: 'user', content: msg });
+
+    fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'openai', messages: messages, max_tokens: 400, temperature: 0.7 })
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(function(data) {
+        var reply = 'Sorry, I could not get a response. Please try again.';
+        if (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+            reply = data.choices[0].message.content.trim();
+        }
+        chatHistory.push({role:'user',content:msg});
+        chatHistory.push({role:'assistant',content:reply});
+        if (chatHistory.length > 12) chatHistory.splice(0, chatHistory.length - 12);
+        typing.remove();
+        addMsg('assistant', reply);
+        btn.disabled = false;
+    })
+    .catch(function() {
+        typing.remove();
+        addMsg('assistant', 'Chat is unavailable right now. Please try again in a moment.');
+        btn.disabled = false;
+    });
+}
+
+function getFiltered() {
+    var list = portfolio.holdings.filter(function(h) {
+        if (activeFilter === 'all') return true;
+        return activeFilter.split(',').indexOf(h.type) !== -1;
+    });
+    if (searchTerm) {
+        var t = searchTerm.toLowerCase();
+        list = list.filter(function(h) {
+            return h.name.toLowerCase().indexOf(t) !== -1 ||
+                (h.ticker && h.ticker.toLowerCase().indexOf(t) !== -1) ||
+                (h.address && h.address.toLowerCase().indexOf(t) !== -1);
+        });
+    }
+    list.sort(function(a,b) {
+        if (sortBy === 'value-asc') return holdingValue(a)-holdingValue(b);
+        if (sortBy === 'yield-desc') {
+            var va=holdingValue(a), vb=holdingValue(b);
+            return (vb>0?holdingIncome(b)/vb:0)-(va>0?holdingIncome(a)/va:0);
+        }
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
+        return holdingValue(b)-holdingValue(a);
+    });
+    return list;
+}
+
+function renderChart(filtered) {
+    var ctx = document.getElementById('allocationChart').getContext('2d');
+    var types = {};
+    var total = 0;
+    filtered.forEach(function(h) { var v=holdingValue(h); types[h.type]=(types[h.type]||0)+v; total+=v; });
+    var keys = Object.keys(types);
+    var labels = keys.map(function(t) { var pct=total>0?(types[t]/total*100).toFixed(1):0; return t.charAt(0).toUpperCase()+t.slice(1)+' ('+pct+'%)'; });
+    var vals = keys.map(function(t) { return types[t]; });
+    if (allocationChart) {
+        allocationChart.data.labels = labels;
+        allocationChart.data.datasets[0].data = vals;
+        allocationChart.update('none');
+    } else {
+        allocationChart = new Chart(ctx, {
+            type: 'pie',
+            data: { labels: labels, datasets:[{data:vals, backgroundColor:['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40']}] },
+            options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:function(c){ return fmt(fromDKK(c.raw,displayCurrency),displayCurrency); }}} } }
+        });
+    }
+}
+
+function render() {
+    var filtered = getFiltered();
+    var totVal=0, totCost=0, totInc=0;
+    filtered.forEach(function(h) {
+        totVal += holdingValue(h);
+        totCost += (h.type==='property'||h.type==='savings') ? holdingValue(h) : toDKK((h.cost||0)*(h.shares||0), h.costCurrency||'DKK');
+        totInc += holdingIncome(h);
+    });
+
+    var dVal  = fromDKK(totVal, displayCurrency);
+    var dInc  = fromDKK(totInc, displayCurrency);
+    var dChg  = fromDKK(totVal-totCost, displayCurrency);
+    var chgPct = totCost ? ((totVal-totCost)/totCost*100) : 0;
+    var yldPct = totVal  ? (totInc/totVal*100) : 0;
+
+    document.getElementById('totalValue').textContent = fmt(dVal, displayCurrency);
+    document.getElementById('annualIncome').textContent = fmt(dInc, displayCurrency);
+    document.getElementById('yieldPercent').textContent = yldPct.toFixed(2)+'%';
+
+    var chgEl = document.getElementById('totalChange');
+    chgEl.textContent = (dChg>=0?'+':'') + fmt(dChg,displayCurrency) + ' (' + chgPct.toFixed(1) + '%)';
+    chgEl.className = 'change ' + (dChg>=0?'positive':'negative');
+
+    var lbl = activeFilter==='all' ? 'All' : activeFilter.split(',').map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join('+');
+    document.getElementById('filterLabel').textContent = '('+lbl+')';
+    document.getElementById('incomeFilterLabel').textContent = '('+lbl+')';
+
+    var container = document.getElementById('holdings');
+    container.innerHTML = '';
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings found</div>';
+    } else {
+        filtered.forEach(function(h) {
+            var val=holdingValue(h), inc=holdingIncome(h);
+            var yld=val?(inc/val*100):0;
+            var dv=fromDKK(val,displayCurrency), di=fromDKK(Math.abs(inc),displayCurrency);
+            var badge='', lines='', status='';
+
+            if (h.type==='savings') {
+                badge='<span class="badge badge-savings">SAVINGS</span>';
+                lines='<div class="meta">Interest: '+(h.interestRate||0).toFixed(2)+'% per year</div>';
+            } else if (h.type==='property') {
+                badge='<span class="badge badge-property">PROPERTY</span>';
+                lines=h.address?'<div class="meta">'+h.address+'</div>':'';
+                var c=h.costs||{}, tc=(c.tax||0)+(c.power||0)+(c.water||0)+(c.gas||0)+(c.internet||0)+(c.other||0);
+                if (tc>0) lines+='<div class="meta">Annual costs: '+fmt(fromDKK(toDKK(tc,h.costsCurrency||'DKK'),displayCurrency),displayCurrency)+'</div>';
+            } else {
+                var cv=toDKK((h.cost||0)*(h.shares||0),h.costCurrency||'DKK');
+                var chg=val-cv, dCv=fromDKK(cv,displayCurrency), dChg2=fromDKK(chg,displayCurrency);
+                var chgP=cv?(chg/cv*100):0;
+                if (h.type==='fund') { badge='<span class="badge badge-fund">FUND</span>'; status='<span class="status manual-badge">Manual price</span>'; }
+                else if (h.type==='rsu') { badge='<span class="badge badge-rsu">RSU</span>'; }
+                if (h.type!=='fund') {
+                    if (h.fetchError) status='<span class="status failed">Fetch failed</span>';
+                    else if (h.currentPrice) status='<span class="status live">Live price</span>';
+                }
+                lines='<div class="meta">'+(h.shares||0)+' shares @ '+(h.cost||0).toFixed(2)+' '+(h.costCurrency||'DKK')+' = '+fmt(dCv,displayCurrency)+' cost</div>';
+                lines+='<div class="meta '+(chg>=0?'positive':'negative')+'">'+(chg>=0?'+':'')+fmt(dChg2,displayCurrency)+' ('+chgP.toFixed(1)+'%)</div>';
+            }
+
+            var incLabel=inc>=0?'Income':'Cost';
+            var d=document.createElement('div');
+            d.className='holding';
+            var hIdx=portfolio.holdings.indexOf(h);
+            d.onclick=(function(i){ return function(){ editHolding(i); }; })(hIdx);
+            d.innerHTML='<div class="holding-header"><span class="holding-name">'+h.name+badge+'</span><span>'+fmt(dv,displayCurrency)+'</span></div>'+lines+'<div class="meta">'+incLabel+': '+fmt(di,displayCurrency)+'/yr ('+yld.toFixed(1)+'%)</div>'+status;
+            container.appendChild(d);
+        });
+    }
+
+    renderChart(filtered);
+    if (portfolio.lastUpdate) {
+        document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date(portfolio.lastUpdate).toLocaleString('da-DK');
+    }
+    updateNextDisplay();
+}
+
+document.getElementById('addBtn').onclick = function() { editingIdx=null; clearForm(); document.getElementById('modalTitle').textContent='Add Holding'; document.getElementById('modal').classList.add('show'); };
+document.getElementById('closeBtn').onclick = function() { document.getElementById('modal').classList.remove('show'); };
+document.getElementById('saveBtn').onclick = saveHolding;
+document.getElementById('deleteBtn').onclick = deleteHolding;
+document.getElementById('refreshBtn').onclick = refreshPrices;
+document.getElementById('chatBtn').onclick = toggleChat;
+document.getElementById('closeChatBtn').onclick = toggleChat;
+document.getElementById('type').onchange = toggleFields;
+document.getElementById('chatSendBtn').onclick = sendChatMessage;
+document.getElementById('chatInput').onkeypress = function(e) { if (e.key==='Enter') sendChatMessage(); };
+document.getElementById('settingsBtn').onclick = function() { document.getElementById('settingsModal').classList.add('show'); };
+document.getElementById('closeSettingsBtn').onclick = function() { document.getElementById('settingsModal').classList.remove('show'); };
+document.getElementById('exportBtn').onclick = exportData;
+document.getElementById('importBtn').onclick = function() { document.getElementById('importFile').click(); };
+document.getElementById('clearAllData').onclick = function() { if (confirm('Delete ALL data? Cannot be undone!')) { localStorage.clear(); location.reload(); } };
+document.querySelectorAll('.filter-tab').forEach(function(tab) {
+    tab.onclick = function() {
+        document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+        activeFilter = tab.dataset.filter;
+        render();
+    };
+});
+document.getElementById('searchInput').oninput = function(e) { searchTerm=e.target.value; render(); };
+document.getElementById('sortSelect').onchange = function(e) { sortBy=e.target.value; render(); };
+
+updateRates();
+checkAutoUpdate();
+render();
+setInterval(checkAutoUpdate, 60000);
+setInterval(updateNextDisplay, 60000);
 </script>
 
 </body>
