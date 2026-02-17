@@ -48,9 +48,6 @@
         .badge-property { background: #4d94ff; color: white; }
         .badge-savings { background: #00ff88; color: #0a0e1a; }
         .info-text { font-size: 12px; color: #9ba5b8; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
-        .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
-        .filter-tab { padding: 8px 16px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 13px; cursor: pointer; white-space: nowrap; }
-        .filter-tab.active { background: #4d94ff; color: white; border-color: #4d94ff; }
         .next-update { font-size: 11px; color: #9ba5b8; margin-top: 5px; }
         .loading-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #1a2237; padding: 20px 40px; border-radius: 12px; border: 2px solid #4d94ff; z-index: 2000; display: none; }
         .loading-indicator.show { display: block; }
@@ -88,19 +85,53 @@
         .btn-group .btn { flex: 1; }
         #theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; padding: 0.5rem 1rem; background: #4d94ff; color: white; border: none; border-radius: 6px; cursor: pointer; }
         input[type="file"] { display: none; }
-        body.light { background: #f8f9fa; color: #212529; }
-        body.light .card, body.light .holding, body.light .modal-content, body.light .chat-container, body.light .loading-indicator { background: #ffffff; border-color: #dee2e6; }
-        body.light input, body.light select, body.light textarea { background: #f8f9fa; color: #212529; border-color: #ced4da; }
-        body.light .filter-tab { background: #ffffff; border-color: #dee2e6; color: #495057; }
-        body.light .filter-tab.active { background: #007bff; color: white; border-color: #007bff; }
-        body.light .bottom-nav { background: #ffffff; border-top: 1px solid #dee2e6; }
-        body.light .nav-btn { background: #ffffff; color: #495057; }
-        body.light .currency-selector { background: #ffffff; border-color: #dee2e6; }
-        body.light .chat-message.assistant { background: #f0f0f0; color: #212529; }
-        body.light .chat-input { background: #ffffff; color: #212529; }
-        body.light .settings-section { border-color: #dee2e6; }
-        body.light #theme-toggle { background: #007bff; }
-    </style>
+
+```
+    /* Multi-select filter styles */
+    .filter-section { margin-bottom: 20px; }
+    .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .filter-title { font-size: 12px; color: #9ba5b8; text-transform: uppercase; font-weight: 600; }
+    .clear-filters-btn { padding: 6px 12px; background: transparent; color: #9ba5b8; border: 1px solid #2a3550; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .clear-filters-btn:hover { background: #2a3550; color: #e8edf4; border-color: #4d94ff; }
+    .clear-filters-btn:active { transform: scale(0.95); }
+    .filter-presets { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .preset-btn { padding: 8px 14px; background: linear-gradient(135deg, #4d94ff 0%, #3d7fe6 100%); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .preset-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(77, 148, 255, 0.3); }
+    .preset-btn:active { transform: translateY(0); }
+    .filter-checkboxes { display: flex; gap: 12px; flex-wrap: wrap; }
+    .filter-checkbox { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .filter-checkbox:hover { background: #202840; }
+    .filter-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4d94ff; }
+    .filter-checkbox span { font-size: 13px; color: #e8edf4; font-weight: 500; }
+    .filter-checkbox input[type="checkbox"]:checked + span { color: #4d94ff; font-weight: 600; }
+    .filter-checkbox:has(input:checked) { background: #1a2850; border-color: #4d94ff; }
+    
+    .holdings-container { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Light mode */
+    body.light { background: #f8f9fa; color: #212529; }
+    body.light .card, body.light .holding, body.light .modal-content, body.light .chat-container, body.light .loading-indicator { background: #ffffff; border-color: #dee2e6; }
+    body.light input, body.light select, body.light textarea { background: #f8f9fa; color: #212529; border-color: #ced4da; }
+    body.light .bottom-nav { background: #ffffff; border-top: 1px solid #dee2e6; }
+    body.light .nav-btn { background: #ffffff; color: #495057; }
+    body.light .currency-selector { background: #ffffff; border-color: #dee2e6; }
+    body.light .chat-message.assistant { background: #f0f0f0; color: #212529; }
+    body.light .chat-input { background: #ffffff; color: #212529; }
+    body.light .settings-section { border-color: #dee2e6; }
+    body.light #theme-toggle { background: #007bff; }
+    body.light .clear-filters-btn { color: #6c757d; border-color: #dee2e6; }
+    body.light .clear-filters-btn:hover { background: #f8f9fa; color: #212529; border-color: #007bff; }
+    body.light .preset-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+    body.light .preset-btn:hover { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); }
+    body.light .filter-checkbox { background: #ffffff; border-color: #dee2e6; }
+    body.light .filter-checkbox:hover { background: #f8f9fa; }
+    body.light .filter-checkbox span { color: #212529; }
+    body.light .filter-checkbox input[type="checkbox"]:checked + span { color: #007bff; }
+    body.light .filter-checkbox:has(input:checked) { background: #e7f3ff; border-color: #007bff; }
+</style>
+```
+
 </head>
 <body class="dark">
 
@@ -139,14 +170,45 @@
     <div class="chart-container"><canvas id="allocationChart"></canvas></div>
 </div>
 
-<div class="filter-tabs">
-    <div class="filter-tab active" data-filter="all">All</div>
-    <div class="filter-tab" data-filter="stock">Stocks</div>
-    <div class="filter-tab" data-filter="fund">Funds</div>
-    <div class="filter-tab" data-filter="rsu">RSU</div>
-    <div class="filter-tab" data-filter="property">Property</div>
-    <div class="filter-tab" data-filter="savings">Savings</div>
-    <div class="filter-tab" data-filter="stock,fund">Stocks+Funds</div>
+<div class="filter-section">
+    <div class="filter-header">
+        <span class="filter-title">FILTER BY TYPE</span>
+        <button class="clear-filters-btn" id="clearFiltersBtn" title="Remove all filters and show all holdings">
+            ✕ Clear All
+        </button>
+    </div>
+
+```
+<div class="filter-presets">
+    <button class="preset-btn" data-preset="liquid" title="Stocks + Savings">💧 Liquid Assets</button>
+    <button class="preset-btn" data-preset="longterm" title="Property + Funds">📈 Long-term</button>
+    <button class="preset-btn" data-preset="income" title="Stocks + Funds + Property">💰 Income Producers</button>
+</div>
+
+<div class="filter-checkboxes">
+    <label class="filter-checkbox">
+        <input type="checkbox" data-type="stock">
+        <span>Stocks</span>
+    </label>
+    <label class="filter-checkbox">
+        <input type="checkbox" data-type="fund">
+        <span>Funds</span>
+    </label>
+    <label class="filter-checkbox">
+        <input type="checkbox" data-type="rsu">
+        <span>RSU</span>
+    </label>
+    <label class="filter-checkbox">
+        <input type="checkbox" data-type="property">
+        <span>Property</span>
+    </label>
+    <label class="filter-checkbox">
+        <input type="checkbox" data-type="savings">
+        <span>Savings</span>
+    </label>
+</div>
+```
+
 </div>
 
 <div class="section-title">
@@ -164,7 +226,7 @@
     </select>
 </div>
 
-<div id="holdings"></div>
+<div id="holdings" class="holdings-container"></div>
 
 <div class="chat-container" id="chatContainer">
     <div class="chat-header">
@@ -307,7 +369,7 @@ var API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
 var portfolio = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
 var editingIdx = null;
 var isRefreshing = false;
-var activeFilter = 'all';
+var activeFilters = [];
 var searchTerm = '';
 var sortBy = 'value-desc';
 var fetchErrors = [];
@@ -316,6 +378,12 @@ var allocationChart = null;
 var rates = { DKK: 1, EUR: 7.46, USD: 6.88 };
 var displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
 document.getElementById('displayCurrency').value = displayCurrency;
+
+var filterPresets = {
+    liquid: ['stock', 'savings'],
+    longterm: ['property', 'fund'],
+    income: ['stock', 'fund', 'property']
+};
 
 function toDKK(amount, currency) {
     return (amount || 0) * (rates[currency] || 1);
@@ -370,12 +438,12 @@ document.getElementById('displayCurrency').onchange = function(e) {
 var theme = localStorage.getItem('theme') || 'dark';
 document.body.className = theme;
 var themeBtn = document.getElementById('theme-toggle');
-themeBtn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
 themeBtn.onclick = function() {
     theme = theme === 'dark' ? 'light' : 'dark';
     document.body.className = theme;
     localStorage.setItem('theme', theme);
-    themeBtn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
 };
 
 function updateRates() {
@@ -710,8 +778,8 @@ function sendChatMessage() {
 
 function getFiltered() {
     var list = portfolio.holdings.filter(function(h) {
-        if (activeFilter === 'all') return true;
-        return activeFilter.split(',').indexOf(h.type) !== -1;
+        if (activeFilters.length === 0) return true;
+        return activeFilters.indexOf(h.type) !== -1;
     });
     if (searchTerm) {
         var t = searchTerm.toLowerCase();
@@ -731,6 +799,47 @@ function getFiltered() {
         return holdingValue(b)-holdingValue(a);
     });
     return list;
+}
+
+function updateFilters() {
+    activeFilters = [];
+    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked').forEach(function(checkbox) {
+        activeFilters.push(checkbox.dataset.type);
+    });
+    updateClearButton();
+    render();
+}
+
+function syncCheckboxes() {
+    document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(checkbox) {
+        var type = checkbox.dataset.type;
+        checkbox.checked = activeFilters.indexOf(type) !== -1;
+    });
+}
+
+function applyPreset(presetName) {
+    var types = filterPresets[presetName];
+    if (!types) return;
+    activeFilters = types.slice();
+    syncCheckboxes();
+    updateClearButton();
+    render();
+}
+
+function clearFilters() {
+    activeFilters = [];
+    document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(checkbox) {
+        checkbox.checked = false;
+    });
+    updateClearButton();
+    render();
+}
+
+function updateClearButton() {
+    var clearBtn = document.getElementById('clearFiltersBtn');
+    if (clearBtn) {
+        clearBtn.style.display = activeFilters.length > 0 ? 'block' : 'none';
+    }
 }
 
 function renderChart(filtered) {
@@ -777,7 +886,9 @@ function render() {
     chgEl.textContent = (dChg>=0?'+':'') + fmt(dChg,displayCurrency) + ' (' + chgPct.toFixed(1) + '%)';
     chgEl.className = 'change ' + (dChg>=0?'positive':'negative');
 
-    var lbl = activeFilter==='all' ? 'All' : activeFilter.split(',').map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join('+');
+    var lbl = activeFilters.length === 0 
+        ? 'All' 
+        : activeFilters.map(function(t){ return t.charAt(0).toUpperCase() + t.slice(1); }).join(' + ');
     document.getElementById('filterLabel').textContent = '('+lbl+')';
     document.getElementById('incomeFilterLabel').textContent = '('+lbl+')';
 
@@ -847,19 +958,24 @@ document.getElementById('closeSettingsBtn').onclick = function() { document.getE
 document.getElementById('exportBtn').onclick = exportData;
 document.getElementById('importBtn').onclick = function() { document.getElementById('importFile').click(); };
 document.getElementById('clearAllData').onclick = function() { if (confirm('Delete ALL data? Cannot be undone!')) { localStorage.clear(); location.reload(); } };
-document.querySelectorAll('.filter-tab').forEach(function(tab) {
-    tab.onclick = function() {
-        document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
-        tab.classList.add('active');
-        activeFilter = tab.dataset.filter;
-        render();
-    };
-});
 document.getElementById('searchInput').oninput = function(e) { searchTerm=e.target.value; render(); };
 document.getElementById('sortSelect').onchange = function(e) { sortBy=e.target.value; render(); };
 
+document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(checkbox) {
+    checkbox.onchange = updateFilters;
+});
+
+document.querySelectorAll('.preset-btn').forEach(function(btn) {
+    btn.onclick = function() {
+        applyPreset(btn.dataset.preset);
+    };
+});
+
+document.getElementById('clearFiltersBtn').onclick = clearFilters;
+
 updateRates();
 checkAutoUpdate();
+updateClearButton();
 render();
 setInterval(checkAutoUpdate, 60000);
 setInterval(updateNextDisplay, 60000);
