@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -23,8 +24,8 @@
         .modal-content { background: #1a2237; border-radius: 16px; padding: 24px; max-width: 500px; margin: 40px auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close { font-size: 30px; color: #9ba5b8; cursor: pointer; background: none; border: none; }
-        input, select, textarea { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; }
-        textarea { min-height: 60px; resize: vertical; font-family: inherit; }
+        input, select, textarea { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; font-family: inherit; }
+        textarea { min-height: 60px; resize: vertical; }
         label { display: block; font-size: 14px; color: #9ba5b8; margin-bottom: 5px; }
         .holding { background: #1a2237; border: 1px solid #2a3550; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
         .holding:active { background: #202840; }
@@ -43,6 +44,7 @@
         .failed { color: #ff4466; }
         .fund-badge { background: #2a3550; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 8px; }
         .property-badge { background: #4d94ff; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 8px; }
+        .savings-badge { background: #00ff88; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 8px; color: #0a0e1a; }
         .info-text { font-size: 12px; color: #9ba5b8; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
         .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
         .filter-tab { padding: 8px 16px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; color: #9ba5b8; font-size: 13px; cursor: pointer; white-space: nowrap; }
@@ -57,152 +59,156 @@
         .cost-item { display: flex; flex-direction: column; }
         .cost-item label { font-size: 12px; margin-bottom: 5px; }
         .cost-item input { margin-bottom: 0; }
-        
-        .currency-selector { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            margin-bottom: 20px;
-            padding: 12px;
-            background: #1a2237;
-            border: 1px solid #2a3550;
-            border-radius: 10px;
-        }
-        .currency-selector label {
-            font-size: 12px;
-            color: #9ba5b8;
-            text-transform: uppercase;
-            margin: 0;
-        }
-        .currency-selector select {
-            width: auto;
-            padding: 8px 12px;
-            margin: 0;
-            font-size: 14px;
-        }
-        
-        .chat-container { position: fixed; bottom: 80px; right: 20px; width: 380px; max-width: calc(100vw - 40px); height: 500px; background: #1a2237; border: 1px solid #2a3550; border-radius: 16px; display: none; flex-direction: column; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        .chat-container.show { display: flex; }
-        .chat-header { padding: 16px; border-bottom: 1px solid #2a3550; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h3 { font-size: 16px; margin: 0; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .chat-message { padding: 12px; border-radius: 8px; max-width: 85%; word-wrap: break-word; }
-        .chat-message.user { background: #4d94ff; color: white; align-self: flex-end; margin-left: auto; }
-        .chat-message.assistant { background: #2a3550; color: #e8edf4; align-self: flex-start; }
-        .chat-message.assistant ul, .chat-message.assistant ol { margin: 8px 0; padding-left: 20px; }
-        .chat-message.assistant li { margin: 4px 0; }
-        .chat-input-container { padding: 12px; border-top: 1px solid #2a3550; display: flex; gap: 8px; }
-        .chat-input { flex: 1; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 10px; color: #e8edf4; font-size: 14px; margin: 0; }
-        .chat-send-btn { background: #4d94ff; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; }
-        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .typing-indicator { padding: 12px; background: #2a3550; border-radius: 8px; align-self: flex-start; max-width: 85px; }
-        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9ba5b8; margin: 0 2px; animation: typing 1.4s infinite; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
-        
-        .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #2a3550; }
-        .settings-section:last-child { border-bottom: none; }
-        .settings-section h4 { margin-bottom: 10px; font-size: 14px; color: #e8edf4; }
-        .btn-secondary { background: #2a3550; margin-top: 10px; }
-        .warning-text { color: #ffc044; font-size: 12px; margin-top: 5px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-group .btn-secondary { flex: 1; }
-        
-        body.light { background: #f8f9fa; color: #212529; }
-        body.light .card { background: #ffffff; border-color: #dee2e6; }
-        body.light input, body.light select, body.light textarea { background: #ffffff; color: #212529; border-color: #ced4da; }
-        body.light .holding { background: #ffffff; border-color: #dee2e6; }
-        body.light .filter-tab { background: #ffffff; border-color: #dee2e6; }
-        body.light .filter-tab.active { background: #007bff; color: white; }
-        body.light .bottom-nav { background: #ffffff; border-top: 1px solid #dee2e6; }
-        body.light .nav-btn { background: #ffffff; border-color: #dee2e6; color: #495057; }
-        body.light .modal-content { background: #ffffff; }
-        body.light .loading-indicator { background: #ffffff; border-color: #007bff; }
-        body.light .chat-container { background: #ffffff; border-color: #dee2e6; }
-        body.light .chat-header { border-color: #dee2e6; }
-        body.light .chat-message.assistant { background: #f8f9fa; color: #212529; }
-        body.light .chat-input { background: #ffffff; border-color: #ced4da; color: #212529; }
-        body.light .chat-input-container { border-color: #dee2e6; }
-        body.light .typing-indicator { background: #f8f9fa; }
-        body.light .settings-section { border-color: #dee2e6; }
-        body.light .currency-selector { background: #ffffff; border-color: #dee2e6; }
-        
-        #theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; padding: 0.5rem 1rem; background: #4d94ff; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        body.light #theme-toggle { background: #007bff; }
-        input[type="file"] { display: none; }
-    </style>
+
+```
+    .currency-selector { 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        margin-bottom: 20px;
+        padding: 12px;
+        background: #1a2237;
+        border: 1px solid #2a3550;
+        border-radius: 10px;
+    }
+    .currency-selector label {
+        font-size: 12px;
+        color: #9ba5b8;
+        text-transform: uppercase;
+        margin: 0;
+    }
+    .currency-selector select {
+        width: auto;
+        padding: 8px 12px;
+        margin: 0;
+        font-size: 14px;
+    }
+    
+    .chat-container { position: fixed; bottom: 80px; right: 20px; width: 380px; max-width: calc(100vw - 40px); height: 500px; background: #1a2237; border: 1px solid #2a3550; border-radius: 16px; display: none; flex-direction: column; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .chat-container.show { display: flex; }
+    .chat-header { padding: 16px; border-bottom: 1px solid #2a3550; display: flex; justify-content: space-between; align-items: center; }
+    .chat-header h3 { font-size: 16px; margin: 0; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .chat-message { padding: 12px; border-radius: 8px; max-width: 85%; word-wrap: break-word; }
+    .chat-message.user { background: #4d94ff; color: white; align-self: flex-end; margin-left: auto; }
+    .chat-message.assistant { background: #2a3550; color: #e8edf4; align-self: flex-start; }
+    .chat-message.assistant ul, .chat-message.assistant ol { margin: 8px 0; padding-left: 20px; }
+    .chat-message.assistant li { margin: 4px 0; }
+    .chat-input-container { padding: 12px; border-top: 1px solid #2a3550; display: flex; gap: 8px; }
+    .chat-input { flex: 1; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 10px; color: #e8edf4; font-size: 14px; margin: 0; }
+    .chat-send-btn { background: #4d94ff; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; }
+    .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .typing-indicator { padding: 12px; background: #2a3550; border-radius: 8px; align-self: flex-start; max-width: 85px; }
+    .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9ba5b8; margin: 0 2px; animation: typing 1.4s infinite; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+    
+    .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #2a3550; }
+    .settings-section:last-child { border-bottom: none; }
+    .settings-section h4 { margin-bottom: 10px; font-size: 14px; color: #e8edf4; }
+    .btn-secondary { background: #2a3550; margin-top: 10px; }
+    .warning-text { color: #ffc044; font-size: 12px; margin-top: 5px; }
+    .btn-group { display: flex; gap: 10px; }
+    .btn-group .btn-secondary { flex: 1; }
+    
+    body.light { background: #f8f9fa; color: #212529; }
+    body.light .card { background: #ffffff; border-color: #dee2e6; }
+    body.light input, body.light select, body.light textarea { background: #ffffff; color: #212529; border-color: #ced4da; }
+    body.light .holding { background: #ffffff; border-color: #dee2e6; }
+    body.light .filter-tab { background: #ffffff; border-color: #dee2e6; }
+    body.light .filter-tab.active { background: #007bff; color: white; }
+    body.light .bottom-nav { background: #ffffff; border-top: 1px solid #dee2e6; }
+    body.light .nav-btn { background: #ffffff; border-color: #dee2e6; color: #495057; }
+    body.light .modal-content { background: #ffffff; }
+    body.light .loading-indicator { background: #ffffff; border-color: #007bff; }
+    body.light .chat-container { background: #ffffff; border-color: #dee2e6; }
+    body.light .chat-header { border-color: #dee2e6; }
+    body.light .chat-message.assistant { background: #f8f9fa; color: #212529; }
+    body.light .chat-input { background: #ffffff; border-color: #ced4da; color: #212529; }
+    body.light .chat-input-container { border-color: #dee2e6; }
+    body.light .typing-indicator { background: #f8f9fa; }
+    body.light .settings-section { border-color: #dee2e6; }
+    body.light .currency-selector { background: #ffffff; border-color: #dee2e6; }
+    
+    #theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; padding: 0.5rem 1rem; background: #4d94ff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    body.light #theme-toggle { background: #007bff; }
+    input[type="file"] { display: none; }
+</style>
+```
+
 </head>
 <body class="dark">
 
-    <button id="theme-toggle">☀️ Light</button>
+```
+<button id="theme-toggle">☀️ Light</button>
 
-    <div class="loading-indicator" id="loadingIndicator">
-        <div>⏳ Updating prices...</div>
+<div class="loading-indicator" id="loadingIndicator">
+    <div>⏳ Updating prices...</div>
+</div>
+
+<h1>Passive Income</h1>
+<div class="meta" id="lastUpdate" style="margin-bottom:5px;">Never updated</div>
+<div class="next-update" id="nextUpdate">Next auto-update: calculating...</div>
+
+<div id="errorContainer"></div>
+
+<div class="currency-selector">
+    <label for="displayCurrency">Display Currency:</label>
+    <select id="displayCurrency">
+        <option value="DKK">DKK (Danish Krone)</option>
+        <option value="EUR">EUR (Euro)</option>
+        <option value="USD">USD (US Dollar)</option>
+    </select>
+</div>
+
+<div class="card">
+    <div class="label">Portfolio Value <span id="filterLabel" style="text-transform:none;">(All)</span></div>
+    <div class="value" id="totalValue">0 DKK</div>
+    <div class="change" id="totalChange">—</div>
+</div>
+
+<div class="card">
+    <div class="label">Annual Income <span id="incomeFilterLabel" style="text-transform:none;">(All)</span></div>
+    <div class="value" id="annualIncome">0 DKK</div>
+    <div class="change"><span id="yieldPercent">0.0%</span> yield</div>
+</div>
+
+<div class="card" id="allocation-card">
+    <h3 style="margin-bottom: 15px;">Portfolio Allocation</h3>
+    <div class="chart-container">
+        <canvas id="allocationChart"></canvas>
     </div>
+</div>
 
-    <h1>Passive Income</h1>
-    <div class="meta" id="lastUpdate" style="margin-bottom:5px;">Never updated</div>
-    <div class="next-update" id="nextUpdate">Next auto-update: calculating...</div>
+<div class="filter-tabs">
+    <div class="filter-tab active" data-filter="all">All</div>
+    <div class="filter-tab" data-filter="stock">Stocks</div>
+    <div class="filter-tab" data-filter="fund">Funds</div>
+    <div class="filter-tab" data-filter="rsu">RSU</div>
+    <div class="filter-tab" data-filter="property">Property</div>
+    <div class="filter-tab" data-filter="savings">Savings</div>
+    <div class="filter-tab" data-filter="stock,fund">Stocks + Funds</div>
+</div>
 
-    <div id="errorContainer"></div>
+<div class="section-title">
+    <span>HOLDINGS</span>
+    <button class="btn btn-small" id="addBtn">+ Add</button>
+</div>
 
-    <div class="currency-selector">
-        <label for="displayCurrency">Display Currency:</label>
-        <select id="displayCurrency">
-            <option value="DKK">DKK (Danish Krone)</option>
-            <option value="EUR">EUR (Euro)</option>
-            <option value="USD">USD (US Dollar)</option>
-        </select>
-    </div>
+<div style="margin: 1rem 0; display: flex; gap: 1rem; flex-wrap: wrap;">
+    <input type="text" id="searchInput" placeholder="Search by name/ticker..." style="padding: 0.5rem; flex: 1; min-width: 200px;">
+    <select id="sortSelect" style="width: auto; min-width: 150px;">
+        <option value="value-desc">Value (High → Low)</option>
+        <option value="value-asc">Value (Low → High)</option>
+        <option value="yield-desc">Yield (High → Low)</option>
+        <option value="name">Name (A-Z)</option>
+    </select>
+</div>
 
-    <div class="card">
-        <div class="label">Portfolio Value <span id="filterLabel" style="text-transform:none;">(All)</span></div>
-        <div class="value" id="totalValue">0 DKK</div>
-        <div class="change" id="totalChange">—</div>
-    </div>
+<div id="holdings"></div>
 
-    <div class="card">
-        <div class="label">Annual Income <span id="incomeFilterLabel" style="text-transform:none;">(All)</span></div>
-        <div class="value" id="annualIncome">0 DKK</div>
-        <div class="change"><span id="yieldPercent">0.0%</span> yield</div>
-    </div>
-
-    <div class="card" id="allocation-card">
-        <h3 style="margin-bottom: 15px;">Portfolio Allocation</h3>
-        <div class="chart-container">
-            <canvas id="allocationChart"></canvas>
-        </div>
-    </div>
-
-    <div class="filter-tabs">
-        <div class="filter-tab active" data-filter="all">All</div>
-        <div class="filter-tab" data-filter="stock">Stocks</div>
-        <div class="filter-tab" data-filter="fund">Funds</div>
-        <div class="filter-tab" data-filter="rsu">RSU</div>
-        <div class="filter-tab" data-filter="property">Property</div>
-        <div class="filter-tab" data-filter="stock,fund">Stocks + Funds</div>
-        <div class="filter-tab" data-filter="stock,rsu">Stocks + RSU</div>
-    </div>
-
-    <div class="section-title">
-        <span>HOLDINGS</span>
-        <button class="btn btn-small" id="addBtn">+ Add</button>
-    </div>
-
-    <div style="margin: 1rem 0; display: flex; gap: 1rem; flex-wrap: wrap;">
-        <input type="text" id="searchInput" placeholder="Search by name/ticker..." style="padding: 0.5rem; flex: 1; min-width: 200px;">
-        <select id="sortSelect" style="width: auto; min-width: 150px;">
-            <option value="value-desc">Value (High → Low)</option>
-            <option value="value-asc">Value (Low → High)</option>
-            <option value="yield-desc">Yield (High → Low)</option>
-            <option value="name">Name (A-Z)</option>
-        </select>
-    </div>
-
-    <div id="holdings"></div>
-
- <div class="chat-container" id="chatContainer">
+<div class="chat-container" id="chatContainer">
     <div class="chat-header">
         <h3>💰 Passive Income Advisor</h3>
         <button class="close" id="closeChatBtn">×</button>
@@ -221,1030 +227,1099 @@
         </div>
     </div>
     <div class="chat-input-container">
-
-            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your portfolio...">
-            <button class="chat-send-btn" id="chatSendBtn">Send</button>
-        </div>
+        <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your portfolio...">
+        <button class="chat-send-btn" id="chatSendBtn">Send</button>
     </div>
-
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⚙️ Settings</h2>
-                <button class="close" id="closeSettingsBtn">×</button>
-            </div>
-
-            <div class="settings-section">
-                <h4>Import / Export Data</h4>
-                <div class="info-text">
-                    Export your portfolio data to a JSON file for backup, or import previously exported data.
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-secondary" id="exportBtn">📥 Export Data</button>
-                    <button class="btn btn-secondary" id="importBtn">📤 Import Data</button>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <h4>Data Management</h4>
-                <button class="btn btn-secondary" id="clearAllData" style="background:#ff4466;">Clear All Portfolio Data</button>
-                <div class="warning-text">⚠️ This will delete all your holdings and settings. Export first!</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add Holding</h2>
-                <button class="close" id="closeBtn">×</button>
-            </div>
-
-            <label>Type</label>
-            <select id="type">
-                <option value="stock">Stock (auto-updates)</option>
-                <option value="fund">Fund (manual only)</option>
-                <option value="rsu">RSU (auto-updates)</option>
-                <option value="property">Property (real estate)</option>
-            </select>
-
-            <div id="tickerField">
-                <label>Ticker Symbol</label>
-                <input type="text" id="ticker" placeholder="e.g., ASTK.CO, FLYW, IBE.MC">
-            </div>
-
-            <div id="addressField" style="display:none;">
-                <label>Address</label>
-                <textarea id="address" placeholder="e.g., Vestergade 12, 1456 København K"></textarea>
-            </div>
-
-            <label>Name</label>
-            <input type="text" id="name" placeholder="e.g., Asetek A/S">
-
-            <div id="sharesField">
-                <label>Shares / Units</label>
-                <input type="number" step="0.01" id="shares">
-            </div>
-
-            <div id="costField">
-                <label>Average Cost per Share/Unit</label>
-                <div class="currency-row">
-                    <input type="number" step="0.01" id="cost">
-                    <select id="costCurrency">
-                        <option value="DKK">DKK</option>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="propertyValueField" style="display:none;">
-                <label>Property Value</label>
-                <div class="currency-row">
-                    <input type="number" step="0.01" id="propertyValue">
-                    <select id="propertyCurrency">
-                        <option value="DKK">DKK</option>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="currentPriceField">
-                <label>Current Price <span id="priceLabel">(required for funds, optional backup for others)</span></label>
-                <div class="info-text" id="priceInfoStock" style="display:block;">
-                    Stocks/RSU: Auto-updates via API. Enter manually only as backup.
-                </div>
-                <div class="info-text" id="priceInfoFund" style="display:none;">
-                    Funds: Required field - will NOT auto-update. Must be > 0.
-                </div>
-                <div class="currency-row">
-                    <input type="number" step="0.01" id="currentPrice" placeholder="Required for funds, optional for stocks/RSU">
-                    <select id="priceCurrency">
-                        <option value="DKK">DKK</option>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="dividendField">
-                <label>Annual Dividend/Distribution per Share</label>
-                <div class="currency-row">
-                    <input type="number" step="0.01" id="dividend" placeholder="0 if none">
-                    <select id="dividendCurrency">
-                        <option value="DKK">DKK</option>
-                        <option value="EUR">EUR</option>
-                        <option value="USD">USD</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="propertyCostsField" style="display:none;">
-                <div id="rentalIncomeField" style="display:none;">
-    <label>Annual Rental Income (Optional)</label>
-    <div class="currency-row">
-        <input type="number" step="0.01" id="rentalIncome" placeholder="0 if not rented">
-        <select id="rentalIncomeCurrency">
-            <option value="DKK">DKK</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-        </select>
-    </div>
-    <div class="info-text">💡 If property is rented out</div>
 </div>
-                <label>Annual Property Costs</label>
-                <div class="cost-grid">
-                    <div class="cost-item">
-                        <label>Property Tax</label>
-                        <input type="number" step="0.01" id="costTax" placeholder="0">
-                    </div>
-                    <div class="cost-item">
-                        <label>Power</label>
-                        <input type="number" step="0.01" id="costPower" placeholder="0">
-                    </div>
-                    <div class="cost-item">
-                        <label>Water</label>
-                        <input type="number" step="0.01" id="costWater" placeholder="0">
-                    </div>
-                    <div class="cost-item">
-                        <label>Gas</label>
-                        <input type="number" step="0.01" id="costGas" placeholder="0">
-                    </div>
-                    <div class="cost-item">
-                        <label>Internet</label>
-                        <input type="number" step="0.01" id="costInternet" placeholder="0">
-                    </div>
-                    <div class="cost-item">
-                        <label>Other</label>
-                        <input type="number" step="0.01" id="costOther" placeholder="0">
-                    </div>
-                </div>
-                <select id="propertyCostsCurrency" style="margin-top: 10px;">
+
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚙️ Settings</h2>
+            <button class="close" id="closeSettingsBtn">×</button>
+        </div>
+
+        <div class="settings-section">
+            <h4>Import / Export Data</h4>
+            <div class="info-text">
+                Export your portfolio data to a JSON file for backup, or import previously exported data.
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="exportBtn">📥 Export Data</button>
+                <button class="btn btn-secondary" id="importBtn">📤 Import Data</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Data Management</h4>
+            <button class="btn btn-secondary" id="clearAllData" style="background:#ff4466;">Clear All Portfolio Data</button>
+            <div class="warning-text">⚠️ This will delete all your holdings and settings. Export first!</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add Holding</h2>
+            <button class="close" id="closeBtn">×</button>
+        </div>
+
+        <label>Type</label>
+        <select id="type">
+            <option value="stock">Stock (auto-updates)</option>
+            <option value="fund">Fund (manual only)</option>
+            <option value="rsu">RSU (auto-updates)</option>
+            <option value="property">Property (real estate)</option>
+            <option value="savings">Savings / Cash</option>
+        </select>
+
+        <div id="tickerField">
+            <label>Ticker Symbol</label>
+            <input type="text" id="ticker" placeholder="e.g., ASTK.CO, FLYW, IBE.MC">
+        </div>
+
+        <div id="addressField" style="display:none;">
+            <label>Address</label>
+            <textarea id="address" placeholder="e.g., Vestergade 12, 1456 København K"></textarea>
+        </div>
+
+        <label>Name</label>
+        <input type="text" id="name" placeholder="e.g., Asetek A/S or Savings Account">
+
+        <div id="sharesField">
+            <label>Shares / Units</label>
+            <input type="number" step="0.01" id="shares">
+        </div>
+
+        <div id="costField">
+            <label>Average Cost per Share/Unit</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="cost">
+                <select id="costCurrency">
                     <option value="DKK">DKK</option>
                     <option value="EUR">EUR</option>
                     <option value="USD">USD</option>
                 </select>
             </div>
-
-            <button class="btn" id="saveBtn">Save</button>
-            <button class="btn" id="deleteBtn" style="display:none; background:#ff4466; margin-top:10px;">Delete</button>
         </div>
+
+        <div id="propertyValueField" style="display:none;">
+            <label>Property Value</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="propertyValue">
+                <select id="propertyCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="savingsAmountField" style="display:none;">
+            <label>Savings Amount</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="savingsAmount">
+                <select id="savingsCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="interestRateField" style="display:none;">
+            <label>Annual Interest Rate % (Optional)</label>
+            <input type="number" step="0.01" id="interestRate" placeholder="e.g., 3.5 for 3.5%">
+            <div class="info-text">💡 If your savings account earns interest</div>
+        </div>
+
+        <div id="currentPriceField">
+            <label>Current Price <span id="priceLabel">(required for funds, optional backup for others)</span></label>
+            <div class="info-text" id="priceInfoStock" style="display:block;">
+                Stocks/RSU: Auto-updates via API. Enter manually only as backup.
+            </div>
+            <div class="info-text" id="priceInfoFund" style="display:none;">
+                Funds: Required field - will NOT auto-update. Must be > 0.
+            </div>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="currentPrice" placeholder="Required for funds, optional for stocks/RSU">
+                <select id="priceCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="dividendField">
+            <label>Annual Dividend/Distribution per Share</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="dividend" placeholder="0 if none">
+                <select id="dividendCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="rentalIncomeField" style="display:none;">
+            <label>Annual Rental Income (Optional)</label>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="rentalIncome" placeholder="0 if not rented">
+                <select id="rentalIncomeCurrency">
+                    <option value="DKK">DKK</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+            <div class="info-text">💡 If property is rented out</div>
+        </div>
+
+        <div id="propertyCostsField" style="display:none;">
+            <label>Annual Property Costs</label>
+            <div class="cost-grid">
+                <div class="cost-item">
+                    <label>Property Tax</label>
+                    <input type="number" step="0.01" id="costTax" placeholder="0">
+                </div>
+                <div class="cost-item">
+                    <label>Power</label>
+                    <input type="number" step="0.01" id="costPower" placeholder="0">
+                </div>
+                <div class="cost-item">
+                    <label>Water</label>
+                    <input type="number" step="0.01" id="costWater" placeholder="0">
+                </div>
+                <div class="cost-item">
+                    <label>Gas</label>
+                    <input type="number" step="0.01" id="costGas" placeholder="0">
+                </div>
+                <div class="cost-item">
+                    <label>Internet</label>
+                    <input type="number" step="0.01" id="costInternet" placeholder="0">
+                </div>
+                <div class="cost-item">
+                    <label>Other</label>
+                    <input type="number" step="0.01" id="costOther" placeholder="0">
+                </div>
+            </div>
+            <select id="propertyCostsCurrency" style="margin-top: 10px;">
+                <option value="DKK">DKK</option>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+            </select>
+        </div>
+
+        <button class="btn" id="saveBtn">Save</button>
+        <button class="btn" id="deleteBtn" style="display:none; background:#ff4466; margin-top:10px;">Delete</button>
     </div>
+</div>
 
-    <div class="bottom-nav">
-        <button class="nav-btn" id="dashBtn">Dashboard</button>
-        <button class="nav-btn" id="refreshBtn">↻ Refresh</button>
-        <button class="nav-btn" id="chatBtn">💬 Chat</button>
-        <button class="nav-btn" id="settingsBtn">⚙️ Settings</button>
-    </div>
+<div class="bottom-nav">
+    <button class="nav-btn" id="dashBtn">Dashboard</button>
+    <button class="nav-btn" id="refreshBtn">↻ Refresh</button>
+    <button class="nav-btn" id="chatBtn">💬 Chat</button>
+    <button class="nav-btn" id="settingsBtn">⚙️ Settings</button>
+</div>
 
-    <input type="file" id="importFile" accept=".json">
+<input type="file" id="importFile" accept=".json">
 
-    <script>
-        const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
+<script>
+    const TWELVEDATA_API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
 
-        let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
-        let editing = null;
-        let isRefreshing = false;
-        let activeFilter = 'all';
-        let searchTerm = '';
-        let sortBy = 'value-desc';
-        let fetchErrors = [];
-        let chatHistory = [];
+    let data = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
+    let editing = null;
+    let isRefreshing = false;
+    let activeFilter = 'all';
+    let searchTerm = '';
+    let sortBy = 'value-desc';
+    let fetchErrors = [];
+    let chatHistory = [];
 
-        let exchangeRates = { DKK: 1, EUR: 7.46, USD: 6.88, GBP: 8.65 };
-        let allocationChart = null;
-        
-        let displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
-        document.getElementById('displayCurrency').value = displayCurrency;
+    let exchangeRates = { DKK: 1, EUR: 7.46, USD: 6.88, GBP: 8.65 };
+    let allocationChart = null;
+    
+    let displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
+    document.getElementById('displayCurrency').value = displayCurrency;
 
-        function convertToDKK(amount, currency) {
-            return (amount || 0) * (exchangeRates[currency] || 1);
-        }
-        
-        function convertFromDKK(amountInDKK, targetCurrency) {
-            if (targetCurrency === 'DKK') return amountInDKK;
-            return amountInDKK / (exchangeRates[targetCurrency] || 1);
-        }
-        
-        function formatCurrency(amount, currency) {
-            const symbols = { DKK: 'DKK', EUR: '€', USD: '$' };
-            const rounded = Math.round(amount);
-            return `${rounded.toLocaleString('da-DK')} ${symbols[currency] || currency}`;
-        }
+    function convertToDKK(amount, currency) {
+        return (amount || 0) * (exchangeRates[currency] || 1);
+    }
+    
+    function convertFromDKK(amountInDKK, targetCurrency) {
+        if (targetCurrency === 'DKK') return amountInDKK;
+        return amountInDKK / (exchangeRates[targetCurrency] || 1);
+    }
+    
+    function formatCurrency(amount, currency) {
+        const symbols = { DKK: 'DKK', EUR: '€', USD: '$' };
+        const rounded = Math.round(amount);
+        return `${rounded.toLocaleString('da-DK')} ${symbols[currency] || currency}`;
+    }
 
-        document.getElementById('displayCurrency').onchange = (e) => {
-            displayCurrency = e.target.value;
-            localStorage.setItem('displayCurrency', displayCurrency);
-            render();
+    document.getElementById('displayCurrency').onchange = (e) => {
+        displayCurrency = e.target.value;
+        localStorage.setItem('displayCurrency', displayCurrency);
+        render();
+    };
+
+    function showSettingsModal() {
+        document.getElementById('settingsModal').classList.add('show');
+    }
+
+    function hideSettingsModal() {
+        document.getElementById('settingsModal').classList.remove('show');
+    }
+
+    setTimeout(() => {
+        document.getElementById('settingsBtn').onclick = showSettingsModal;
+        document.getElementById('closeSettingsBtn').onclick = hideSettingsModal;
+        document.getElementById('exportBtn').onclick = exportData;
+        document.getElementById('importBtn').onclick = importData;
+
+        document.getElementById('clearAllData').onclick = () => {
+            if (confirm('⚠️ Delete ALL portfolio data? This cannot be undone!\n\nMake sure you have exported your data first.')) {
+                if (confirm('Are you absolutely sure? This will delete all your holdings and settings.')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
         };
+    }, 100);
 
-        function showSettingsModal() {
-            document.getElementById('settingsModal').classList.add('show');
+    function migrateData() {
+        let migrated = false;
+        data.holdings = data.holdings.map(h => {
+            if (h.price !== undefined && h.currentPrice === undefined) {
+                h.currentPrice = h.priceOriginal || h.price;
+                delete h.price;
+                delete h.priceOriginal;
+                migrated = true;
+            }
+            if (!h.priceCurrency) h.priceCurrency = h.costCurrency || 'DKK';
+            if (!h.dividendCurrency) h.dividendCurrency = h.costCurrency || 'DKK';
+            if (!h.costCurrency) h.costCurrency = 'DKK';
+            return h;
+        });
+        if (migrated) {
+            localStorage.setItem('portfolio', JSON.stringify(data));
         }
+    }
 
-        function hideSettingsModal() {
-            document.getElementById('settingsModal').classList.remove('show');
-        }
+    async function updateExchangeRates() {
+        try {
+            const res = await fetch('https://api.frankfurter.app/latest?from=DKK&to=EUR,USD,GBP');
+            if (!res.ok) throw new Error();
+            const json = await res.json();
+            exchangeRates.EUR = 1 / (json.rates.EUR || 0.134);
+            exchangeRates.USD = 1 / (json.rates.USD || 0.145);
+            exchangeRates.GBP = 1 / (json.rates.GBP || 0.116);
+        } catch (e) {}
+    }
 
-        setTimeout(() => {
-            document.getElementById('settingsBtn').onclick = showSettingsModal;
-            document.getElementById('closeSettingsBtn').onclick = hideSettingsModal;
-            document.getElementById('exportBtn').onclick = exportData;
-            document.getElementById('importBtn').onclick = importData;
+    function getNextUpdateTime() {
+        const now = new Date();
+        let cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
+        let h = cet.getHours();
+        let next = new Date(cet);
+        if (h < 8) next.setHours(8,0,0,0);
+        else if (h < 22) next.setHours(22,0,0,0);
+        else { next.setDate(next.getDate()+1); next.setHours(8,0,0,0); }
+        return new Date(next.getTime() - (now.getTimezoneOffset() + 60) * 60000);
+    }
 
-            document.getElementById('clearAllData').onclick = () => {
-                if (confirm('⚠️ Delete ALL portfolio data? This cannot be undone!\n\nMake sure you have exported your data first.')) {
-                    if (confirm('Are you absolutely sure? This will delete all your holdings and settings.')) {
-                        localStorage.clear();
-                        location.reload();
-                    }
-                }
-            };
-        }, 100);
+    function updateNextUpdateDisplay() {
+        const next = getNextUpdateTime();
+        const diffMs = next - Date.now();
+        const h = Math.floor(diffMs / 3600000);
+        const m = Math.floor((diffMs % 3600000) / 60000);
+        const timeStr = next.toLocaleTimeString('da-DK', {hour:'2-digit', minute:'2-digit'});
+        let text = h < 1 ? `in ${m} min` : h < 24 ? `in ${h}h ${m}m` : `tomorrow`;
+        document.getElementById('nextUpdate').textContent = `Next auto-update ${text} at ${timeStr}`;
+    }
 
-        function migrateData() {
-            let migrated = false;
-            data.holdings = data.holdings.map(h => {
-                if (h.price !== undefined && h.currentPrice === undefined) {
-                    h.currentPrice = h.priceOriginal || h.price;
-                    delete h.price;
-                    delete h.priceOriginal;
-                    migrated = true;
-                }
-                if (!h.priceCurrency) h.priceCurrency = h.costCurrency || 'DKK';
-                if (!h.dividendCurrency) h.dividendCurrency = h.costCurrency || 'DKK';
-                if (!h.costCurrency) h.costCurrency = 'DKK';
-                return h;
-            });
-            if (migrated) {
+    function checkAutoUpdate() {
+        const now = new Date();
+        const cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
+        const hour = cet.getHours();
+        const minute = cet.getMinutes();
+        
+        if ((hour === 8 || hour === 22) && minute < 5) {
+            const lastUpdate = data.lastScheduledUpdate;
+            const todayKey = cet.toISOString().split('T')[0] + '-' + hour;
+            
+            if (lastUpdate !== todayKey) {
+                data.lastScheduledUpdate = todayKey;
                 localStorage.setItem('portfolio', JSON.stringify(data));
+                refreshPrices();
             }
         }
+    }
 
-        async function updateExchangeRates() {
+    const themeToggle = document.getElementById('theme-toggle');
+    let currentTheme = localStorage.getItem('theme') || 'dark';
+    document.body.className = currentTheme;
+    themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    themeToggle.onclick = () => {
+        document.body.classList.toggle('dark');
+        document.body.classList.toggle('light');
+        currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('theme', currentTheme);
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    };
+
+    async function fetchPriceForHolding(h) {
+        if (h.type === 'fund' || h.type === 'property' || h.type === 'savings' || !h.ticker) return;
+
+        const symbol = h.ticker.toUpperCase();
+        
+        if (!symbol.includes('.')) {
             try {
-                const res = await fetch('https://api.frankfurter.app/latest?from=DKK&to=EUR,USD,GBP');
-                if (!res.ok) throw new Error();
-                const json = await res.json();
-                exchangeRates.EUR = 1 / (json.rates.EUR || 0.134);
-                exchangeRates.USD = 1 / (json.rates.USD || 0.145);
-                exchangeRates.GBP = 1 / (json.rates.GBP || 0.116);
+                const url = `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${TWELVEDATA_API_KEY}`;
+                const response = await fetch(url);
+                const json = await response.json();
+
+                if (json.close || json.previous_close) {
+                    h.currentPrice = parseFloat(json.close || json.previous_close);
+                    h.priceCurrency = json.currency || "USD";
+                    h.fetchError = false;
+                    return;
+                }
             } catch (e) {}
         }
 
-        function getNextUpdateTime() {
-            const now = new Date();
-            let cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
-            let h = cet.getHours();
-            let next = new Date(cet);
-            if (h < 8) next.setHours(8,0,0,0);
-            else if (h < 22) next.setHours(22,0,0,0);
-            else { next.setDate(next.getDate()+1); next.setHours(8,0,0,0); }
-            return new Date(next.getTime() - (now.getTimezoneOffset() + 60) * 60000);
-        }
-
-        function updateNextUpdateDisplay() {
-            const next = getNextUpdateTime();
-            const diffMs = next - Date.now();
-            const h = Math.floor(diffMs / 3600000);
-            const m = Math.floor((diffMs % 3600000) / 60000);
-            const timeStr = next.toLocaleTimeString('da-DK', {hour:'2-digit', minute:'2-digit'});
-            let text = h < 1 ? `in ${m} min` : h < 24 ? `in ${h}h ${m}m` : `tomorrow`;
-            document.getElementById('nextUpdate').textContent = `Next auto-update ${text} at ${timeStr}`;
-        }
-
-        function checkAutoUpdate() {
-            const now = new Date();
-            const cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
-            const hour = cet.getHours();
-            const minute = cet.getMinutes();
-            
-            if ((hour === 8 || hour === 22) && minute < 5) {
-                const lastUpdate = data.lastScheduledUpdate;
-                const todayKey = cet.toISOString().split('T')[0] + '-' + hour;
-                
-                if (lastUpdate !== todayKey) {
-                    data.lastScheduledUpdate = todayKey;
-                    localStorage.setItem('portfolio', JSON.stringify(data));
-                    refreshPrices();
-                }
-            }
-        }
-
-        const themeToggle = document.getElementById('theme-toggle');
-        let currentTheme = localStorage.getItem('theme') || 'dark';
-        document.body.className = currentTheme;
-        themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
-        themeToggle.onclick = () => {
-            document.body.classList.toggle('dark');
-            document.body.classList.toggle('light');
-            currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
-            localStorage.setItem('theme', currentTheme);
-            themeToggle.textContent = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
-        };
-
-        async function fetchPriceForHolding(h) {
-            if (h.type === 'fund' || h.type === 'property' || !h.ticker) return;
-
-            const symbol = h.ticker.toUpperCase();
-            
-            if (!symbol.includes('.')) {
-                try {
-                    const url = `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${TWELVEDATA_API_KEY}`;
-                    const response = await fetch(url);
-                    const json = await response.json();
-
-                    if (json.close || json.previous_close) {
-                        h.currentPrice = parseFloat(json.close || json.previous_close);
-                        h.priceCurrency = json.currency || "USD";
-                        h.fetchError = false;
-                        return;
-                    }
-                } catch (e) {}
-            }
-
-            h.fetchError = true;
-            fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed - using ${h.manualPrice ? 'manual' : 'cost basis'} price`);
-        }
-
-        async function refreshPrices() {
-            if (isRefreshing) return;
-            isRefreshing = true;
-            fetchErrors = [];
-            
-            document.getElementById('loadingIndicator').classList.add('show');
-            document.getElementById('refreshBtn').textContent = 'Updating...';
-            document.getElementById('refreshBtn').disabled = true;
-
-            await updateExchangeRates();
-
-            const stocksToFetch = data.holdings.filter(h => h.type !== 'fund' && h.type !== 'property' && h.ticker);
-            await Promise.all(stocksToFetch.map(h => fetchPriceForHolding(h)));
-
-            data.lastUpdate = new Date().toISOString();
-            localStorage.setItem('portfolio', JSON.stringify(data));
-
-            showFetchErrors();
-            render();
-            
-            document.getElementById('loadingIndicator').classList.remove('show');
-            document.getElementById('refreshBtn').textContent = '↻ Refresh';
-            document.getElementById('refreshBtn').disabled = false;
-            isRefreshing = false;
-        }
-
-        function showFetchErrors() {
-            const container = document.getElementById('errorContainer');
-            if (fetchErrors.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            let html = '<div class="error-list"><strong>⚠️ Some prices failed to update:</strong>';
-            fetchErrors.forEach(err => {
-                html += `<div class="error-item">• ${err}</div>`;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function getHoldingValue(h) {
-            if (h.type === 'property') {
-                return convertToDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
-            }
-            
-            let price = 0;
-            if (h.type === 'fund') {
-                price = h.manualPrice || 0;
-            } else {
-                price = h.currentPrice || h.manualPrice || h.cost;
-            }
-            return h.shares * convertToDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
-        }
-
-        function getHoldingIncome(h) {
-    if (h.type === 'property') {
-        const rental = convertToDKK(h.rentalIncome || 0, h.rentalIncomeCurrency || 'DKK');
-        const costs = (h.propertyCosts || {});
-        const totalCost = (costs.tax || 0) + (costs.power || 0) + (costs.water || 0) + 
-                        (costs.gas || 0) + (costs.internet || 0) + (costs.other || 0);
-        const totalCostDKK = convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK');
-        return rental - totalCostDKK;
+        h.fetchError = true;
+        fetchErrors.push(`${h.name} (${symbol}): Auto-fetch failed - using ${h.manualPrice ? 'manual' : 'cost basis'} price`);
     }
-    return convertToDKK((h.dividend || 0) * h.shares, h.dividendCurrency || 'DKK');
-}
-        function toggleChat() {
-            const chatContainer = document.getElementById('chatContainer');
-            chatContainer.classList.toggle('show');
-            if (chatContainer.classList.contains('show')) {
-                document.getElementById('chatInput').focus();
-            }
-        }
 
-        function getPortfolioContext() {
-            const filtered = data.holdings;
-            let totalValue = 0, totalCost = 0, annualIncome = 0;
+    async function refreshPrices() {
+        if (isRefreshing) return;
+        isRefreshing = true;
+        fetchErrors = [];
+        
+        document.getElementById('loadingIndicator').classList.add('show');
+        document.getElementById('refreshBtn').textContent = 'Updating...';
+        document.getElementById('refreshBtn').disabled = true;
+
+        await updateExchangeRates();
+
+        const stocksToFetch = data.holdings.filter(h => h.type !== 'fund' && h.type !== 'property' && h.type !== 'savings' && h.ticker);
+        await Promise.all(stocksToFetch.map(h => fetchPriceForHolding(h)));
+
+        data.lastUpdate = new Date().toISOString();
+        localStorage.setItem('portfolio', JSON.stringify(data));
+
+        showFetchErrors();
+        render();
+        
+        document.getElementById('loadingIndicator').classList.remove('show');
+        document.getElementById('refreshBtn').textContent = '↻ Refresh';
+        document.getElementById('refreshBtn').disabled = false;
+        isRefreshing = false;
+    }
+
+    function showFetchErrors() {
+        const container = document.getElementById('errorContainer');
+        if (fetchErrors.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = '<div class="error-list"><strong>⚠️ Some prices failed to update:</strong>';
+        fetchErrors.forEach(err => {
+            html += `<div class="error-item">• ${err}</div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function getHoldingValue(h) {
+        if (h.type === 'property') {
+            return convertToDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
+        }
+        
+        if (h.type === 'savings') {
+            return convertToDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
+        }
+        
+        let price = 0;
+        if (h.type === 'fund') {
+            price = h.manualPrice || 0;
+        } else {
+            price = h.currentPrice || h.manualPrice || h.cost;
+        }
+        return h.shares * convertToDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
+    }
+
+    function getHoldingIncome(h) {
+        if (h.type === 'property') {
+            const rental = convertToDKK(h.rentalIncome || 0, h.rentalIncomeCurrency || 'DKK');
+            const costs = (h.propertyCosts || {});
+            const totalCost = (costs.tax || 0) + (costs.power || 0) + (costs.water || 0) + 
+                            (costs.gas || 0) + (costs.internet || 0) + (costs.other || 0);
+            const totalCostDKK = convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK');
+            return rental - totalCostDKK;
+        }
+        
+        if (h.type === 'savings') {
+            const amount = convertToDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
+            const rate = (h.interestRate || 0) / 100;
+            return amount * rate;
+        }
+        
+        return convertToDKK((h.dividend || 0) * h.shares, h.dividendCurrency || 'DKK');
+    }
+
+    function toggleChat() {
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.classList.toggle('show');
+        if (chatContainer.classList.contains('show')) {
+            document.getElementById('chatInput').focus();
+        }
+    }
+
+    function getPortfolioContext() {
+        const filtered = data.holdings;
+        let totalValue = 0, totalCost = 0, annualIncome = 0;
+        
+        const holdings = filtered.map(h => {
+            const value = getHoldingValue(h);
+            const cost = (h.type === 'property' || h.type === 'savings') ? value : convertToDKK(h.cost * h.shares, h.costCurrency);
+            const income = getHoldingIncome(h);
+            totalValue += value;
+            totalCost += cost;
+            annualIncome += income;
             
-            const holdings = filtered.map(h => {
-                const value = getHoldingValue(h);
-                const cost = h.type === 'property' ? value : convertToDKK(h.cost * h.shares, h.costCurrency);
-                const income = getHoldingIncome(h);
-                totalValue += value;
-                totalCost += cost;
-                annualIncome += income;
-                
-                const yld = value > 0 ? (income / value * 100) : 0;
-                
-                return {
-                    name: h.name,
-                    type: h.type,
-                    shares: h.shares,
-                    value: Math.round(value),
-                    cost: Math.round(cost),
-                    annualIncome: Math.round(income),
-                    yield: yld.toFixed(2) + '%'
-                };
-            });
-            
-            const yieldPct = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
+            const yld = value > 0 ? (income / value * 100) : 0;
             
             return {
-                totalValue: Math.round(totalValue),
-                totalCost: Math.round(totalCost),
-                totalGain: Math.round(totalValue - totalCost),
-                gainPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost * 100).toFixed(1) : 0,
-                annualIncome: Math.round(annualIncome),
-                portfolioYield: yieldPct.toFixed(2) + '%',
-                holdings: holdings,
-                holdingsCount: holdings.length
+                name: h.name,
+                type: h.type,
+                shares: h.shares,
+                value: Math.round(value),
+                cost: Math.round(cost),
+                annualIncome: Math.round(income),
+                yield: yld.toFixed(2) + '%'
             };
-        }
+        });
+        
+        const yieldPct = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
+        
+        return {
+            totalValue: Math.round(totalValue),
+            totalCost: Math.round(totalCost),
+            totalGain: Math.round(totalValue - totalCost),
+            gainPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost * 100).toFixed(1) : 0,
+            annualIncome: Math.round(annualIncome),
+            portfolioYield: yieldPct.toFixed(2) + '%',
+            holdings: holdings,
+            holdingsCount: holdings.length
+        };
+    }
 
-        async function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if (!message) return;
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        addChatMessage('user', message);
+        input.value = '';
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerHTML = '<span></span><span></span><span></span>';
+        document.getElementById('chatMessages').appendChild(typingDiv);
+        typingDiv.scrollIntoView({ behavior: 'smooth' });
+        
+        const sendBtn = document.getElementById('chatSendBtn');
+        sendBtn.disabled = true;
+        
+        try {
+            const portfolio = getPortfolioContext();
             
-            addChatMessage('user', message);
-            input.value = '';
-            
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator';
-            typingDiv.innerHTML = '<span></span><span></span><span></span>';
-            document.getElementById('chatMessages').appendChild(typingDiv);
-            typingDiv.scrollIntoView({ behavior: 'smooth' });
-            
-            const sendBtn = document.getElementById('chatSendBtn');
-            sendBtn.disabled = true;
-            
-            try {
-                const portfolio = getPortfolioContext();
-                
-                const systemPrompt = `You are a passive income investment and real estate advisor. Portfolio: ${portfolio.totalValue.toLocaleString()} DKK value, ${portfolio.annualIncome.toLocaleString()} DKK annual income, ${portfolio.portfolioYield} yield.
+            const systemPrompt = `You are a passive income investment and real estate advisor. Portfolio: ${portfolio.totalValue.toLocaleString()} DKK value, ${portfolio.annualIncome.toLocaleString()} DKK annual income, ${portfolio.portfolioYield} yield.
+```
 
 For property valuations: When asked about property values, provide rough estimates based on the address. Consider:
+
 - Official property tax assessments in the region
 - Recent sales data in the area
 - Market trends for similar properties
 - Location quality (city center, suburbs, etc.)
 
 Always caveat that these are ROUGH ESTIMATES and recommend:
+
 1. Checking official property registers (Boligsiden.dk for Denmark, Idealista.com for Spain)
-2. Getting professional appraisals
-3. Reviewing recent comparable sales
+1. Getting professional appraisals
+1. Reviewing recent comparable sales
 
 Focus on long-term wealth building, diversification, and realistic expectations. Keep responses brief and actionable.`;
-;
 
-                const conversationContext = chatHistory.slice(-6).map(m => `${m.role}: ${m.content}`).join('\n');
-                const fullPrompt = `${systemPrompt}\n\n${conversationContext}\nuser: ${message}\nassistant:`;
-                
-                const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        inputs: fullPrompt,
-                        parameters: {
-                            max_new_tokens: 300,
-                            temperature: 0.7,
-                            return_full_text: false
-                        }
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Chat service temporarily unavailable');
-                }
-                
-                const result = await response.json();
-                let assistantMessage = result[0]?.generated_text || "I'm having trouble responding right now. Please try again.";
-                
-                assistantMessage = assistantMessage.trim();
-                
-                chatHistory.push({ role: 'user', content: message });
-                chatHistory.push({ role: 'assistant', content: assistantMessage });
-                
-                if (chatHistory.length > 12) {
-                    chatHistory = chatHistory.slice(-12);
-                }
-                
-                typingDiv.remove();
-                addChatMessage('assistant', assistantMessage);
-                
-            } catch (error) {
-                typingDiv.remove();
-                addChatMessage('assistant', `I'm currently unavailable. This is a free AI service that may have rate limits. Please try again in a moment.`);
+```
+            const conversationContext = chatHistory.slice(-6).map(m => `${m.role}: ${m.content}`).join('\n');
+            const fullPrompt = `${systemPrompt}\n\n${conversationContext}\nuser: ${message}\nassistant:`;
+            
+            const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    inputs: fullPrompt,
+                    parameters: {
+                        max_new_tokens: 300,
+                        temperature: 0.7,
+                        return_full_text: false
+                    }
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Chat service temporarily unavailable');
             }
             
-            sendBtn.disabled = false;
-        }
-
-        function addChatMessage(role, content) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${role}`;
+            const result = await response.json();
+            let assistantMessage = result[0]?.generated_text || "I'm having trouble responding right now. Please try again.";
             
-            let formattedContent = content
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n- /g, '<br>• ')
-                .replace(/\n\n/g, '<br><br>');
+            assistantMessage = assistantMessage.trim();
             
-            messageDiv.innerHTML = formattedContent;
-            messagesDiv.appendChild(messageDiv);
-            messageDiv.scrollIntoView({ behavior: 'smooth' });
+            chatHistory.push({ role: 'user', content: message });
+            chatHistory.push({ role: 'assistant', content: assistantMessage });
+            
+            if (chatHistory.length > 12) {
+                chatHistory = chatHistory.slice(-12);
+            }
+            
+            typingDiv.remove();
+            addChatMessage('assistant', assistantMessage);
+            
+        } catch (error) {
+            typingDiv.remove();
+            addChatMessage('assistant', `I'm currently unavailable. This is a free AI service that may have rate limits. Please try again in a moment.`);
+        }
+        
+        sendBtn.disabled = false;
+    }
+
+    function addChatMessage(role, content) {
+        const messagesDiv = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${role}`;
+        
+        let formattedContent = content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n- /g, '<br>• ')
+            .replace(/\n\n/g, '<br><br>');
+        
+        messageDiv.innerHTML = formattedContent;
+        messagesDiv.appendChild(messageDiv);
+        messageDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function getFilteredAndSortedHoldings() {
+        let holdings = data.holdings.filter(h => {
+            if (activeFilter === 'all') return true;
+            return activeFilter.split(',').includes(h.type);
+        });
+
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            holdings = holdings.filter(h => 
+                h.name.toLowerCase().includes(term) || 
+                (h.ticker && h.ticker.toLowerCase().includes(term)) ||
+                (h.address && h.address.toLowerCase().includes(term))
+            );
         }
 
-        function getFilteredAndSortedHoldings() {
-            let holdings = data.holdings.filter(h => {
-                if (activeFilter === 'all') return true;
-                return activeFilter.split(',').includes(h.type);
+        if (sortBy === 'value-desc') {
+            holdings.sort((a,b) => getHoldingValue(b) - getHoldingValue(a));
+        } else if (sortBy === 'value-asc') {
+            holdings.sort((a,b) => getHoldingValue(a) - getHoldingValue(b));
+        } else if (sortBy === 'yield-desc') {
+            holdings.sort((a,b) => {
+                const va = getHoldingValue(a), vb = getHoldingValue(b);
+                const ya = va > 0 ? getHoldingIncome(a) / va : 0;
+                const yb = vb > 0 ? getHoldingIncome(b) / vb : 0;
+                return yb - ya;
             });
-
-            if (searchTerm) {
-                const term = searchTerm.toLowerCase();
-                holdings = holdings.filter(h => 
-                    h.name.toLowerCase().includes(term) || 
-                    (h.ticker && h.ticker.toLowerCase().includes(term)) ||
-                    (h.address && h.address.toLowerCase().includes(term))
-                );
-            }
-
-            if (sortBy === 'value-desc') {
-                holdings.sort((a,b) => getHoldingValue(b) - getHoldingValue(a));
-            } else if (sortBy === 'value-asc') {
-                holdings.sort((a,b) => getHoldingValue(a) - getHoldingValue(b));
-            } else if (sortBy === 'yield-desc') {
-                holdings.sort((a,b) => {
-                    const va = getHoldingValue(a), vb = getHoldingValue(b);
-                    const ya = va > 0 ? getHoldingIncome(a) / va : 0;
-                    const yb = vb > 0 ? getHoldingIncome(b) / vb : 0;
-                    return yb - ya;
-                });
-            } else {
-                holdings.sort((a,b) => a.name.localeCompare(b.name));
-            }
-
-            return holdings;
+        } else {
+            holdings.sort((a,b) => a.name.localeCompare(b.name));
         }
 
-        function renderAllocationChart(filtered) {
-            const ctx = document.getElementById('allocationChart')?.getContext('2d');
-            if (!ctx) return;
+        return holdings;
+    }
 
-            const types = {};
-            let total = 0;
-            filtered.forEach(h => { 
-                const v = getHoldingValue(h); 
-                types[h.type] = (types[h.type] || 0) + v; 
-                total += v; 
-            });
+    function renderAllocationChart(filtered) {
+        const ctx = document.getElementById('allocationChart')?.getContext('2d');
+        if (!ctx) return;
 
-            const labels = Object.keys(types).map((type, i) => {
-                const value = types[type];
-                const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
-                return `${type.charAt(0).toUpperCase() + type.slice(1)} (${pct}%)`;
-            });
-            const dataPoints = Object.values(types);
+        const types = {};
+        let total = 0;
+        filtered.forEach(h => { 
+            const v = getHoldingValue(h); 
+            types[h.type] = (types[h.type] || 0) + v; 
+            total += v; 
+        });
 
-            if (allocationChart) {
-                allocationChart.data.labels = labels;
-                allocationChart.data.datasets[0].data = dataPoints;
-                allocationChart.update('none');
-            } else {
-                allocationChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: { 
-                        labels: labels, 
-                        datasets: [{ 
-                            data: dataPoints, 
-                            backgroundColor: ['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40'] 
-                        }] 
-                    },
-                    options: { 
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: { 
-                            legend: { position: 'bottom' }, 
-                            tooltip: { 
-                                callbacks: { 
-                                    label: ctx => {
-                                        const valueInDKK = ctx.raw;
-                                        const valueInDisplay = convertFromDKK(valueInDKK, displayCurrency);
-                                        return formatCurrency(valueInDisplay, displayCurrency);
-                                    }
-                                } 
+        const labels = Object.keys(types).map((type, i) => {
+            const value = types[type];
+            const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
+            return `${type.charAt(0).toUpperCase() + type.slice(1)} (${pct}%)`;
+        });
+        const dataPoints = Object.values(types);
+
+        if (allocationChart) {
+            allocationChart.data.labels = labels;
+            allocationChart.data.datasets[0].data = dataPoints;
+            allocationChart.update('none');
+        } else {
+            allocationChart = new Chart(ctx, {
+                type: 'pie',
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: dataPoints, 
+                        backgroundColor: ['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40'] 
+                    }] 
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { 
+                        legend: { position: 'bottom' }, 
+                        tooltip: { 
+                            callbacks: { 
+                                label: ctx => {
+                                    const valueInDKK = ctx.raw;
+                                    const valueInDisplay = convertFromDKK(valueInDKK, displayCurrency);
+                                    return formatCurrency(valueInDisplay, displayCurrency);
+                                }
                             } 
                         } 
-                    }
-                });
-            }
-        }
-
-        function render() {
-            const filtered = getFilteredAndSortedHoldings();
-
-            let totalValue = 0, totalCost = 0, annualIncome = 0;
-
-            filtered.forEach(h => {
-                const value = getHoldingValue(h);
-                const cost = h.type === 'property' ? value : convertToDKK(h.cost * h.shares, h.costCurrency);
-                const income = getHoldingIncome(h);
-                totalValue += value;
-                totalCost += cost;
-                annualIncome += income;
+                    } 
+                }
             });
+        }
+    }
 
-            const displayValue = convertFromDKK(totalValue, displayCurrency);
-            const displayIncome = convertFromDKK(annualIncome, displayCurrency);
-            const change = totalValue - totalCost;
-            const displayChange = convertFromDKK(change, displayCurrency);
-            const changePct = totalCost ? (change / totalCost * 100) : 0;
-            const yieldPct = totalValue ? (annualIncome / totalValue * 100) : 0;
+    function render() {
+        const filtered = getFilteredAndSortedHoldings();
 
-            document.getElementById('totalValue').textContent = formatCurrency(displayValue, displayCurrency);
-            
-            const changeEl = document.getElementById('totalChange');
-            changeEl.textContent = (change >= 0 ? '+' : '') + formatCurrency(displayChange, displayCurrency) + ' (' + changePct.toFixed(1) + '%)';
-            changeEl.className = 'change ' + (change >= 0 ? 'positive' : change < 0 ? 'negative' : '');
+        let totalValue = 0, totalCost = 0, annualIncome = 0;
 
-            document.getElementById('annualIncome').textContent = formatCurrency(displayIncome, displayCurrency);
-            document.getElementById('yieldPercent').textContent = yieldPct.toFixed(2) + '%';
+        filtered.forEach(h => {
+            const value = getHoldingValue(h);
+            const cost = (h.type === 'property' || h.type === 'savings') ? value : convertToDKK(h.cost * h.shares, h.costCurrency);
+            const income = getHoldingIncome(h);
+            totalValue += value;
+            totalCost += cost;
+            annualIncome += income;
+        });
 
-            const lbl = activeFilter === 'all' ? 'All' : activeFilter.split(',').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' + ');
-            document.getElementById('filterLabel').textContent = `(${lbl})`;
-            document.getElementById('incomeFilterLabel').textContent = `(${lbl})`;
+        const displayValue = convertFromDKK(totalValue, displayCurrency);
+        const displayIncome = convertFromDKK(annualIncome, displayCurrency);
+        const change = totalValue - totalCost;
+        const displayChange = convertFromDKK(change, displayCurrency);
+        const changePct = totalCost ? (change / totalCost * 100) : 0;
+        const yieldPct = totalValue ? (annualIncome / totalValue * 100) : 0;
 
-            const container = document.getElementById('holdings');
-            container.innerHTML = '';
+        document.getElementById('totalValue').textContent = formatCurrency(displayValue, displayCurrency);
+        
+        const changeEl = document.getElementById('totalChange');
+        changeEl.textContent = (change >= 0 ? '+' : '') + formatCurrency(displayChange, displayCurrency) + ' (' + changePct.toFixed(1) + '%)';
+        changeEl.className = 'change ' + (change >= 0 ? 'positive' : change < 0 ? 'negative' : '');
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings found</div>';
-            } else {
-                filtered.forEach(h => {
-                    const div = document.createElement('div');
-                    div.className = 'holding';
-                    div.onclick = () => editHolding(data.holdings.indexOf(h));
+        document.getElementById('annualIncome').textContent = formatCurrency(displayIncome, displayCurrency);
+        document.getElementById('yieldPercent').textContent = yieldPct.toFixed(2) + '%';
 
-                    const value = getHoldingValue(h);
-                    const displayHoldingValue = convertFromDKK(value, displayCurrency);
-                    const income = getHoldingIncome(h);
-                    const displayHoldingIncome = convertFromDKK(income, displayCurrency);
-                    const yld = value ? (income / value * 100) : 0;
+        const lbl = activeFilter === 'all' ? 'All' : activeFilter.split(',').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' + ');
+        document.getElementById('filterLabel').textContent = `(${lbl})`;
+        document.getElementById('incomeFilterLabel').textContent = `(${lbl})`;
 
-                    let badge = '';
-                    let meta = '';
-                    let status = '';
+        const container = document.getElementById('holdings');
+        container.innerHTML = '';
 
-                    if (h.type === 'property') {
-                        badge = ' <span class="property-badge">PROPERTY</span>';
-                        meta = `<div class="meta">${h.address || 'No address'}</div>`;
-                        const costs = h.propertyCosts || {};
-                        const totalCost = (costs.tax||0) + (costs.power||0) + (costs.water||0) + (costs.gas||0) + (costs.internet||0) + (costs.other||0);
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings found</div>';
+        } else {
+            filtered.forEach(h => {
+                const div = document.createElement('div');
+                div.className = 'holding';
+                div.onclick = () => editHolding(data.holdings.indexOf(h));
+
+                const value = getHoldingValue(h);
+                const displayHoldingValue = convertFromDKK(value, displayCurrency);
+                const income = getHoldingIncome(h);
+                const displayHoldingIncome = convertFromDKK(income, displayCurrency);
+                const yld = value ? (income / value * 100) : 0;
+
+                let badge = '';
+                let meta = '';
+                let status = '';
+
+                if (h.type === 'property') {
+                    badge = ' <span class="property-badge">PROPERTY</span>';
+                    meta = `<div class="meta">${h.address || 'No address'}</div>`;
+                    const costs = h.propertyCosts || {};
+                    const totalCost = (costs.tax||0) + (costs.power||0) + (costs.water||0) + (costs.gas||0) + (costs.internet||0) + (costs.other||0);
+                    if (totalCost > 0) {
                         meta += `<div class="meta">Annual costs: ${formatCurrency(convertFromDKK(convertToDKK(totalCost, h.propertyCostsCurrency || 'DKK'), displayCurrency), displayCurrency)}</div>`;
+                    }
+                } else if (h.type === 'savings') {
+                    badge = ' <span class="savings-badge">SAVINGS</span>';
+                    const rate = h.interestRate || 0;
+                    if (rate > 0) {
+                        meta = `<div class="meta">Interest rate: ${rate.toFixed(2)}% per year</div>`;
                     } else {
-                        const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
-                        const displayHoldingCost = convertFromDKK(cost, displayCurrency);
-                        const chg = value - cost;
-                        const displayHoldingChange = convertFromDKK(chg, displayCurrency);
-                        const chgPct = cost ? chg / cost * 100 : 0;
+                        meta = `<div class="meta">No interest</div>`;
+                    }
+                } else {
+                    const cost = convertToDKK(h.cost * h.shares, h.costCurrency);
+                    const displayHoldingCost = convertFromDKK(cost, displayCurrency);
+                    const chg = value - cost;
+                    const displayHoldingChange = convertFromDKK(chg, displayCurrency);
+                    const chgPct = cost ? chg / cost * 100 : 0;
 
-                        if (h.type === 'fund') {
-                            badge = ' <span class="fund-badge">FUND</span>';
-                            status = '<span class="status manual-price">💼 Fund - manual price</span>';
-                        } else if (h.type === 'rsu') {
-                            badge = ' <span class="fund-badge">RSU</span>';
-                        }
-
-                        if (h.type !== 'fund') {
-                            if (h.fetchError) {
-                                status = '<span class="status failed">⚠️ Fetch failed - using ' + (h.manualPrice ? 'manual' : 'cost basis') + '</span>';
-                            } else if (h.currentPrice) {
-                                status = '<span class="status live">✓ Price updated</span>';
-                            }
-                        }
-
-                        meta = `<div class="meta">${h.shares} shares @ ${h.cost.toFixed(2)} ${h.costCurrency} = ${formatCurrency(displayHoldingCost, displayCurrency)} cost</div>`;
-                        meta += `<div class="meta ${chg>0?'positive':chg<0?'negative':''}">`;
-                        meta += `${(chg>=0?'+':'') + formatCurrency(displayHoldingChange, displayCurrency)} (${chgPct.toFixed(1)}%)`;
-                        meta += `</div>`;
+                    if (h.type === 'fund') {
+                        badge = ' <span class="fund-badge">FUND</span>';
+                        status = '<span class="status manual-price">💼 Fund - manual price</span>';
+                    } else if (h.type === 'rsu') {
+                        badge = ' <span class="fund-badge">RSU</span>';
                     }
 
-                    const incomeLabel = income >= 0 ? 'Income' : 'Costs';
+                    if (h.type !== 'fund') {
+                        if (h.fetchError) {
+                            status = '<span class="status failed">⚠️ Fetch failed - using ' + (h.manualPrice ? 'manual' : 'cost basis') + '</span>';
+                        } else if (h.currentPrice) {
+                            status = '<span class="status live">✓ Price updated</span>';
+                        }
+                    }
 
-                    div.innerHTML = `
-                        <div class="holding-header">
-                            <span class="ticker">${h.name}${badge}</span>
-                            <span class="value">${formatCurrency(displayHoldingValue, displayCurrency)}</span>
-                        </div>
-                        ${meta}
-                        <div class="meta">${incomeLabel}: ${formatCurrency(Math.abs(displayHoldingIncome), displayCurrency)}/yr (${yld.toFixed(1)}% yield)</div>
-                        ${status}
-                    `;
-                    container.appendChild(div);
-                });
-            }
+                    meta = `<div class="meta">${h.shares} shares @ ${h.cost.toFixed(2)} ${h.costCurrency} = ${formatCurrency(displayHoldingCost, displayCurrency)} cost</div>`;
+                    meta += `<div class="meta ${chg>0?'positive':chg<0?'negative':''}">`;
+                    meta += `${(chg>=0?'+':'') + formatCurrency(displayHoldingChange, displayCurrency)} (${chgPct.toFixed(1)}%)`;
+                    meta += `</div>`;
+                }
 
-            renderAllocationChart(filtered);
+                const incomeLabel = income >= 0 ? 'Income' : 'Costs';
 
-            if (data.lastUpdate) {
-                const d = new Date(data.lastUpdate);
-                document.getElementById('lastUpdate').textContent = 'Last update: ' + d.toLocaleString('da-DK');
-            }
-
-            updateNextUpdateDisplay();
+                div.innerHTML = `
+                    <div class="holding-header">
+                        <span class="ticker">${h.name}${badge}</span>
+                        <span class="value">${formatCurrency(displayHoldingValue, displayCurrency)}</span>
+                    </div>
+                    ${meta}
+                    <div class="meta">${incomeLabel}: ${formatCurrency(Math.abs(displayHoldingIncome), displayCurrency)}/yr (${yld.toFixed(1)}% yield)</div>
+                    ${status}
+                `;
+                container.appendChild(div);
+            });
         }
 
-        function showModal() { document.getElementById('modal').classList.add('show'); }
-        function hideModal() { document.getElementById('modal').classList.remove('show'); }
+        renderAllocationChart(filtered);
 
-        function clearForm() {
-            document.getElementById('type').value = 'stock';
-            document.getElementById('ticker').value = '';
-            document.getElementById('address').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('shares').value = '';
-            document.getElementById('cost').value = '';
-            document.getElementById('costCurrency').value = 'DKK';
-            document.getElementById('currentPrice').value = '';
-            document.getElementById('priceCurrency').value = 'DKK';
-            document.getElementById('dividend').value = '0';
-            document.getElementById('dividendCurrency').value = 'DKK';
-            document.getElementById('propertyValue').value = '';
-            document.getElementById('propertyCurrency').value = 'DKK';
-            document.getElementById('costTax').value = '0';
-            document.getElementById('costPower').value = '0';
-            document.getElementById('costWater').value = '0';
-            document.getElementById('costGas').value = '0';
-            document.getElementById('costInternet').value = '0';
-            document.getElementById('costOther').value = '0';
-            document.getElementById('propertyCostsCurrency').value = 'DKK';
-            document.getElementById('rentalIncome').value = '0';
-            document.getElementById('rentalIncomeCurrency').value = 'DKK';
-            document.getElementById('deleteBtn').style.display = 'none';
-            toggleFields();
+        if (data.lastUpdate) {
+            const d = new Date(data.lastUpdate);
+            document.getElementById('lastUpdate').textContent = 'Last update: ' + d.toLocaleString('da-DK');
         }
 
-        function toggleFields() {
-            const type = document.getElementById('type').value;
-            const isProperty = type === 'property';
-            const isFund = type === 'fund';
+        updateNextUpdateDisplay();
+    }
 
-            document.getElementById('tickerField').style.display = isProperty ? 'none' : 'block';
-            document.getElementById('addressField').style.display = isProperty ? 'block' : 'none';
-            document.getElementById('sharesField').style.display = isProperty ? 'none' : 'block';
-            document.getElementById('costField').style.display = isProperty ? 'none' : 'block';
-            document.getElementById('propertyValueField').style.display = isProperty ? 'block' : 'none';
-            document.getElementById('currentPriceField').style.display = isProperty ? 'none' : 'block';
-            document.getElementById('dividendField').style.display = isProperty ? 'none' : 'block';
-            document.getElementById('propertyCostsField').style.display = isProperty ? 'block' : 'none';
-            document.getElementById('rentalIncomeField').style.display = isProperty ? 'block' : 'none';
+    function showModal() { document.getElementById('modal').classList.add('show'); }
+    function hideModal() { document.getElementById('modal').classList.remove('show'); }
 
+    function clearForm() {
+        document.getElementById('type').value = 'stock';
+        document.getElementById('ticker').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('shares').value = '';
+        document.getElementById('cost').value = '';
+        document.getElementById('costCurrency').value = 'DKK';
+        document.getElementById('currentPrice').value = '';
+        document.getElementById('priceCurrency').value = 'DKK';
+        document.getElementById('dividend').value = '0';
+        document.getElementById('dividendCurrency').value = 'DKK';
+        document.getElementById('propertyValue').value = '';
+        document.getElementById('propertyCurrency').value = 'DKK';
+        document.getElementById('costTax').value = '0';
+        document.getElementById('costPower').value = '0';
+        document.getElementById('costWater').value = '0';
+        document.getElementById('costGas').value = '0';
+        document.getElementById('costInternet').value = '0';
+        document.getElementById('costOther').value = '0';
+        document.getElementById('propertyCostsCurrency').value = 'DKK';
+        document.getElementById('rentalIncome').value = '0';
+        document.getElementById('rentalIncomeCurrency').value = 'DKK';
+        document.getElementById('savingsAmount').value = '';
+        document.getElementById('savingsCurrency').value = 'DKK';
+        document.getElementById('interestRate').value = '';
+        document.getElementById('deleteBtn').style.display = 'none';
+        toggleFields();
+    }
 
-            document.getElementById('priceInfoStock').style.display = isFund || isProperty ? 'none' : 'block';
-            document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
-            document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds (>0)' : 'Optional (auto-fetch preferred)';
+    function toggleFields() {
+        const type = document.getElementById('type').value;
+        const isProperty = type === 'property';
+        const isSavings = type === 'savings';
+        const isFund = type === 'fund';
+
+        document.getElementById('tickerField').style.display = (isProperty || isSavings) ? 'none' : 'block';
+        document.getElementById('addressField').style.display = isProperty ? 'block' : 'none';
+        document.getElementById('sharesField').style.display = (isProperty || isSavings) ? 'none' : 'block';
+        document.getElementById('costField').style.display = (isProperty || isSavings) ? 'none' : 'block';
+        document.getElementById('propertyValueField').style.display = isProperty ? 'block' : 'none';
+        document.getElementById('savingsAmountField').style.display = isSavings ? 'block' : 'none';
+        document.getElementById('interestRateField').style.display = isSavings ? 'block' : 'none';
+        document.getElementById('currentPriceField').style.display = (isProperty || isSavings) ? 'none' : 'block';
+        document.getElementById('dividendField').style.display = (isProperty || isSavings) ? 'none' : 'block';
+        document.getElementById('propertyCostsField').style.display = isProperty ? 'block' : 'none';
+        document.getElementById('rentalIncomeField').style.display = isProperty ? 'block' : 'none';
+
+        document.getElementById('priceInfoStock').style.display = (isFund || isProperty || isSavings) ? 'none' : 'block';
+        document.getElementById('priceInfoFund').style.display = isFund ? 'block' : 'none';
+        document.getElementById('currentPrice').placeholder = isFund ? 'Required for funds (>0)' : 'Optional (auto-fetch preferred)';
+    }
+
+    function editHolding(idx) {
+        editing = idx;
+        const h = data.holdings[idx];
+        document.getElementById('rentalIncome').value = h.rentalIncome || 0;
+        document.getElementById('rentalIncomeCurrency').value = h.rentalIncomeCurrency || 'DKK';
+        document.getElementById('modalTitle').textContent = 'Edit Holding';
+        document.getElementById('type').value = h.type;
+        document.getElementById('ticker').value = h.ticker || '';
+        document.getElementById('address').value = h.address || '';
+        document.getElementById('name').value = h.name;
+        document.getElementById('shares').value = h.shares || '';
+        document.getElementById('cost').value = h.cost || '';
+        document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
+        document.getElementById('currentPrice').value = h.manualPrice || '';
+        document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
+        document.getElementById('dividend').value = h.dividend || 0;
+        document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
+        
+        if (h.type === 'property') {
+            document.getElementById('propertyValue').value = h.propertyValue || '';
+            document.getElementById('propertyCurrency').value = h.propertyCurrency || 'DKK';
+            const costs = h.propertyCosts || {};
+            document.getElementById('costTax').value = costs.tax || 0;
+            document.getElementById('costPower').value = costs.power || 0;
+            document.getElementById('costWater').value = costs.water || 0;
+            document.getElementById('costGas').value = costs.gas || 0;
+            document.getElementById('costInternet').value = costs.internet || 0;
+            document.getElementById('costOther').value = costs.other || 0;
+            document.getElementById('propertyCostsCurrency').value = h.propertyCostsCurrency || 'DKK';
+        }
+        
+        if (h.type === 'savings') {
+            document.getElementById('savingsAmount').value = h.savingsAmount || '';
+            document.getElementById('savingsCurrency').value = h.savingsCurrency || 'DKK';
+            document.getElementById('interestRate').value = h.interestRate || '';
+        }
+        
+        document.getElementById('deleteBtn').style.display = 'block';
+        toggleFields();
+        showModal();
+    }
+
+    function saveHolding() {
+        const type = document.getElementById('type').value;
+        const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+        const address = document.getElementById('address').value.trim();
+        const name = document.getElementById('name').value.trim();
+
+        if (!name) {
+            alert('Name is required.');
+            return;
         }
 
-        function editHolding(idx) {
-            editing = idx;
-            const h = data.holdings[idx];
-            document.getElementById('rentalIncome').value = h.rentalIncome || 0;
-            document.getElementById('rentalIncomeCurrency').value = h.rentalIncomeCurrency || 'DKK';
-            document.getElementById('modalTitle').textContent = 'Edit Holding';
-            document.getElementById('type').value = h.type;
-            document.getElementById('ticker').value = h.ticker || '';
-            document.getElementById('address').value = h.address || '';
-            document.getElementById('name').value = h.name;
-            document.getElementById('shares').value = h.shares || '';
-            document.getElementById('cost').value = h.cost || '';
-            document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
-            document.getElementById('currentPrice').value = h.manualPrice || '';
-            document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
-            document.getElementById('dividend').value = h.dividend || 0;
-            document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
+        let holding = { type, name };
+
+        if (type === 'property') {
+            const propertyValue = parseFloat(document.getElementById('propertyValue').value) || 0;
+            const propertyCurrency = document.getElementById('propertyCurrency').value;
             
-            if (h.type === 'property') {
-                document.getElementById('propertyValue').value = h.propertyValue || '';
-                document.getElementById('propertyCurrency').value = h.propertyCurrency || 'DKK';
-                const costs = h.propertyCosts || {};
-                document.getElementById('costTax').value = costs.tax || 0;
-                document.getElementById('costPower').value = costs.power || 0;
-                document.getElementById('costWater').value = costs.water || 0;
-                document.getElementById('costGas').value = costs.gas || 0;
-                document.getElementById('costInternet').value = costs.internet || 0;
-                document.getElementById('costOther').value = costs.other || 0;
-                document.getElementById('propertyCostsCurrency').value = h.propertyCostsCurrency || 'DKK';
-            }
-            
-            document.getElementById('deleteBtn').style.display = 'block';
-            toggleFields();
-            showModal();
-        }
+            holding.rentalIncome = parseFloat(document.getElementById('rentalIncome').value) || 0;
+            holding.rentalIncomeCurrency = document.getElementById('rentalIncomeCurrency').value;
 
-        function saveHolding() {
-            const type = document.getElementById('type').value;
-            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
-            const address = document.getElementById('address').value.trim();
-            const name = document.getElementById('name').value.trim();
-
-            if (!name) {
-                alert('Name is required.');
+            if (propertyValue <= 0) {
+                alert('Property value must be > 0.');
                 return;
             }
 
-            let holding = { type, name };
+            holding.address = address;
+            holding.propertyValue = propertyValue;
+            holding.propertyCurrency = propertyCurrency;
+            holding.propertyCosts = {
+                tax: parseFloat(document.getElementById('costTax').value) || 0,
+                power: parseFloat(document.getElementById('costPower').value) || 0,
+                water: parseFloat(document.getElementById('costWater').value) || 0,
+                gas: parseFloat(document.getElementById('costGas').value) || 0,
+                internet: parseFloat(document.getElementById('costInternet').value) || 0,
+                other: parseFloat(document.getElementById('costOther').value) || 0
+            };
+            holding.propertyCostsCurrency = document.getElementById('propertyCostsCurrency').value;
+        } else if (type === 'savings') {
+            const savingsAmount = parseFloat(document.getElementById('savingsAmount').value) || 0;
+            const savingsCurrency = document.getElementById('savingsCurrency').value;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
 
-            if (type === 'property') {
-    const propertyValue = parseFloat(document.getElementById('propertyValue').value) || 0;
-    const propertyCurrency = document.getElementById('propertyCurrency').value;
+            if (savingsAmount <= 0) {
+                alert('Savings amount must be > 0.');
+                return;
+            }
+
+            holding.savingsAmount = savingsAmount;
+            holding.savingsCurrency = savingsCurrency;
+            holding.interestRate = interestRate;
+        } else {
+            const shares = parseFloat(document.getElementById('shares').value) || 0;
+            const cost = parseFloat(document.getElementById('cost').value) || 0;
+            const costCur = document.getElementById('costCurrency').value;
+            const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+            const priceCur = document.getElementById('priceCurrency').value;
+            const div = parseFloat(document.getElementById('dividend').value) || 0;
+            const divCur = document.getElementById('dividendCurrency').value;
+
+            if (shares <= 0 || cost <= 0) {
+                alert('Shares >0 and Cost >0 required.');
+                return;
+            }
+            if (type !== 'fund' && !ticker) {
+                alert('Ticker required for stocks/RSU.');
+                return;
+            }
+            if (type === 'fund' && manPrice <= 0) {
+                alert('Current price required for funds and must be > 0.');
+                return;
+            }
+
+            holding.ticker = type !== 'fund' ? ticker : undefined;
+            holding.shares = shares;
+            holding.cost = cost;
+            holding.costCurrency = costCur;
+            holding.manualPrice = manPrice > 0 ? manPrice : undefined;
+            holding.priceCurrency = priceCur;
+            holding.dividend = div;
+            holding.dividendCurrency = divCur;
+            holding.currentPrice = undefined;
+            holding.fetchError = false;
+        }
+
+        if (editing !== null) {
+            const old = data.holdings[editing];
+            if (old.currentPrice && type !== 'fund' && type !== 'property' && type !== 'savings') {
+                holding.currentPrice = old.currentPrice;
+            }
+            data.holdings[editing] = holding;
+            editing = null;
+        } else {
+            data.holdings.push(holding);
+        }
+
+        localStorage.setItem('portfolio', JSON.stringify(data));
+        hideModal();
+        clearForm();
+        render();
+        
+        if (type !== 'fund' && type !== 'property' && type !== 'savings' && ticker) {
+            const h = data.holdings[data.holdings.length - 1];
+            fetchPriceForHolding(h).then(() => {
+                localStorage.setItem('portfolio', JSON.stringify(data));
+                render();
+            });
+        }
+    }
+
+    function deleteHolding() {
+        if (!confirm('Delete this holding?')) return;
+        data.holdings.splice(editing, 1);
+        localStorage.setItem('portfolio', JSON.stringify(data));
+        hideModal();
+        clearForm();
+        render();
+    }
+
+    function exportData() {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData() {
+        document.getElementById('importFile').click();
+    }
+
+    document.getElementById('addBtn').onclick = () => { editing = null; clearForm(); showModal(); };
+    document.getElementById('closeBtn').onclick = hideModal;
+    document.getElementById('saveBtn').onclick = saveHolding;
+    document.getElementById('deleteBtn').onclick = deleteHolding;
+    document.getElementById('refreshBtn').onclick = refreshPrices;
+    document.getElementById('chatBtn').onclick = toggleChat;
+    document.getElementById('closeChatBtn').onclick = toggleChat;
+    document.getElementById('type').onchange = toggleFields;
     
-    holding.rentalIncome = parseFloat(document.getElementById('rentalIncome').value) || 0;
-    holding.rentalIncomeCurrency = document.getElementById('rentalIncomeCurrency').value;
+    document.getElementById('chatSendBtn').onclick = sendChatMessage;
+    document.getElementById('chatInput').onkeypress = (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    };
 
-    if (propertyValue <= 0) {
-
-                    alert('Property value must be > 0.');
+    document.getElementById('importFile').onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const imported = JSON.parse(event.target.result);
+                if (!imported.holdings || !Array.isArray(imported.holdings)) {
+                    alert('Invalid portfolio file format');
                     return;
                 }
-
-                holding.address = address;
-                holding.propertyValue = propertyValue;
-                holding.propertyCurrency = propertyCurrency;
-                holding.propertyCosts = {
-                    tax: parseFloat(document.getElementById('costTax').value) || 0,
-                    power: parseFloat(document.getElementById('costPower').value) || 0,
-                    water: parseFloat(document.getElementById('costWater').value) || 0,
-                    gas: parseFloat(document.getElementById('costGas').value) || 0,
-                    internet: parseFloat(document.getElementById('costInternet').value) || 0,
-                    other: parseFloat(document.getElementById('costOther').value) || 0
-                };
-                holding.propertyCostsCurrency = document.getElementById('propertyCostsCurrency').value;
-            } else {
-                const shares = parseFloat(document.getElementById('shares').value) || 0;
-                const cost = parseFloat(document.getElementById('cost').value) || 0;
-                const costCur = document.getElementById('costCurrency').value;
-                const manPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
-                const priceCur = document.getElementById('priceCurrency').value;
-                const div = parseFloat(document.getElementById('dividend').value) || 0;
-                const divCur = document.getElementById('dividendCurrency').value;
-
-                if (shares <= 0 || cost <= 0) {
-                    alert('Shares >0 and Cost >0 required.');
-                    return;
-                }
-                if (type !== 'fund' && !ticker) {
-                    alert('Ticker required for stocks/RSU.');
-                    return;
-                }
-                if (type === 'fund' && manPrice <= 0) {
-                    alert('Current price required for funds and must be > 0.');
-                    return;
-                }
-
-                holding.ticker = type !== 'fund' ? ticker : undefined;
-                holding.shares = shares;
-                holding.cost = cost;
-                holding.costCurrency = costCur;
-                holding.manualPrice = manPrice > 0 ? manPrice : undefined;
-                holding.priceCurrency = priceCur;
-                holding.dividend = div;
-                holding.dividendCurrency = divCur;
-                holding.currentPrice = undefined;
-                holding.fetchError = false;
-            }
-
-            if (editing !== null) {
-                const old = data.holdings[editing];
-                if (old.currentPrice && type !== 'fund' && type !== 'property') {
-                    holding.currentPrice = old.currentPrice;
-                }
-                data.holdings[editing] = holding;
-                editing = null;
-            } else {
-                data.holdings.push(holding);
-            }
-
-            localStorage.setItem('portfolio', JSON.stringify(data));
-            hideModal();
-            clearForm();
-            render();
-            
-            if (type !== 'fund' && type !== 'property' && ticker) {
-                const h = data.holdings[data.holdings.length - 1];
-                fetchPriceForHolding(h).then(() => {
+                
+                if (confirm(`Import ${imported.holdings.length} holdings? This will replace your current portfolio.`)) {
+                    data = imported;
+                    migrateData();
                     localStorage.setItem('portfolio', JSON.stringify(data));
                     render();
-                });
-            }
-        }
-
-        function deleteHolding() {
-            if (!confirm('Delete this holding?')) return;
-            data.holdings.splice(editing, 1);
-            localStorage.setItem('portfolio', JSON.stringify(data));
-            hideModal();
-            clearForm();
-            render();
-        }
-
-        function exportData() {
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importData() {
-            document.getElementById('importFile').click();
-        }
-
-        document.getElementById('addBtn').onclick = () => { editing = null; clearForm(); showModal(); };
-        document.getElementById('closeBtn').onclick = hideModal;
-        document.getElementById('saveBtn').onclick = saveHolding;
-        document.getElementById('deleteBtn').onclick = deleteHolding;
-        document.getElementById('refreshBtn').onclick = refreshPrices;
-        document.getElementById('chatBtn').onclick = toggleChat;
-        document.getElementById('closeChatBtn').onclick = toggleChat;
-        document.getElementById('type').onchange = toggleFields;
-        
-        document.getElementById('chatSendBtn').onclick = sendChatMessage;
-        document.getElementById('chatInput').onkeypress = (e) => {
-            if (e.key === 'Enter') sendChatMessage();
-        };
-
-        document.getElementById('importFile').onchange = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const imported = JSON.parse(event.target.result);
-                    if (!imported.holdings || !Array.isArray(imported.holdings)) {
-                        alert('Invalid portfolio file format');
-                        return;
-                    }
-                    
-                    if (confirm(`Import ${imported.holdings.length} holdings? This will replace your current portfolio.`)) {
-                        data = imported;
-                        migrateData();
-                        localStorage.setItem('portfolio', JSON.stringify(data));
-                        render();
-                        alert('✅ Portfolio imported successfully!');
-                    }
-                } catch (err) {
-                    alert('Error reading file: ' + err.message);
+                    alert('✅ Portfolio imported successfully!');
                 }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
+            } catch (err) {
+                alert('Error reading file: ' + err.message);
+            }
         };
+        reader.readAsText(file);
+        e.target.value = '';
+    };
 
-        document.querySelectorAll('.filter-tab').forEach(tab => {
-            tab.onclick = () => {
-                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                activeFilter = tab.dataset.filter;
-                render();
-            };
-        });
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.onclick = () => {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeFilter = tab.dataset.filter;
+            render();
+        };
+    });
 
-        document.getElementById('searchInput').oninput = e => { searchTerm = e.target.value; render(); };
-        document.getElementById('sortSelect').onchange = e => { sortBy = e.target.value; render(); };
+    document.getElementById('searchInput').oninput = e => { searchTerm = e.target.value; render(); };
+    document.getElementById('sortSelect').onchange = e => { sortBy = e.target.value; render(); };
 
-        migrateData();
-        updateExchangeRates();
-        checkAutoUpdate();
-        render();
-        setInterval(checkAutoUpdate, 60000);
-        setInterval(updateNextUpdateDisplay, 60000);
-    </script>
+    migrateData();
+    updateExchangeRates();
+    checkAutoUpdate();
+    render();
+    setInterval(checkAutoUpdate, 60000);
+    setInterval(updateNextUpdateDisplay, 60000);
+</script>
+```
+
 </body>
 </html>
