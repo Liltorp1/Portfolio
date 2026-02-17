@@ -708,181 +708,39 @@
             let totalVal = 0, totalInc = 0;
             portfolio.holdings.forEach(h => { totalVal += holdingValue(h); totalInc += holdingIncome(h); });
             const yld = totalVal > 0 ? (totalInc/totalVal*100).toFixed(2) : 0;
-            const context = `Portfolio: ${Math.round(totalVal).toLocaleString()} DKK value, ${Math.round(totalInc).toLocaleString()} DKK annual income, ${yld}% yield. Holdings: ${portfolio.holdings.map(h=>h.name+' ('+h.type+')').join(', ')}.`;
-            const prompt = `You are a passive income advisor. ${context}\n\n${chatHistory.slice(-4).map(m=>m.role+': '+m.content).join('\n')}\nuser: ${msg}\nassistant:`;
 
-            const res = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
+            const systemMsg = 'You are a helpful passive income investment advisor. The user has a portfolio worth ' + Math.round(totalVal).toLocaleString() + ' DKK with ' + Math.round(totalInc).toLocaleString() + ' DKK annual income (' + yld + '% yield). Holdings: ' + portfolio.holdings.map(h=>h.name+' ('+h.type+')').join(', ') + '. Give concise, practical advice. For Danish property valuations, recommend Boligsiden.dk.';
+
+            const messages = [{ role: 'system', content: systemMsg }];
+            chatHistory.slice(-6).forEach(m => messages.push(m));
+            messages.push({ role: 'user', content: msg });
+
+            const res = await fetch('https://text.pollinations.ai/openai', {
                 method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({inputs: prompt, parameters:{max_new_tokens:300,temperature:0.7,return_full_text:false}})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'openai',
+                    messages: messages,
+                    max_tokens: 400,
+                    temperature: 0.7
+                })
             });
+
+            if (!res.ok) throw new Error('Status ' + res.status);
             const data = await res.json();
-            const reply = data[0]?.generated_text?.trim() || 'Sorry, try again.';
+            const reply = data.choices?.[0]?.message?.content?.trim() || 'Sorry, could not get a response.';
+
             chatHistory.push({role:'user',content:msg},{role:'assistant',content:reply});
-            if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+            if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
             typing.remove();
             addMsg('assistant', reply);
         } catch(err) {
             typing.remove();
-            addMsg('assistant', 'Chat service unavailable right now. Please try again in a moment.');
+            addMsg('assistant', 'Chat unavailable right now. Please try again in a moment.');
         }
         btn.disabled = false;
     }
 
-    // ── RENDER ────────────────────────────────────────────────────────────────
-    function getFiltered() {
-        let list = portfolio.holdings.filter(h => {
-            if (activeFilter === 'all') return true;
-            return activeFilter.split(',').includes(h.type);
-        });
-        if (searchTerm) {
-            const t = searchTerm.toLowerCase();
-            list = list.filter(h =>
-                h.name.toLowerCase().includes(t) ||
-                (h.ticker && h.ticker.toLowerCase().includes(t)) ||
-                (h.address && h.address.toLowerCase().includes(t))
-            );
-        }
-        if (sortBy === 'value-desc') list.sort((a,b) => holdingValue(b) - holdingValue(a));
-        else if (sortBy === 'value-asc') list.sort((a,b) => holdingValue(a) - holdingValue(b));
-        else if (sortBy === 'yield-desc') {
-            list.sort((a,b) => {
-                const va=holdingValue(a), vb=holdingValue(b);
-                return (vb>0?holdingIncome(b)/vb:0) - (va>0?holdingIncome(a)/va:0);
-            });
-        } else list.sort((a,b) => a.name.localeCompare(b.name));
-        return list;
-    }
-
-    function renderChart(filtered) {
-        const ctx = document.getElementById('allocationChart').getContext('2d');
-        const types = {};
-        let total = 0;
-        filtered.forEach(h => { const v=holdingValue(h); types[h.type]=(types[h.type]||0)+v; total+=v; });
-        const labels = Object.keys(types).map(t => t.charAt(0).toUpperCase()+t.slice(1)+' ('+((total>0?types[t]/total*100:0).toFixed(1))+'%)');
-        const vals = Object.values(types);
-        if (allocationChart) {
-            allocationChart.data.labels = labels;
-            allocationChart.data.datasets[0].data = vals;
-            allocationChart.update('none');
-        } else {
-            allocationChart = new Chart(ctx, {
-                type: 'pie',
-                data: { labels, datasets:[{data:vals, backgroundColor:['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40']}] },
-                options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>fmt(fromDKK(c.raw,displayCurrency),displayCurrency)}} } }
-            });
-        }
-    }
-
-    function render() {
-        const filtered = getFiltered();
-        let totVal=0, totCost=0, totInc=0;
-        filtered.forEach(h => {
-            totVal  += holdingValue(h);
-            totCost += (h.type==='property'||h.type==='savings') ? holdingValue(h) : toDKK((h.cost||0)*(h.shares||0), h.costCurrency||'DKK');
-            totInc  += holdingIncome(h);
-        });
-
-        const dVal  = fromDKK(totVal,  displayCurrency);
-        const dInc  = fromDKK(totInc,  displayCurrency);
-        const dChg  = fromDKK(totVal-totCost, displayCurrency);
-        const chgPct = totCost ? ((totVal-totCost)/totCost*100) : 0;
-        const yldPct = totVal  ? (totInc/totVal*100) : 0;
-
-        document.getElementById('totalValue').textContent   = fmt(dVal, displayCurrency);
-        document.getElementById('annualIncome').textContent = fmt(dInc, displayCurrency);
-        document.getElementById('yieldPercent').textContent = yldPct.toFixed(2)+'%';
-
-        const chgEl = document.getElementById('totalChange');
-        chgEl.textContent = (dChg>=0?'+':'') + fmt(dChg,displayCurrency) + ' (' + chgPct.toFixed(1) + '%)';
-        chgEl.className = 'change ' + (dChg>=0?'positive':'negative');
-
-        const lbl = activeFilter==='all' ? 'All' : activeFilter.split(',').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join('+');
-        document.getElementById('filterLabel').textContent = '('+lbl+')';
-        document.getElementById('incomeFilterLabel').textContent = '('+lbl+')';
-
-        const container = document.getElementById('holdings');
-        container.innerHTML = '';
-
-        if (filtered.length === 0) {
-            container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings found</div>';
-        } else {
-            filtered.forEach(h => {
-                const val = holdingValue(h);
-                const inc = holdingIncome(h);
-                const yld = val ? (inc/val*100) : 0;
-                const dv  = fromDKK(val, displayCurrency);
-                const di  = fromDKK(Math.abs(inc), displayCurrency);
-
-                let badge = '';
-                let lines = '';
-                let status = '';
-
-                if (h.type === 'savings') {
-                    badge = '<span class="badge badge-savings">SAVINGS</span>';
-                    lines = `<div class="meta">Interest: ${(h.interestRate||0).toFixed(2)}% per year</div>`;
-
-                } else if (h.type === 'property') {
-                    badge = '<span class="badge badge-property">PROPERTY</span>';
-                    lines = h.address ? `<div class="meta">${h.address}</div>` : '';
-                    const c = h.costs || {};
-                    const tc = (c.tax||0)+(c.power||0)+(c.water||0)+(c.gas||0)+(c.internet||0)+(c.other||0);
-                    if (tc > 0) lines += `<div class="meta">Annual costs: ${fmt(fromDKK(toDKK(tc,h.costsCurrency||'DKK'),displayCurrency),displayCurrency)}</div>`;
-
-                } else {
-                    // stock / fund / rsu
-                    const cv   = toDKK((h.cost||0)*(h.shares||0), h.costCurrency||'DKK');
-                    const chg  = val - cv;
-                    const dCv  = fromDKK(cv,  displayCurrency);
-                    const dChg = fromDKK(chg, displayCurrency);
-                    const chgP = cv ? (chg/cv*100) : 0;
-
-                    if (h.type === 'fund')    { badge = '<span class="badge badge-fund">FUND</span>'; status = '<span class="status manual-badge">💼 Manual price</span>'; }
-                    else if (h.type === 'rsu'){ badge = '<span class="badge badge-rsu">RSU</span>'; }
-
-                    if (h.type !== 'fund') {
-                        if (h.fetchError)       status = '<span class="status failed">⚠️ Fetch failed</span>';
-                        else if (h.currentPrice) status = '<span class="status live">✓ Live price</span>';
-                    }
-
-                    lines  = `<div class="meta">${h.shares} shares @ ${(h.cost||0).toFixed(2)} ${h.costCurrency||'DKK'} = ${fmt(dCv,displayCurrency)} cost</div>`;
-                    lines += `<div class="meta ${chg>=0?'positive':'negative'}">${chg>=0?'+':''}${fmt(dChg,displayCurrency)} (${chgP.toFixed(1)}%)</div>`;
-                }
-
-                const incLabel = inc >= 0 ? 'Income' : 'Cost';
-                const d = document.createElement('div');
-                d.className = 'holding';
-                d.onclick = () => editHolding(portfolio.holdings.indexOf(h));
-                d.innerHTML = `
-                    <div class="holding-header">
-                        <span class="holding-name">${h.name}${badge}</span>
-                        <span>${fmt(dv,displayCurrency)}</span>
-                    </div>
-                    ${lines}
-                    <div class="meta">${incLabel}: ${fmt(di,displayCurrency)}/yr (${yld.toFixed(1)}%)</div>
-                    ${status}
-                `;
-                container.appendChild(d);
-            });
-        }
-
-        renderChart(filtered);
-
-        if (portfolio.lastUpdate) {
-            document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date(portfolio.lastUpdate).toLocaleString('da-DK');
-        }
-        updateNextDisplay();
-    }
-
-    // ── EVENT LISTENERS ───────────────────────────────────────────────────────
-    document.getElementById('addBtn').onclick = () => { editingIdx=null; clearForm(); document.getElementById('modalTitle').textContent='Add Holding'; document.getElementById('modal').classList.add('show'); };
-    document.getElementById('closeBtn').onclick = () => { document.getElementById('modal').classList.remove('show'); };
-    document.getElementById('saveBtn').onclick = saveHolding;
-    document.getElementById('deleteBtn').onclick = deleteHolding;
-    document.getElementById('refreshBtn').onclick = refreshPrices;
-    document.getElementById('chatBtn').onclick = toggleChat;
-    document.getElementById('closeChatBtn').onclick = toggleChat;
-    document.getElementById('type').onchange = toggleFields;
     document.getElementById('chatSendBtn').onclick = sendChatMessage;
     document.getElementById('chatInput').onkeypress = e => { if (e.key==='Enter') sendChatMessage(); };
     document.getElementById('settingsBtn').onclick = () => document.getElementById('settingsModal').classList.add('show');
