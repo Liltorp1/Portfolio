@@ -74,6 +74,21 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
         .nav-btn { flex: 1; padding: 12px; background: #1a2237; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; border: none; }
         .status { font-size: 10px; margin-top: 3px; }
+        .edit-price-btn { background: #4d94ff; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; cursor: pointer; margin-left: 8px; font-weight: 600; }
+        .edit-price-btn:hover { background: #3d7fe6; }
+        .edit-price-btn:active { transform: scale(0.95); }
+        .inline-price-editor { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 10px; background: #0a0e1a; border-radius: 6px; }
+        .inline-price-input { width: 120px; padding: 6px 10px; background: #1a2237; border: 1px solid #4d94ff; border-radius: 4px; color: #e8edf4; font-size: 14px; }
+        .inline-price-currency { width: 70px; padding: 6px 10px; background: #1a2237; border: 1px solid #2a3550; border-radius: 4px; color: #e8edf4; font-size: 14px; }
+        .inline-price-save { background: #00ff88; color: #0a0e1a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600; }
+        .inline-price-cancel { background: #2a3550; color: #e8edf4; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+        body.light .edit-price-btn { background: #007bff; }
+        body.light .edit-price-btn:hover { background: #0056b3; }
+        body.light .inline-price-editor { background: #f8f9fa; }
+        body.light .inline-price-input { background: #ffffff; border-color: #007bff; color: #212529; }
+        body.light .inline-price-currency { background: #ffffff; border-color: #dee2e6; color: #212529; }
+        body.light .inline-price-save { background: #28a745; color: white; }
+        body.light .inline-price-cancel { background: #6c757d; color: white; }
         .currency-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .currency-row input { flex: 2; margin-bottom: 0; }
         .currency-row select { flex: 1; margin-bottom: 0; }
@@ -85,6 +100,8 @@
         .badge-rsu { background: #2a3550; color: #9ba5b8; }
         .badge-property { background: #4d94ff; color: white; }
         .badge-savings { background: #00ff88; color: #0a0e1a; }
+        .badge-manual { background: #ffc044; color: #0a0e1a; font-weight: 600; cursor: help; }
+        .badge-manual:hover { background: #ffb020; }
         .info-text { font-size: 12px; color: #9ba5b8; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
         .next-update { font-size: 11px; color: #9ba5b8; margin-top: 5px; }
         .loading-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #1a2237; padding: 20px 40px; border-radius: 12px; border: 2px solid #4d94ff; z-index: 2000; display: none; }
@@ -350,6 +367,14 @@
             </div>
         </div>
         <div class="settings-section">
+            <h4>Manual Price Mode</h4>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <input type="checkbox" id="manualPriceToggle" style="width:auto;margin:0;">
+                <label for="manualPriceToggle" style="margin:0;cursor:pointer;">Enable Manual Price Mode</label>
+            </div>
+            <div class="info-text">For stocks from unsupported exchanges (.CO, .MC, etc.), manually enter prices instead of API fetching.</div>
+        </div>
+        <div class="settings-section">
             <h4>Data Management</h4>
             <button class="btn" id="clearAllData" style="background:#ff4466;">Clear All Data</button>
             <div class="warning-text">This deletes everything. Export first!</div>
@@ -395,6 +420,14 @@
         <div class="currency-row">
             <input type="number" step="0.01" id="currentPrice" placeholder="Current price">
             <select id="priceCurrency"><option>DKK</option><option>EUR</option><option>USD</option></select>
+        </div>
+        <div id="manualPriceWrap" style="display:none;">
+            <label>Manual Price (for unsupported exchanges)</label>
+            <div class="info-text">Enter current price manually. This will be used instead of API fetching.</div>
+            <div class="currency-row">
+                <input type="number" step="0.01" id="manualPrice" placeholder="Manual price">
+                <select id="manualPriceCurrency"><option>DKK</option><option>EUR</option><option>USD</option></select>
+            </div>
         </div>
         <label>Annual Dividend per Share (0 if none)</label>
         <div class="currency-row">
@@ -476,6 +509,7 @@
 // - Yield metrics: Current yield, yield-on-cost
 // - Historical tracking: Daily income snapshots with growth visualization
 // - Auto price updates: TwelveData API integration
+// - Manual Price Mode: For unsupported exchanges (.CO, .MC, etc.)
 // - AI chat: Pollinations.ai powered advisor
 // - Multi-select filtering: Combine any asset types
 // - Import/Export: JSON backup/restore
@@ -494,6 +528,7 @@ var allocationChart = null;
 var rates = { DKK: 1, EUR: 7.46, USD: 6.88 };
 var displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
 var incomeHistory = JSON.parse(localStorage.getItem('incomeHistory') || '[]');
+var manualPriceMode = localStorage.getItem('manualPriceMode') === 'true';
 document.getElementById('displayCurrency').value = displayCurrency;
 
 var filterPresets = {
@@ -531,9 +566,18 @@ function holdingValue(h) {
     if (h.type === 'savings') {
         return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
     }
+    
+    // Price selection logic for stocks/funds/RSU:
+    // 1. For funds: Always use manualPrice (funds require manual entry)
+    // 2. For stocks/RSU:
+    //    - currentPrice: Set by API fetch OR manual price override
+    //    - manualPrice: Legacy field (backup)
+    //    - cost: Fallback to cost basis if no price available
     var price = h.type === 'fund'
         ? (h.manualPrice || 0)
         : (h.currentPrice || h.manualPrice || h.cost || 0);
+    
+    // Value = shares × price (converted to DKK)
     return (h.shares || 0) * toDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
 }
 
@@ -568,6 +612,30 @@ function holdingYieldOnCost(h) {
 // Simple monthly projection (annual / 12)
 function calculateMonthlyIncome(annualIncome) {
     return annualIncome / 12;
+}
+
+// Calculate portfolio totals (works with mixed manual/API prices)
+// This function ensures correct calculation regardless of price source:
+// - Stocks with API prices: Uses currentPrice from API
+// - Stocks with manual prices: Uses currentPrice (set by fetchPrice from manualPriceOverride)
+// - Funds: Uses manualPrice field
+// - Property: Uses propertyValue
+// - Savings: Uses savingsAmount
+// All calculations aggregate correctly because holdingValue() handles each type
+function calculatePortfolioTotals(holdings) {
+    var totVal = 0;
+    var totCost = 0;
+    var totInc = 0;
+    
+    holdings.forEach(function(h) {
+        totVal += holdingValue(h);
+        totCost += (h.type === 'property' || h.type === 'savings') 
+            ? holdingValue(h) 
+            : toDKK((h.cost || 0) * (h.shares || 0), h.costCurrency || 'DKK');
+        totInc += holdingIncome(h);
+    });
+    
+    return { value: totVal, cost: totCost, income: totInc };
 }
 
 // Record daily income snapshot (prevents duplicates)
@@ -714,11 +782,45 @@ function checkAutoUpdate() {
 }
 
 function fetchPrice(h) {
+    // ============================================================================
+    // MANUAL PRICE MODE LOGIC
+    // ============================================================================
+    // Priority 1: If manual price mode is ON and holding has a manual price override,
+    // use that price instead of making an API call. This allows users to manually
+    // enter prices for stocks from unsupported exchanges (.CO, .MC, etc.)
+    if (manualPriceMode && h.manualPriceOverride && h.manualPriceOverride > 0) {
+        h.currentPrice = h.manualPriceOverride;
+        h.priceCurrency = h.manualPriceCurrency || 'DKK';
+        h.fetchError = false;
+        h.isManualPrice = true; // Flag for UI badge display
+        return Promise.resolve(); // Skip API call
+    }
+    
+    // Mark as not using manual price (for UI indicators)
+    h.isManualPrice = false;
+    
+    // ============================================================================
+    // SKIP API FETCH FOR NON-STOCK TYPES
+    // ============================================================================
+    // Funds, property, and savings don't use API prices
     if (!h.ticker || h.type === 'fund' || h.type === 'property' || h.type === 'savings') {
         return Promise.resolve();
     }
+    
+    // ============================================================================
+    // SKIP UNSUPPORTED EXCHANGES
+    // ============================================================================
+    // TwelveData free tier doesn't support exchanges with dots in ticker (.CO, .MC, etc.)
+    // Mark as fetch error so user knows to use manual price mode
     var sym = h.ticker.toUpperCase();
-    if (sym.indexOf('.') !== -1) { h.fetchError = true; return Promise.resolve(); }
+    if (sym.indexOf('.') !== -1) { 
+        h.fetchError = true; 
+        return Promise.resolve(); 
+    }
+    
+    // ============================================================================
+    // FETCH FROM API
+    // ============================================================================
     return fetch('https://api.twelvedata.com/quote?symbol=' + sym + '&apikey=' + API_KEY)
         .then(function(r) { return r.json(); })
         .then(function(j) {
@@ -766,6 +868,10 @@ function toggleFields() {
     document.getElementById('priceHint').style.display = type==='fund' ? 'none' : 'block';
     document.getElementById('fundHint').style.display = type==='fund' ? 'block' : 'none';
     
+    // Show manual price field only when manual price mode is ON and type is stock/fund/rsu
+    var showManualPrice = manualPriceMode && (type==='stock'||type==='fund'||type==='rsu');
+    document.getElementById('manualPriceWrap').style.display = showManualPrice ? 'block' : 'none';
+    
     var freqField = document.getElementById('dividendFrequency');
     if (type === 'property') {
         freqField.value = 'monthly';
@@ -777,7 +883,7 @@ function toggleFields() {
 }
 
 function clearForm() {
-    ['ticker','name','shares','cost','currentPrice','dividend','address','propertyValue','rentalIncome','costTax','costPower','costWater','costGas','costInternet','costOther','savingsAmount','interestRate'].forEach(function(id) {
+    ['ticker','name','shares','cost','currentPrice','dividend','address','propertyValue','rentalIncome','costTax','costPower','costWater','costGas','costInternet','costOther','savingsAmount','interestRate','manualPrice'].forEach(function(id) {
         document.getElementById(id).value = '';
     });
     document.getElementById('type').value = 'stock';
@@ -785,6 +891,7 @@ function clearForm() {
     document.getElementById('priceCurrency').value = 'DKK';
     document.getElementById('dividendCurrency').value = 'DKK';
     document.getElementById('dividendFrequency').value = 'annual';
+    document.getElementById('manualPriceCurrency').value = 'DKK';
     document.getElementById('propertyCurrency').value = 'DKK';
     document.getElementById('rentalCurrency').value = 'DKK';
     document.getElementById('costsCurrency').value = 'DKK';
@@ -825,6 +932,8 @@ function editHolding(idx) {
         document.getElementById('costCurrency').value = h.costCurrency || 'DKK';
         document.getElementById('currentPrice').value = h.manualPrice || '';
         document.getElementById('priceCurrency').value = h.priceCurrency || 'DKK';
+        document.getElementById('manualPrice').value = h.manualPriceOverride || '';
+        document.getElementById('manualPriceCurrency').value = h.manualPriceCurrency || 'DKK';
         document.getElementById('dividend').value = h.dividend || '';
         document.getElementById('dividendCurrency').value = h.dividendCurrency || 'DKK';
         document.getElementById('dividendFrequency').value = h.dividendFrequency || 'annual';
@@ -878,6 +987,17 @@ function saveHolding() {
         h.dividend = parseFloat(document.getElementById('dividend').value) || 0;
         h.dividendCurrency = document.getElementById('dividendCurrency').value;
         h.dividendFrequency = document.getElementById('dividendFrequency').value;
+        
+        // Save manual price if provided
+        var manualPriceInput = parseFloat(document.getElementById('manualPrice').value);
+        if (manualPriceInput > 0) {
+            h.manualPriceOverride = manualPriceInput;
+            h.manualPriceCurrency = document.getElementById('manualPriceCurrency').value;
+        } else {
+            h.manualPriceOverride = null;
+            h.manualPriceCurrency = null;
+        }
+        
         if (editingIdx !== null && portfolio.holdings[editingIdx] && portfolio.holdings[editingIdx].currentPrice) {
             h.currentPrice = portfolio.holdings[editingIdx].currentPrice;
         }
@@ -908,6 +1028,67 @@ function deleteHolding() {
     clearForm();
     render();
     recordIncomeSnapshot();
+}
+
+// ============================================================================
+// MANUAL PRICE INLINE EDITOR
+// ============================================================================
+// These functions allow quick price updates without opening the full edit modal
+
+function showInlinePriceEditor(idx) {
+    var h = portfolio.holdings[idx];
+    var holdingEl = document.getElementById('holding-' + idx);
+    if (!holdingEl) return;
+    
+    var currentPrice = h.manualPriceOverride || h.currentPrice || h.cost || 0;
+    var currentCurrency = h.manualPriceCurrency || h.priceCurrency || h.costCurrency || 'DKK';
+    
+    var editorHtml = '<div class="inline-price-editor" id="priceEditor-' + idx + '">' +
+        '<input type="number" step="0.01" class="inline-price-input" id="priceInput-' + idx + '" value="' + currentPrice + '" placeholder="Price">' +
+        '<select class="inline-price-currency" id="priceCurrencySelect-' + idx + '">' +
+            '<option value="DKK"' + (currentCurrency==='DKK'?' selected':'') + '>DKK</option>' +
+            '<option value="EUR"' + (currentCurrency==='EUR'?' selected':'') + '>EUR</option>' +
+            '<option value="USD"' + (currentCurrency==='USD'?' selected':'') + '>USD</option>' +
+        '</select>' +
+        '<button class="inline-price-save" onclick="saveInlinePrice(' + idx + ')">Save</button>' +
+        '<button class="inline-price-cancel" onclick="cancelInlinePrice(' + idx + ')">Cancel</button>' +
+    '</div>';
+    
+    var existingEditor = document.getElementById('priceEditor-' + idx);
+    if (existingEditor) {
+        existingEditor.remove();
+    } else {
+        holdingEl.insertAdjacentHTML('beforeend', editorHtml);
+        document.getElementById('priceInput-' + idx).focus();
+    }
+}
+
+function saveInlinePrice(idx) {
+    var priceInput = document.getElementById('priceInput-' + idx);
+    var currencySelect = document.getElementById('priceCurrencySelect-' + idx);
+    
+    var newPrice = parseFloat(priceInput.value);
+    if (!newPrice || newPrice <= 0) {
+        alert('Please enter a valid price');
+        return;
+    }
+    
+    var h = portfolio.holdings[idx];
+    h.manualPriceOverride = newPrice;
+    h.manualPriceCurrency = currencySelect.value;
+    h.currentPrice = newPrice;
+    h.priceCurrency = currencySelect.value;
+    h.isManualPrice = true;
+    h.fetchError = false;
+    
+    save();
+    render();
+    recordIncomeSnapshot();
+}
+
+function cancelInlinePrice(idx) {
+    var editor = document.getElementById('priceEditor-' + idx);
+    if (editor) editor.remove();
 }
 
 function exportData() {
@@ -1265,6 +1446,14 @@ function renderIncomeGrowthChart(days) {
 
 function render() {
     var filtered = getFiltered();
+    
+    // Calculate portfolio totals across all holdings
+    // Works correctly with mixed price sources:
+    // - API-fetched prices (stocks/RSU with live data)
+    // - Manual prices (unsupported exchanges like .CO, .MC)
+    // - Fund prices (always manual)
+    // - Property valuations
+    // - Savings amounts
     var totVal=0, totCost=0, totInc=0;
     filtered.forEach(function(h) {
         totVal += holdingValue(h);
@@ -1329,12 +1518,33 @@ function render() {
                 var cv=toDKK((h.cost||0)*(h.shares||0),h.costCurrency||'DKK');
                 var chg=val-cv, dCv=fromDKK(cv,displayCurrency), dChg2=fromDKK(chg,displayCurrency);
                 var chgP=cv?(chg/cv*100):0;
-                if (h.type==='fund') { badge='<span class="badge badge-fund">FUND</span>'; status='<span class="status manual-badge">Manual price</span>'; }
-                else if (h.type==='rsu') { badge='<span class="badge badge-rsu">RSU</span>'; }
-                if (h.type!=='fund') {
-                    if (h.fetchError) status='<span class="status failed">Fetch failed</span>';
-                    else if (h.currentPrice) status='<span class="status live">Live price</span>';
+                
+                // Add type badges
+                if (h.type==='fund') { 
+                    badge='<span class="badge badge-fund">FUND</span>'; 
                 }
+                else if (h.type==='rsu') { 
+                    badge='<span class="badge badge-rsu">RSU</span>'; 
+                }
+                
+                // Add manual price badge if applicable
+                if (h.isManualPrice) {
+                    badge += '<span class="badge badge-manual" title="Price manually entered">MANUAL</span>';
+                }
+                
+                // Set status indicator
+                if (h.type==='fund') {
+                    status='<span class="status manual-badge">Manual price</span>';
+                } else if (h.type!=='fund') {
+                    if (h.isManualPrice) {
+                        status='<span class="status manual-badge" title="This price was manually entered">Manual price</span>';
+                    } else if (h.fetchError) {
+                        status='<span class="status failed">Fetch failed</span>';
+                    } else if (h.currentPrice) {
+                        status='<span class="status live">Live price</span>';
+                    }
+                }
+                
                 lines='<div class="meta">'+(h.shares||0)+' shares @ '+(h.cost||0).toFixed(2)+' '+(h.costCurrency||'DKK')+' = '+fmt(dCv,displayCurrency)+' cost</div>';
                 lines+='<div class="meta '+(chg>=0?'positive':'negative')+'">'+(chg>=0?'+':'')+fmt(dChg2,displayCurrency)+' ('+chgP.toFixed(1)+'%)</div>';
             }
@@ -1352,8 +1562,15 @@ function render() {
             var d=document.createElement('div');
             d.className='holding';
             var hIdx=portfolio.holdings.indexOf(h);
+            d.id = 'holding-' + hIdx;
+            
+            var editPriceBtn = '';
+            if (manualPriceMode && (h.type === 'stock' || h.type === 'fund' || h.type === 'rsu')) {
+                editPriceBtn = '<button class="edit-price-btn" onclick="event.stopPropagation(); showInlinePriceEditor(' + hIdx + ')">Edit Price</button>';
+            }
+            
             d.onclick=(function(i){ return function(){ editHolding(i); }; })(hIdx);
-            d.innerHTML='<div class="holding-header"><span class="holding-name">'+h.name+badge+'</span><span>'+fmt(dv,displayCurrency)+'</span></div>'+lines+'<div class="meta">'+incLabel+': '+fmt(di,displayCurrency)+'/yr ('+yld.toFixed(1)+'%)</div>'+yocDisplay+status;
+            d.innerHTML='<div class="holding-header"><span class="holding-name">'+h.name+badge+editPriceBtn+'</span><span>'+fmt(dv,displayCurrency)+'</span></div>'+lines+'<div class="meta">'+incLabel+': '+fmt(di,displayCurrency)+'/yr ('+yld.toFixed(1)+'%)</div>'+yocDisplay+status;
             container.appendChild(d);
         });
     }
@@ -1382,6 +1599,16 @@ document.getElementById('closeSettingsBtn').onclick = function() { document.getE
 document.getElementById('exportBtn').onclick = exportData;
 document.getElementById('importBtn').onclick = function() { document.getElementById('importFile').click(); };
 document.getElementById('clearAllData').onclick = function() { if (confirm('Delete ALL data? Cannot be undone!')) { localStorage.clear(); location.reload(); } };
+
+document.getElementById('manualPriceToggle').checked = manualPriceMode;
+document.getElementById('manualPriceToggle').onchange = function() {
+    manualPriceMode = this.checked;
+    localStorage.setItem('manualPriceMode', manualPriceMode);
+    // If modal is open, refresh fields visibility
+    if (document.getElementById('modal').classList.contains('show')) {
+        toggleFields();
+    }
+};
 document.getElementById('searchInput').oninput = function(e) { searchTerm=e.target.value; render(); };
 document.getElementById('sortSelect').onchange = function(e) { sortBy=e.target.value; render(); };
 
