@@ -108,6 +108,7 @@
         .loading-indicator.show { display: block; }
         .error-list { background: #ff446620; border: 1px solid #ff4466; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 12px; }
         .chart-container { position: relative; max-height: 250px; }
+        #historyChart { width: 100%; height: 300px; display: block; }
         .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .cost-item label { font-size: 12px; margin-bottom: 5px; }
         .cost-item input { margin-bottom: 0; }
@@ -272,6 +273,26 @@
     </div>
     <div id="incomeGrowthStats" class="growth-stats"></div>
     <div id="incomeGrowthChart" class="income-growth-chart"></div>
+</div>
+
+<div class="card">
+    <div class="income-growth-header">
+        <h3>Portfolio History</h3>
+        <div class="time-range-toggles">
+            <button class="history-range-toggle active" data-range="30d">30D</button>
+            <button class="history-range-toggle" data-range="12m">12M</button>
+            <button class="history-range-toggle" data-range="all">All</button>
+        </div>
+    </div>
+    <div style="margin-bottom:15px;">
+        <label for="historyMetric" style="font-size:12px;color:#9ba5b8;margin-right:10px;">Show:</label>
+        <select id="historyMetric" style="padding:6px 10px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;font-size:14px;">
+            <option value="value">Total Value</option>
+            <option value="income">Annual Income</option>
+            <option value="yield">Yield %</option>
+        </select>
+    </div>
+    <canvas id="historyChart" width="800" height="300"></canvas>
 </div>
 
 <div class="card">
@@ -508,6 +529,7 @@
 // - Income forecasting: Monthly projections, dividend calendar, growth tracking
 // - Yield metrics: Current yield, yield-on-cost
 // - Historical tracking: Daily income snapshots with growth visualization
+// - Portfolio History: Daily tracking of value, income, yield with charts
 // - Auto price updates: TwelveData API integration
 // - Manual Price Mode: For unsupported exchanges (.CO, .MC, etc.)
 // - AI chat: Pollinations.ai powered advisor
@@ -528,6 +550,7 @@ var allocationChart = null;
 var rates = { DKK: 1, EUR: 7.46, USD: 6.88 };
 var displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
 var incomeHistory = JSON.parse(localStorage.getItem('incomeHistory') || '[]');
+var portfolioHistory = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
 var manualPriceMode = localStorage.getItem('manualPriceMode') === 'true';
 document.getElementById('displayCurrency').value = displayCurrency;
 
@@ -636,6 +659,248 @@ function calculatePortfolioTotals(holdings) {
     });
     
     return { value: totVal, cost: totCost, income: totInc };
+}
+
+// ============================================================================
+// PORTFOLIO HISTORY TRACKING
+// ============================================================================
+// Tracks daily snapshots of portfolio value, income, and yield for trending
+// Data stored locally in browser (no backend required)
+// One snapshot per day to track long-term portfolio growth
+
+function loadHistory() {
+    // Load history from localStorage
+    return JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+}
+
+function saveHistory(history) {
+    // Save history to localStorage and update global variable
+    localStorage.setItem('portfolioHistory', JSON.stringify(history));
+    portfolioHistory = history;
+}
+
+function recordDailySnapshot(totalValue, annualIncome) {
+    // Records one snapshot per day (prevents duplicates)
+    // Called automatically by render() after portfolio totals are calculated
+    // Values are in DKK for consistency across currency changes
+    
+    var today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    // Load current history
+    var history = loadHistory();
+    
+    // Check if snapshot for today already exists
+    var alreadyRecorded = history.some(function(entry) {
+        return entry.date === today;
+    });
+    
+    if (alreadyRecorded) {
+        return; // Don't duplicate - only one snapshot per day
+    }
+    
+    // Calculate yield percentage
+    var yieldPercent = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
+    
+    // Create new snapshot entry
+    var snapshot = {
+        date: today,
+        totalValue: totalValue,        // Portfolio value in DKK
+        annualIncome: annualIncome,    // Annual income in DKK
+        yield: yieldPercent            // Yield percentage
+    };
+    
+    // Append to history
+    history.push(snapshot);
+    
+    // Sort by date (oldest first)
+    history.sort(function(a, b) {
+        return a.date.localeCompare(b.date);
+    });
+    
+    // Limit to last 3 years for performance (1095 days)
+    if (history.length > 1095) {
+        history = history.slice(-1095);
+    }
+    
+    // Save to localStorage
+    saveHistory(history);
+}
+
+function getChartData(range) {
+    // Filters history by time range and prepares data for charting
+    // Range options: '30d' (last 30 days), '12m' (last 12 months), 'all' (entire history)
+    // Returns four parallel arrays ready for chart rendering
+    
+    var history = loadHistory();
+    
+    // Return empty arrays if no history
+    if (history.length === 0) {
+        return {
+            labels: [],
+            values: [],
+            income: [],
+            yield: []
+        };
+    }
+    
+    // Calculate cutoff date based on range
+    var cutoffDate = new Date();
+    var filtered = history;
+    
+    if (range === '30d') {
+        cutoffDate.setDate(cutoffDate.getDate() - 30);
+        filtered = history.filter(function(entry) {
+            return new Date(entry.date) >= cutoffDate;
+        });
+    } else if (range === '12m') {
+        cutoffDate.setMonth(cutoffDate.getMonth() - 12);
+        filtered = history.filter(function(entry) {
+            return new Date(entry.date) >= cutoffDate;
+        });
+    }
+    // 'all' range uses all data (no filtering)
+    
+    // Extract parallel arrays for charting
+    var labels = [];
+    var values = [];
+    var income = [];
+    var yieldData = [];
+    
+    filtered.forEach(function(entry) {
+        labels.push(entry.date);
+        values.push(entry.totalValue);
+        income.push(entry.annualIncome);
+        yieldData.push(entry.yield);
+    });
+    
+    return {
+        labels: labels,      // Date strings (YYYY-MM-DD)
+        values: values,      // Total portfolio values
+        income: income,      // Annual income amounts
+        yield: yieldData     // Yield percentages
+    };
+}
+
+function drawHistoryChart(labels, values, metric) {
+    // Draws a line chart on canvas element showing portfolio history
+    // Uses pure Canvas API (no external chart libraries)
+    // Metric parameter determines Y-axis formatting: 'value', 'income', or 'yield'
+    
+    metric = metric || 'value'; // Default to value
+    
+    var canvas = document.getElementById('historyChart');
+    if (!canvas || !canvas.getContext) return;
+    
+    var ctx = canvas.getContext('2d');
+    var width = canvas.width;
+    var height = canvas.height;
+    
+    // Clear canvas before redrawing
+    ctx.clearRect(0, 0, width, height);
+    
+    // Show message if no data available
+    if (!labels || labels.length === 0) {
+        ctx.fillStyle = '#9ba5b8';
+        ctx.font = '14px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('No history data yet. Check back tomorrow!', width / 2, height / 2);
+        return;
+    }
+    
+    // Chart padding for axes and labels
+    var padding = { top: 30, right: 40, bottom: 40, left: 60 };
+    var chartWidth = width - padding.left - padding.right;
+    var chartHeight = height - padding.top - padding.bottom;
+    
+    // Calculate value range for auto-scaling
+    var maxValue = Math.max.apply(Math, values);
+    var minValue = Math.min.apply(Math, values);
+    var valueRange = maxValue - minValue;
+    
+    // Add 10% padding to range for better visualization
+    var rangePadding = valueRange * 0.1;
+    maxValue += rangePadding;
+    minValue -= rangePadding;
+    if (minValue < 0) minValue = 0;
+    
+    // Scale functions to convert data to pixel coordinates
+    var xScale = function(index) {
+        return padding.left + (index / Math.max(1, labels.length - 1)) * chartWidth;
+    };
+    
+    var yScale = function(value) {
+        var range = maxValue - minValue;
+        if (range === 0) return padding.top + chartHeight / 2;
+        return padding.top + chartHeight - ((value - minValue) / range) * chartHeight;
+    };
+    
+    // Draw horizontal grid lines
+    ctx.strokeStyle = '#2a3550';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 5; i++) {
+        var y = padding.top + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.stroke();
+        
+        // Y-axis labels with metric-appropriate formatting
+        var value = maxValue - ((maxValue - minValue) / 5) * i;
+        var labelText;
+        if (metric === 'yield') {
+            labelText = value.toFixed(1) + '%';  // e.g., "3.5%"
+        } else {
+            labelText = Math.round(value / 1000) + 'K';  // e.g., "1200K"
+        }
+        ctx.fillStyle = '#9ba5b8';
+        ctx.font = '11px system-ui';
+        ctx.textAlign = 'right';
+        ctx.fillText(labelText, padding.left - 10, y + 4);
+    }
+    
+    // Draw the line chart connecting all data points
+    ctx.strokeStyle = '#4d94ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    for (var i = 0; i < labels.length; i++) {
+        var x = xScale(i);
+        var y = yScale(values[i]);
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.stroke();
+    
+    // Draw dots at each data point
+    ctx.fillStyle = '#4d94ff';
+    for (var i = 0; i < labels.length; i++) {
+        var x = xScale(i);
+        var y = yScale(values[i]);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Draw X-axis date labels (show max 8 labels to avoid crowding)
+    ctx.fillStyle = '#9ba5b8';
+    ctx.font = '11px system-ui';
+    ctx.textAlign = 'center';
+    var labelStep = Math.ceil(labels.length / 8);
+    for (var i = 0; i < labels.length; i += labelStep) {
+        var x = xScale(i);
+        var dateStr = labels[i];
+        // Format date: MM/DD
+        var parts = dateStr.split('-');
+        if (parts.length === 3) {
+            dateStr = parts[1] + '/' + parts[2];
+        }
+        ctx.fillText(dateStr, x, height - padding.bottom + 20);
+    }
 }
 
 // Record daily income snapshot (prevents duplicates)
@@ -1477,6 +1742,9 @@ function render() {
 
     var monthlyInc = calculateMonthlyIncome(totInc);
     var dMonthlyInc = fromDKK(monthlyInc, displayCurrency);
+    
+    // Record daily portfolio snapshot (in DKK for consistency)
+    recordDailySnapshot(totVal, totInc);
 
     document.getElementById('totalValue').textContent = fmt(dVal, displayCurrency);
     document.getElementById('monthlyIncome').textContent = fmt(dMonthlyInc, displayCurrency);
@@ -1578,6 +1846,14 @@ function render() {
     renderChart(filtered);
     renderMonthlyCalendar();
     renderIncomeGrowthChart(activeTimeRange);
+    
+    // Draw portfolio history chart
+    var historyData = getChartData(activeHistoryRange);
+    var chartValues = activeHistoryMetric === 'value' ? historyData.values 
+                    : activeHistoryMetric === 'income' ? historyData.income 
+                    : historyData.yield;
+    drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+    
     if (portfolio.lastUpdate) {
         document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date(portfolio.lastUpdate).toLocaleString('da-DK');
     }
@@ -1625,6 +1901,8 @@ document.querySelectorAll('.preset-btn').forEach(function(btn) {
 document.getElementById('clearFiltersBtn').onclick = clearFilters;
 
 var activeTimeRange = 30;
+var activeHistoryRange = 'all';
+var activeHistoryMetric = 'value';
 
 document.querySelectorAll('.time-toggle').forEach(function(toggle) {
     toggle.onclick = function() {
@@ -1637,6 +1915,30 @@ document.querySelectorAll('.time-toggle').forEach(function(toggle) {
         renderIncomeGrowthChart(activeTimeRange);
     };
 });
+
+document.querySelectorAll('.history-range-toggle').forEach(function(toggle) {
+    toggle.onclick = function() {
+        document.querySelectorAll('.history-range-toggle').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        this.classList.add('active');
+        activeHistoryRange = this.dataset.range;
+        var historyData = getChartData(activeHistoryRange);
+        var chartValues = activeHistoryMetric === 'value' ? historyData.values 
+                        : activeHistoryMetric === 'income' ? historyData.income 
+                        : historyData.yield;
+        drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+    };
+});
+
+document.getElementById('historyMetric').onchange = function() {
+    activeHistoryMetric = this.value;
+    var historyData = getChartData(activeHistoryRange);
+    var chartValues = activeHistoryMetric === 'value' ? historyData.values 
+                    : activeHistoryMetric === 'income' ? historyData.income 
+                    : historyData.yield;
+    drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+};
 
 updateRates();
 checkAutoUpdate();
