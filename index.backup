@@ -108,6 +108,7 @@
         .loading-indicator.show { display: block; }
         .error-list { background: #ff446620; border: 1px solid #ff4466; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 12px; }
         .chart-container { position: relative; max-height: 250px; }
+        #historyChart { width: 100%; height: 300px; display: block; }
         .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .cost-item label { font-size: 12px; margin-bottom: 5px; }
         .cost-item input { margin-bottom: 0; }
@@ -175,6 +176,27 @@
     body.light .income-divider { background: #dee2e6; }
     body.light .yield-metrics { border-top-color: #dee2e6; }
     body.light .yield-value { color: #28a745; }
+    body.light #goalType, body.light #goalCurrency, body.light #goalTarget, body.light #goalLabel { background: #ffffff; border-color: #dee2e6; color: #212529; }
+    .goal-progress-bar { width: 100%; height: 8px; background: #2a3550; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+    .goal-progress-fill { height: 100%; background: #4d94ff; border-radius: 4px; transition: width 0.3s ease; }
+    body.light .goal-progress-bar { background: #e9ecef; }
+    body.light .goal-progress-fill { background: #007bff; }
+    .goal-actions { display: flex; gap: 6px; }
+    .goal-edit-btn, .goal-delete-btn { padding: 4px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+    .goal-edit-btn { background: #4d94ff; color: white; }
+    .goal-edit-btn:hover { background: #3d84ef; }
+    .goal-delete-btn { background: #dc3545; color: white; }
+    .goal-delete-btn:hover { background: #c82333; }
+    .goal-completed { border: 2px solid #00ff88 !important; background: #0d1a14 !important; }
+    .goal-completed-badge { display: inline-block; padding: 3px 8px; background: #00ff88; color: #0a0e1a; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+    .goal-checkmark { font-size: 18px; color: #00ff88; margin-right: 6px; }
+    body.light .goal-completed { border-color: #28a745 !important; background: #d4edda !important; }
+    body.light .goal-completed-badge { background: #28a745; color: white; }
+    body.light .goal-checkmark { color: #28a745; }
+    .goal-toast { position: fixed; top: 80px; right: 20px; background: #00ff88; color: #0a0e1a; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,255,136,0.3); font-weight: 600; z-index: 10000; animation: slideIn 0.3s ease; }
+    .goal-toast-icon { font-size: 20px; margin-right: 10px; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    body.light .goal-toast { background: #28a745; color: white; box-shadow: 0 4px 12px rgba(40,167,69,0.3); }
     body.light .calendar-month { background: #f8f9fa; border-color: #dee2e6; }
     body.light .calendar-month:hover { background: #e9ecef; border-color: #007bff; }
     body.light .calendar-month-amount { color: #212529; }
@@ -275,8 +297,67 @@
 </div>
 
 <div class="card">
+    <div class="income-growth-header">
+        <h3>Portfolio History</h3>
+        <div class="time-range-toggles">
+            <button class="history-range-toggle active" data-range="30d">30D</button>
+            <button class="history-range-toggle" data-range="12m">12M</button>
+            <button class="history-range-toggle" data-range="all">All</button>
+        </div>
+    </div>
+    <div style="margin-bottom:15px;">
+        <label for="historyMetric" style="font-size:12px;color:#9ba5b8;margin-right:10px;">Show:</label>
+        <select id="historyMetric" style="padding:6px 10px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;font-size:14px;">
+            <option value="value">Total Value</option>
+            <option value="income">Annual Income</option>
+            <option value="yield">Yield %</option>
+        </select>
+    </div>
+    <canvas id="historyChart" width="800" height="300"></canvas>
+</div>
+
+<div class="card">
     <h3 style="margin-bottom:15px;">Portfolio Allocation</h3>
     <div class="chart-container"><canvas id="allocationChart"></canvas></div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:15px;">Financial Goals</h3>
+
+```
+<div class="goal-form">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+            <label style="font-size:12px;color:#9ba5b8;">Goal Type</label>
+            <select id="goalType" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
+                <option value="netWorth">Net Worth</option>
+                <option value="savings">Savings</option>
+                <option value="income">Annual Income</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size:12px;color:#9ba5b8;">Currency</label>
+            <select id="goalCurrency" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
+                <option value="DKK">DKK</option>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+            </select>
+        </div>
+    </div>
+    <div style="margin-bottom:10px;">
+        <label style="font-size:12px;color:#9ba5b8;">Target Amount</label>
+        <input type="number" id="goalTarget" placeholder="e.g., 1000000" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
+    </div>
+    <div style="margin-bottom:10px;">
+        <label style="font-size:12px;color:#9ba5b8;">Label</label>
+        <input type="text" id="goalLabel" placeholder="e.g., Reach 1M net worth" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
+    </div>
+    <button id="saveGoalBtn" class="btn" style="width:100%;background:#4d94ff;">Create Goal</button>
+</div>
+
+<div id="goalsList" style="margin-top:20px;"></div>
+```
+
 </div>
 
 <div class="filter-section">
@@ -373,6 +454,14 @@
                 <label for="manualPriceToggle" style="margin:0;cursor:pointer;">Enable Manual Price Mode</label>
             </div>
             <div class="info-text">For stocks from unsupported exchanges (.CO, .MC, etc.), manually enter prices instead of API fetching.</div>
+        </div>
+        <div class="settings-section">
+            <h4>Goal Notifications</h4>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <input type="checkbox" id="goalNotificationsToggle" style="width:auto;margin:0;">
+                <label for="goalNotificationsToggle" style="margin:0;cursor:pointer;">Notify me when a goal is reached</label>
+            </div>
+            <div class="info-text">Shows a toast notification when you reach 100% on any goal.</div>
         </div>
         <div class="settings-section">
             <h4>Data Management</h4>
@@ -508,6 +597,8 @@
 // - Income forecasting: Monthly projections, dividend calendar, growth tracking
 // - Yield metrics: Current yield, yield-on-cost
 // - Historical tracking: Daily income snapshots with growth visualization
+// - Portfolio History: Daily tracking of value, income, yield with charts
+// - Goal Tracking: Set and track financial goals with progress bars
 // - Auto price updates: TwelveData API integration
 // - Manual Price Mode: For unsupported exchanges (.CO, .MC, etc.)
 // - AI chat: Pollinations.ai powered advisor
@@ -528,7 +619,11 @@ var allocationChart = null;
 var rates = { DKK: 1, EUR: 7.46, USD: 6.88 };
 var displayCurrency = localStorage.getItem('displayCurrency') || 'DKK';
 var incomeHistory = JSON.parse(localStorage.getItem('incomeHistory') || '[]');
+var portfolioHistory = JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+var goals = JSON.parse(localStorage.getItem('goals') || '[]');
 var manualPriceMode = localStorage.getItem('manualPriceMode') === 'true';
+var goalNotificationsEnabled = localStorage.getItem('goalNotifications') === 'true';
+var notifiedGoals = JSON.parse(localStorage.getItem('notifiedGoals') || '[]');
 document.getElementById('displayCurrency').value = displayCurrency;
 
 var filterPresets = {
@@ -636,6 +731,523 @@ function calculatePortfolioTotals(holdings) {
     });
     
     return { value: totVal, cost: totCost, income: totInc };
+}
+
+// ============================================================================
+// GOAL TRACKING SYSTEM
+// ============================================================================
+// Track financial goals with progress visualization
+// Supports: Net Worth, Savings, Annual Income goals
+// Features: Progress bars, completion indicators, optional notifications
+// Data stored locally in browser (no backend required)
+
+function loadGoals() {
+    // Load goals from localStorage
+    return JSON.parse(localStorage.getItem('goals') || '[]');
+}
+
+function saveGoals(goalsArray) {
+    // Save goals to localStorage and update global variable
+    localStorage.setItem('goals', JSON.stringify(goalsArray));
+    goals = goalsArray;
+}
+
+function createGoal() {
+    // Create a new goal from form inputs
+    // Validates inputs, generates unique ID, saves to localStorage
+    var type = document.getElementById('goalType').value;
+    var target = parseFloat(document.getElementById('goalTarget').value);
+    var currency = document.getElementById('goalCurrency').value;
+    var label = document.getElementById('goalLabel').value.trim();
+    
+    // Validate inputs
+    if (!target || target <= 0) {
+        alert('Please enter a valid target amount');
+        return;
+    }
+    
+    if (!label) {
+        alert('Please enter a label for your goal');
+        return;
+    }
+    
+    // Create new goal object
+    var newGoal = {
+        id: 'goal_' + Date.now(),
+        type: type,
+        target: target,
+        currency: currency,
+        label: label
+    };
+    
+    // Add to goals array
+    var currentGoals = loadGoals();
+    currentGoals.push(newGoal);
+    saveGoals(currentGoals);
+    
+    // Clear form
+    document.getElementById('goalTarget').value = '';
+    document.getElementById('goalLabel').value = '';
+    
+    // Re-render goals list
+    renderGoals();
+}
+
+function calculateGoalProgress(goal) {
+    // Calculate current progress toward a goal
+    // Returns: { currentValue, percentage, isCompleted, progressBarWidth }
+    // 
+    // Goal Types:
+    // - netWorth: Sum of all holdings (stocks, property, savings, etc.)
+    // - savings: Sum of only savings-type holdings
+    // - income: Sum of all annual income (dividends, rental, interest)
+    //
+    // Currency conversion: Values converted to goal currency for display
+    
+    var currentValue = 0;
+    
+    if (goal.type === 'netWorth') {
+        // Net worth = total portfolio value
+        portfolio.holdings.forEach(function(h) {
+            currentValue += holdingValue(h);
+        });
+    } else if (goal.type === 'savings') {
+        // Savings = sum of holdings with type 'savings'
+        portfolio.holdings.forEach(function(h) {
+            if (h.type === 'savings') {
+                currentValue += holdingValue(h);
+            }
+        });
+    } else if (goal.type === 'income') {
+        // Income = total annual income
+        portfolio.holdings.forEach(function(h) {
+            currentValue += holdingIncome(h);
+        });
+    }
+    
+    // Convert current value to goal currency if different
+    var targetInDKK = toDKK(goal.target, goal.currency);
+    
+    // Current value is already in DKK from holdingValue/holdingIncome
+    // Convert to goal currency for display
+    var currentInGoalCurrency = fromDKK(currentValue, goal.currency);
+    
+    // Calculate percentage
+    var percentage = targetInDKK > 0 ? (currentValue / targetInDKK * 100) : 0;
+    
+    // Check if goal is completed
+    var isCompleted = percentage >= 100;
+    
+    // Cap progress bar at 100%, but keep actual percentage for display
+    var progressBarWidth = Math.min(percentage, 100);
+    
+    return {
+        currentValue: currentInGoalCurrency,
+        percentage: percentage,
+        isCompleted: isCompleted,
+        progressBarWidth: progressBarWidth
+    };
+}
+
+function editGoal(goalId) {
+    // Edit an existing goal
+    var currentGoals = loadGoals();
+    var goal = currentGoals.find(function(g) { return g.id === goalId; });
+    
+    if (!goal) return;
+    
+    // Prompt for new values (inline editing)
+    var newTarget = prompt('New target amount:', goal.target);
+    if (newTarget === null) return; // Cancelled
+    
+    newTarget = parseFloat(newTarget);
+    if (!newTarget || newTarget <= 0) {
+        alert('Please enter a valid target amount');
+        return;
+    }
+    
+    var newLabel = prompt('New label:', goal.label);
+    if (newLabel === null) return; // Cancelled
+    
+    newLabel = newLabel.trim();
+    if (!newLabel) {
+        alert('Please enter a label');
+        return;
+    }
+    
+    // Update goal
+    goal.target = newTarget;
+    goal.label = newLabel;
+    
+    // Save and re-render
+    saveGoals(currentGoals);
+    renderGoals();
+}
+
+function deleteGoal(goalId) {
+    // Delete a goal after confirmation
+    if (!confirm('Are you sure you want to delete this goal?')) {
+        return;
+    }
+    
+    var currentGoals = loadGoals();
+    var filtered = currentGoals.filter(function(g) { return g.id !== goalId; });
+    
+    saveGoals(filtered);
+    renderGoals();
+}
+
+// ============================================================================
+// GOAL NOTIFICATIONS
+// ============================================================================
+// Optional toast notifications when goals are completed
+// Tracks which goals have been notified to prevent duplicates
+
+function showGoalToast(goalLabel) {
+    // Display animated toast notification for completed goal
+    // Auto-dismisses after 4 seconds with slide-out animation
+    var toast = document.createElement('div');
+    toast.className = 'goal-toast';
+    toast.innerHTML = '<span class="goal-toast-icon">🎉</span> Goal Reached: ' + goalLabel;
+    
+    document.body.appendChild(toast);
+    
+    // Remove after 4 seconds
+    setTimeout(function() {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(function() {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 4000);
+}
+
+function checkGoalNotifications() {
+    // Check if any goals just reached 100% and show notifications
+    // Only notifies once per goal (tracked in notifiedGoals array)
+    // If goal falls below 100%, removes from notified list (can notify again)
+    // Respects goalNotificationsEnabled setting
+    if (!goalNotificationsEnabled) return;
+    
+    var currentGoals = loadGoals();
+    
+    currentGoals.forEach(function(goal) {
+        var progress = calculateGoalProgress(goal);
+        
+        // Goal just completed and not yet notified
+        if (progress.isCompleted && !notifiedGoals.includes(goal.id)) {
+            showGoalToast(goal.label);
+            notifiedGoals.push(goal.id);
+            localStorage.setItem('notifiedGoals', JSON.stringify(notifiedGoals));
+        }
+        
+        // Goal fell below 100%, remove from notified list
+        if (!progress.isCompleted && notifiedGoals.includes(goal.id)) {
+            notifiedGoals = notifiedGoals.filter(function(id) { return id !== goal.id; });
+            localStorage.setItem('notifiedGoals', JSON.stringify(notifiedGoals));
+        }
+    });
+}
+
+function renderGoals() {
+    // Display all goals in the goals list
+    var container = document.getElementById('goalsList');
+    var currentGoals = loadGoals();
+    
+    if (currentGoals.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#9ba5b8;font-size:14px;">No goals yet. Create your first goal above!</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    currentGoals.forEach(function(goal) {
+        // Calculate progress
+        var progress = calculateGoalProgress(goal);
+        
+        var goalDiv = document.createElement('div');
+        var baseStyle = 'padding:15px;background:#1a2237;border-radius:8px;margin-bottom:10px;';
+        
+        // Add completed class if goal reached
+        if (progress.isCompleted) {
+            goalDiv.className = 'goal-completed';
+            goalDiv.style.cssText = baseStyle;
+        } else {
+            goalDiv.style.cssText = baseStyle;
+        }
+        
+        var typeLabel = goal.type === 'netWorth' ? 'Net Worth' 
+                      : goal.type === 'savings' ? 'Savings' 
+                      : 'Annual Income';
+        
+        // Add checkmark and badge for completed goals
+        var checkmark = progress.isCompleted ? '<span class="goal-checkmark">✓</span>' : '';
+        var badge = progress.isCompleted ? '<span class="goal-completed-badge">Goal Reached!</span>' : '';
+        
+        goalDiv.innerHTML = 
+            '<div>' +
+                '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
+                    '<div style="flex:1;">' +
+                        '<div style="font-weight:600;margin-bottom:4px;">' + checkmark + goal.label + badge + '</div>' +
+                        '<div style="font-size:12px;color:#9ba5b8;">' + typeLabel + ' • Target: ' + goal.target.toLocaleString() + ' ' + goal.currency + '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;align-items:center;gap:10px;">' +
+                        '<div style="text-align:right;font-size:14px;font-weight:600;color:' + (progress.isCompleted ? '#00ff88' : '#4d94ff') + ';">' + progress.percentage.toFixed(1) + '%</div>' +
+                        '<div class="goal-actions">' +
+                            '<button class="goal-edit-btn" onclick="editGoal(\'' + goal.id + '\')">Edit</button>' +
+                            '<button class="goal-delete-btn" onclick="deleteGoal(\'' + goal.id + '\')">Delete</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="font-size:12px;color:#9ba5b8;margin-bottom:8px;">Current: ' + Math.round(progress.currentValue).toLocaleString() + ' ' + goal.currency + '</div>' +
+                '<div class="goal-progress-bar">' +
+                    '<div class="goal-progress-fill" style="width:' + progress.progressBarWidth + '%"></div>' +
+                '</div>' +
+            '</div>';
+        
+        container.appendChild(goalDiv);
+    });
+}
+
+// ============================================================================
+// PORTFOLIO HISTORY TRACKING
+// ============================================================================
+// Tracks daily snapshots of portfolio value, income, and yield for trending
+// Data stored locally in browser (no backend required)
+// One snapshot per day to track long-term portfolio growth
+
+function loadHistory() {
+    // Load history from localStorage
+    return JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
+}
+
+function saveHistory(history) {
+    // Save history to localStorage and update global variable
+    localStorage.setItem('portfolioHistory', JSON.stringify(history));
+    portfolioHistory = history;
+}
+
+function recordDailySnapshot(totalValue, annualIncome) {
+    // Records one snapshot per day (prevents duplicates)
+    // Called automatically by render() after portfolio totals are calculated
+    // Values are in DKK for consistency across currency changes
+    
+    var today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    // Load current history
+    var history = loadHistory();
+    
+    // Check if snapshot for today already exists
+    var alreadyRecorded = history.some(function(entry) {
+        return entry.date === today;
+    });
+    
+    if (alreadyRecorded) {
+        return; // Don't duplicate - only one snapshot per day
+    }
+    
+    // Calculate yield percentage
+    var yieldPercent = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
+    
+    // Create new snapshot entry
+    var snapshot = {
+        date: today,
+        totalValue: totalValue,        // Portfolio value in DKK
+        annualIncome: annualIncome,    // Annual income in DKK
+        yield: yieldPercent            // Yield percentage
+    };
+    
+    // Append to history
+    history.push(snapshot);
+    
+    // Sort by date (oldest first)
+    history.sort(function(a, b) {
+        return a.date.localeCompare(b.date);
+    });
+    
+    // Limit to last 3 years for performance (1095 days)
+    if (history.length > 1095) {
+        history = history.slice(-1095);
+    }
+    
+    // Save to localStorage
+    saveHistory(history);
+}
+
+function getChartData(range) {
+    // Filters history by time range and prepares data for charting
+    // Range options: '30d' (last 30 days), '12m' (last 12 months), 'all' (entire history)
+    // Returns four parallel arrays ready for chart rendering
+    
+    var history = loadHistory();
+    
+    // Return empty arrays if no history
+    if (history.length === 0) {
+        return {
+            labels: [],
+            values: [],
+            income: [],
+            yield: []
+        };
+    }
+    
+    // Calculate cutoff date based on range
+    var cutoffDate = new Date();
+    var filtered = history;
+    
+    if (range === '30d') {
+        cutoffDate.setDate(cutoffDate.getDate() - 30);
+        filtered = history.filter(function(entry) {
+            return new Date(entry.date) >= cutoffDate;
+        });
+    } else if (range === '12m') {
+        cutoffDate.setMonth(cutoffDate.getMonth() - 12);
+        filtered = history.filter(function(entry) {
+            return new Date(entry.date) >= cutoffDate;
+        });
+    }
+    // 'all' range uses all data (no filtering)
+    
+    // Extract parallel arrays for charting
+    var labels = [];
+    var values = [];
+    var income = [];
+    var yieldData = [];
+    
+    filtered.forEach(function(entry) {
+        labels.push(entry.date);
+        values.push(entry.totalValue);
+        income.push(entry.annualIncome);
+        yieldData.push(entry.yield);
+    });
+    
+    return {
+        labels: labels,      // Date strings (YYYY-MM-DD)
+        values: values,      // Total portfolio values
+        income: income,      // Annual income amounts
+        yield: yieldData     // Yield percentages
+    };
+}
+
+function drawHistoryChart(labels, values, metric) {
+    // Draws a line chart on canvas element showing portfolio history
+    // Uses pure Canvas API (no external chart libraries)
+    // Metric parameter determines Y-axis formatting: 'value', 'income', or 'yield'
+    
+    metric = metric || 'value'; // Default to value
+    
+    var canvas = document.getElementById('historyChart');
+    if (!canvas || !canvas.getContext) return;
+    
+    var ctx = canvas.getContext('2d');
+    var width = canvas.width;
+    var height = canvas.height;
+    
+    // Clear canvas before redrawing
+    ctx.clearRect(0, 0, width, height);
+    
+    // Show message if no data available
+    if (!labels || labels.length === 0) {
+        ctx.fillStyle = '#9ba5b8';
+        ctx.font = '14px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('No history data yet. Check back tomorrow!', width / 2, height / 2);
+        return;
+    }
+    
+    // Chart padding for axes and labels
+    var padding = { top: 30, right: 40, bottom: 40, left: 60 };
+    var chartWidth = width - padding.left - padding.right;
+    var chartHeight = height - padding.top - padding.bottom;
+    
+    // Calculate value range for auto-scaling
+    var maxValue = Math.max.apply(Math, values);
+    var minValue = Math.min.apply(Math, values);
+    var valueRange = maxValue - minValue;
+    
+    // Add 10% padding to range for better visualization
+    var rangePadding = valueRange * 0.1;
+    maxValue += rangePadding;
+    minValue -= rangePadding;
+    if (minValue < 0) minValue = 0;
+    
+    // Scale functions to convert data to pixel coordinates
+    var xScale = function(index) {
+        return padding.left + (index / Math.max(1, labels.length - 1)) * chartWidth;
+    };
+    
+    var yScale = function(value) {
+        var range = maxValue - minValue;
+        if (range === 0) return padding.top + chartHeight / 2;
+        return padding.top + chartHeight - ((value - minValue) / range) * chartHeight;
+    };
+    
+    // Draw horizontal grid lines
+    ctx.strokeStyle = '#2a3550';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 5; i++) {
+        var y = padding.top + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.stroke();
+        
+        // Y-axis labels with metric-appropriate formatting
+        var value = maxValue - ((maxValue - minValue) / 5) * i;
+        var labelText;
+        if (metric === 'yield') {
+            labelText = value.toFixed(1) + '%';  // e.g., "3.5%"
+        } else {
+            labelText = Math.round(value / 1000) + 'K';  // e.g., "1200K"
+        }
+        ctx.fillStyle = '#9ba5b8';
+        ctx.font = '11px system-ui';
+        ctx.textAlign = 'right';
+        ctx.fillText(labelText, padding.left - 10, y + 4);
+    }
+    
+    // Draw the line chart connecting all data points
+    ctx.strokeStyle = '#4d94ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    for (var i = 0; i < labels.length; i++) {
+        var x = xScale(i);
+        var y = yScale(values[i]);
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.stroke();
+    
+    // Draw dots at each data point
+    ctx.fillStyle = '#4d94ff';
+    for (var i = 0; i < labels.length; i++) {
+        var x = xScale(i);
+        var y = yScale(values[i]);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Draw X-axis date labels (show max 8 labels to avoid crowding)
+    ctx.fillStyle = '#9ba5b8';
+    ctx.font = '11px system-ui';
+    ctx.textAlign = 'center';
+    var labelStep = Math.ceil(labels.length / 8);
+    for (var i = 0; i < labels.length; i += labelStep) {
+        var x = xScale(i);
+        var dateStr = labels[i];
+        // Format date: MM/DD
+        var parts = dateStr.split('-');
+        if (parts.length === 3) {
+            dateStr = parts[1] + '/' + parts[2];
+        }
+        ctx.fillText(dateStr, x, height - padding.bottom + 20);
+    }
 }
 
 // Record daily income snapshot (prevents duplicates)
@@ -1477,6 +2089,9 @@ function render() {
 
     var monthlyInc = calculateMonthlyIncome(totInc);
     var dMonthlyInc = fromDKK(monthlyInc, displayCurrency);
+    
+    // Record daily portfolio snapshot (in DKK for consistency)
+    recordDailySnapshot(totVal, totInc);
 
     document.getElementById('totalValue').textContent = fmt(dVal, displayCurrency);
     document.getElementById('monthlyIncome').textContent = fmt(dMonthlyInc, displayCurrency);
@@ -1578,6 +2193,18 @@ function render() {
     renderChart(filtered);
     renderMonthlyCalendar();
     renderIncomeGrowthChart(activeTimeRange);
+    
+    // Draw portfolio history chart
+    var historyData = getChartData(activeHistoryRange);
+    var chartValues = activeHistoryMetric === 'value' ? historyData.values 
+                    : activeHistoryMetric === 'income' ? historyData.income 
+                    : historyData.yield;
+    drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+    
+    // Update goals progress
+    renderGoals();
+    checkGoalNotifications();
+    
     if (portfolio.lastUpdate) {
         document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date(portfolio.lastUpdate).toLocaleString('da-DK');
     }
@@ -1609,6 +2236,13 @@ document.getElementById('manualPriceToggle').onchange = function() {
         toggleFields();
     }
 };
+
+document.getElementById('goalNotificationsToggle').checked = goalNotificationsEnabled;
+document.getElementById('goalNotificationsToggle').onchange = function() {
+    goalNotificationsEnabled = this.checked;
+    localStorage.setItem('goalNotifications', goalNotificationsEnabled);
+};
+
 document.getElementById('searchInput').oninput = function(e) { searchTerm=e.target.value; render(); };
 document.getElementById('sortSelect').onchange = function(e) { sortBy=e.target.value; render(); };
 
@@ -1625,6 +2259,8 @@ document.querySelectorAll('.preset-btn').forEach(function(btn) {
 document.getElementById('clearFiltersBtn').onclick = clearFilters;
 
 var activeTimeRange = 30;
+var activeHistoryRange = 'all';
+var activeHistoryMetric = 'value';
 
 document.querySelectorAll('.time-toggle').forEach(function(toggle) {
     toggle.onclick = function() {
@@ -1638,10 +2274,39 @@ document.querySelectorAll('.time-toggle').forEach(function(toggle) {
     };
 });
 
+document.querySelectorAll('.history-range-toggle').forEach(function(toggle) {
+    toggle.onclick = function() {
+        document.querySelectorAll('.history-range-toggle').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        this.classList.add('active');
+        activeHistoryRange = this.dataset.range;
+        var historyData = getChartData(activeHistoryRange);
+        var chartValues = activeHistoryMetric === 'value' ? historyData.values 
+                        : activeHistoryMetric === 'income' ? historyData.income 
+                        : historyData.yield;
+        drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+    };
+});
+
+document.getElementById('historyMetric').onchange = function() {
+    activeHistoryMetric = this.value;
+    var historyData = getChartData(activeHistoryRange);
+    var chartValues = activeHistoryMetric === 'value' ? historyData.values 
+                    : activeHistoryMetric === 'income' ? historyData.income 
+                    : historyData.yield;
+    drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+};
+
+// Goal tracking event handlers
+document.getElementById('saveGoalBtn').onclick = createGoal;
+document.getElementById('goalCurrency').value = displayCurrency; // Default to display currency
+
 updateRates();
 checkAutoUpdate();
 updateClearButton();
 render();
+renderGoals(); // Initialize goals display
 recordIncomeSnapshot();
 setInterval(checkAutoUpdate, 60000);
 setInterval(updateNextDisplay, 60000);
