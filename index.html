@@ -720,9 +720,9 @@
 // - Portfolio History: Daily tracking of value, income, yield with charts
 // - Goal Tracking: Set and track financial goals with progress bars
 // - Scenario Simulator: What-if analysis for investments and yield changes
+// - Portfolio-Aware AI Chat: Personalized passive income advice with full context
 // - Auto price updates: TwelveData API integration
 // - Manual Price Mode: For unsupported exchanges (.CO, .MC, etc.)
-// - AI chat: Pollinations.ai powered advisor
 // - Multi-select filtering: Combine any asset types
 // - Import/Export: JSON backup/restore
 // ============================================================================
@@ -2193,65 +2193,313 @@ function addMsg(role, text) {
     d.scrollIntoView({behavior:'smooth'});
 }
 
+// ============================================================================
+// PORTFOLIO-AWARE AI CHAT SYSTEM
+// ============================================================================
+// Provides intelligent, personalized passive income advice based on actual holdings
+// 
+// IMPORTANT: The chat NEVER modifies the real portfolio
+// - All data is read-only for context
+// - AI only provides advice and analysis
+// - User must manually make changes to their portfolio
+//
+// System Components:
+// 1. systemPrompt - Defines AI personality and rules
+// 2. getPortfolioContext() - Extracts all portfolio data
+// 3. buildContextPrompt() - Formats data for AI
+// 4. buildChatPayload() - Combines everything into API request
+// 5. sendChatRequest() - Sends to AI and returns response
+// 6. sendChatMessage() - Main orchestrator function
+//
+// The AI receives with every message:
+// - Role definition (passive income advisor)
+// - Complete portfolio JSON (holdings, totals, goals)
+// - User's question
+//
+// This enables portfolio-aware, goal-focused, personalized advice.
+
+// ============================================================================
+// PORTFOLIO CONTEXT LOADER FOR AI CHAT
+// ============================================================================
+// Extracts all dashboard data for the AI chatbot to provide portfolio-aware advice
+
+// System Prompt: Defines the chatbot's role and behavior
+var systemPrompt = 
+    "You are a Passive Income Advisor — an expert in long-term investing, passive income generation, " +
+    "and financial independence. Your role is to help users build sustainable wealth through dividends, " +
+    "rental income, and interest.\n\n" +
+    
+    "CORE PRINCIPLES:\n" +
+    "• Focus on long-term, sustainable passive income strategies\n" +
+    "• Prioritize dividend growth, quality holdings, and diversification\n" +
+    "• Use the user's actual portfolio data as the source of truth\n" +
+    "• Avoid speculation, day trading, and market timing advice\n" +
+    "• Think in years and decades, not days or months\n\n" +
+    
+    "COMMUNICATION STYLE:\n" +
+    "• Use clear, simple language without excessive jargon\n" +
+    "• Be encouraging and supportive\n" +
+    "• Reference specific holdings by name when relevant\n" +
+    "• Provide actionable insights based on the user's actual data\n" +
+    "• Stay focused on income generation and financial independence\n\n" +
+    
+    "PORTFOLIO-AWARE REASONING:\n" +
+    "• Always reference holdings by name (e.g., 'your Apple shares', 'your Copenhagen apartment')\n" +
+    "• Use exact dividend amounts from the portfolio JSON\n" +
+    "• Calculate annual income by summing all holdings' annualIncome fields\n" +
+    "• Calculate yield as: (totalAnnualIncome / totalValue) × 100\n" +
+    "• Compare holdings: identify highest/lowest income contributors\n" +
+    "• For stocks: mention ticker, shares, dividend, and frequency\n" +
+    "• For property: reference rental income and property value\n" +
+    "• For savings: reference interest rate and amount\n" +
+    "• When discussing diversification, reference actual asset types in portfolio\n\n" +
+    
+    "GOAL AWARENESS:\n" +
+    "• Always relate suggestions back to the user's financial goals\n" +
+    "• Reference goals by their label (e.g., 'your First Million goal')\n" +
+    "• Calculate progress: (currentValue / target) × 100\n" +
+    "• For Net Worth goals: compare portfolio totalValue to target\n" +
+    "• For Savings goals: sum savings holdings and compare to target\n" +
+    "• For Income goals: compare totalAnnualIncome to target\n" +
+    "• Celebrate when goals are reached (percentage >= 100%)\n" +
+    "• Suggest next steps when goals are exceeded\n" +
+    "• Encourage when progress is being made (e.g., '75% toward your goal')\n" +
+    "• If no goals exist, suggest creating specific, measurable targets\n\n" +
+    
+    "WHAT TO DO:\n" +
+    "• Analyze the user's current holdings and income streams\n" +
+    "• Suggest ways to increase passive income\n" +
+    "• Identify diversification opportunities\n" +
+    "• Help track progress toward financial goals\n" +
+    "• Explain dividend reinvestment and compounding\n" +
+    "• Discuss yield, dividend growth, and sustainability\n" +
+    "• Compare user's progress to their stated goals\n" +
+    "• Connect every suggestion to goal achievement\n\n" +
+    
+    "WHAT TO AVOID:\n" +
+    "• Short-term trading strategies\n" +
+    "• Market timing or technical analysis\n" +
+    "• Speculative or high-risk investments\n" +
+    "• Crypto or volatile assets\n" +
+    "• Making specific buy/sell recommendations without context\n" +
+    "• Generic advice that ignores their actual holdings\n" +
+    "• Ignoring their stated goals when making suggestions\n\n" +
+    
+    "Remember: The user's portfolio data is provided in JSON format. Always use this as the foundation " +
+    "for your analysis and advice. Reference their actual holdings, income, and goals. Be specific, not generic.";
+
+
+function getPortfolioContext() {
+    // Collect all portfolio data for the AI chatbot
+    // Returns a clean JSON object matching the dashboard's data model
+    
+    var context = {
+        // Holdings array with all details
+        holdings: portfolio.holdings.map(function(h) {
+            return {
+                name: h.name,
+                type: h.type,
+                ticker: h.ticker || null,
+                shares: h.shares || 0,
+                currentPrice: h.currentPrice || h.manualPrice || h.cost || 0,
+                priceCurrency: h.priceCurrency || h.costCurrency || 'DKK',
+                dividend: h.dividend || 0,
+                dividendCurrency: h.dividendCurrency || 'DKK',
+                frequency: h.frequency || 'annual',
+                propertyValue: h.propertyValue || 0,
+                rentalIncome: h.rentalIncome || 0,
+                savingsAmount: h.savingsAmount || 0,
+                interestRate: h.interestRate || 0,
+                value: holdingValue(h),
+                annualIncome: holdingIncome(h)
+            };
+        }),
+        
+        // Portfolio totals
+        totals: {
+            totalValue: 0,
+            totalAnnualIncome: 0,
+            currentYield: 0
+        },
+        
+        // Goals if any exist
+        goals: loadGoals().map(function(g) {
+            var progress = calculateGoalProgress(g);
+            return {
+                label: g.label,
+                type: g.type,
+                target: g.target,
+                currency: g.currency,
+                currentValue: progress.currentValue,
+                percentage: progress.percentage,
+                isCompleted: progress.isCompleted
+            };
+        }),
+        
+        // Display currency
+        displayCurrency: displayCurrency,
+        
+        // Exchange rates
+        rates: rates
+    };
+    
+    // Calculate totals
+    portfolio.holdings.forEach(function(h) {
+        context.totals.totalValue += holdingValue(h);
+        context.totals.totalAnnualIncome += holdingIncome(h);
+    });
+    
+    context.totals.currentYield = context.totals.totalValue > 0 
+        ? (context.totals.totalAnnualIncome / context.totals.totalValue * 100) 
+        : 0;
+    
+    return context;
+}
+
+function buildContextPrompt() {
+    // Build the context prompt that includes portfolio data
+    // This is sent with every chat request so the AI is always aware of current holdings
+    
+    var context = getPortfolioContext();
+    var contextJSON = JSON.stringify(context, null, 2);
+    
+    var contextPrompt = 
+        "=== USER'S PORTFOLIO DATA (SOURCE OF TRUTH) ===\n\n" +
+        "Here is the user's current portfolio. Use this data as the foundation for all analysis and advice.\n\n" +
+        "```json\n" +
+        contextJSON + "\n" +
+        "```\n\n" +
+        "KEY INFORMATION:\n" +
+        "• Total Portfolio Value: " + Math.round(context.totals.totalValue).toLocaleString() + " " + context.displayCurrency + "\n" +
+        "• Total Annual Income: " + Math.round(context.totals.totalAnnualIncome).toLocaleString() + " " + context.displayCurrency + "/year\n" +
+        "• Current Yield: " + context.totals.currentYield.toFixed(2) + "%\n" +
+        "• Number of Holdings: " + context.holdings.length + "\n" +
+        "• Number of Goals: " + context.goals.length + "\n\n" +
+        "INSTRUCTIONS:\n" +
+        "• Reference holdings by name when relevant (e.g., 'your Apple shares')\n" +
+        "• Use these exact numbers in your calculations\n" +
+        "• Consider the user's goals when providing advice\n" +
+        "• Focus on how to increase passive income with their current holdings\n\n" +
+        "Now, please respond to the user's question:";
+    
+    return contextPrompt;
+}
+
+function buildChatPayload(userMessage) {
+    // Build the complete payload for the AI API
+    // Combines: system prompt + context prompt + user message
+    // Returns: properly formatted chat completion request
+    
+    var contextPrompt = buildContextPrompt();
+    
+    // Build messages array in chat completion format
+    var messages = [
+        {
+            role: "system",
+            content: systemPrompt
+        },
+        {
+            role: "assistant",
+            content: contextPrompt
+        },
+        {
+            role: "user",
+            content: userMessage
+        }
+    ];
+    
+    // Create the payload
+    var payload = {
+        model: "openai",  // Pollinations.ai uses "openai" as model identifier
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1000
+    };
+    
+    return payload;
+}
+
+async function sendChatRequest(payload) {
+    // Send the payload to the AI API and return the assistant's reply
+    // Uses Pollinations.ai endpoint with portfolio-aware payload
+    
+    try {
+        var response = await fetch('https://text.pollinations.ai/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            throw new Error('API request failed: ' + response.status);
+        }
+        
+        // Get response text
+        var responseText = await response.text();
+        
+        // Pollinations.ai returns plain text, not JSON
+        return responseText.trim();
+        
+    } catch (error) {
+        console.error('Chat API Error:', error);
+        return 'Sorry, I encountered an error. Please try again.';
+    }
+}
+
+function sendChatMessage() {
 function sendChatMessage() {
     var input = document.getElementById('chatInput');
     var msg = input.value.trim();
     if (!msg) return;
+    
+    // Add user message to chat
     addMsg('user', msg);
     input.value = '';
+    
+    // Disable send button while processing
     var btn = document.getElementById('chatSendBtn');
     btn.disabled = true;
-
+    
+    // Show "Thinking..." indicator
     var typing = document.createElement('div');
     typing.className = 'typing-indicator';
     typing.innerHTML = '<span></span><span></span><span></span>';
     document.getElementById('chatMessages').appendChild(typing);
     typing.scrollIntoView({behavior:'smooth'});
-
-    var totalVal = 0;
-    var totalInc = 0;
-    portfolio.holdings.forEach(function(h) { totalVal += holdingValue(h); totalInc += holdingIncome(h); });
-    var yld = totalVal > 0 ? (totalInc/totalVal*100).toFixed(2) : '0.00';
-    var names = portfolio.holdings.map(function(h){ return h.name + ' (' + h.type + ')'; }).join(', ') || 'none yet';
-
-    var systemMsg = 'You are a helpful passive income investment advisor. ' +
-        'Portfolio value: ' + Math.round(totalVal).toLocaleString() + ' DKK. ' +
-        'Annual income: ' + Math.round(totalInc).toLocaleString() + ' DKK (' + yld + '% yield). ' +
-        'Holdings: ' + names + '. ' +
-        'Give concise practical advice. For Danish property valuations recommend Boligsiden.dk.';
-
-    var messages = [{ role: 'system', content: systemMsg }];
-    for (var i = Math.max(0, chatHistory.length-6); i < chatHistory.length; i++) {
-        messages.push(chatHistory[i]);
-    }
-    messages.push({ role: 'user', content: msg });
-
-    fetch('https://text.pollinations.ai/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'openai', messages: messages, max_tokens: 400, temperature: 0.7 })
-    })
-    .then(function(res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-    })
-    .then(function(data) {
-        var reply = 'Sorry, I could not get a response. Please try again.';
-        if (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-            reply = data.choices[0].message.content.trim();
-        }
-        chatHistory.push({role:'user',content:msg});
-        chatHistory.push({role:'assistant',content:reply});
-        if (chatHistory.length > 12) chatHistory.splice(0, chatHistory.length - 12);
-        typing.remove();
-        addMsg('assistant', reply);
-        btn.disabled = false;
-    })
-    .catch(function() {
-        typing.remove();
-        addMsg('assistant', 'Chat is unavailable right now. Please try again in a moment.');
-        btn.disabled = false;
-    });
+    
+    // Build the complete payload with portfolio context
+    var payload = buildChatPayload(msg);
+    
+    // Send request to AI API
+    sendChatRequest(payload)
+        .then(function(reply) {
+            // Remove typing indicator
+            typing.remove();
+            
+            // Add assistant's reply to chat
+            addMsg('assistant', reply);
+            
+            // Store in chat history
+            chatHistory.push({role:'user', content:msg});
+            chatHistory.push({role:'assistant', content:reply});
+            
+            // Keep only last 12 messages (6 exchanges)
+            if (chatHistory.length > 12) {
+                chatHistory.splice(0, chatHistory.length - 12);
+            }
+            
+            // Re-enable send button
+            btn.disabled = false;
+        })
+        .catch(function(error) {
+            // Handle errors
+            typing.remove();
+            addMsg('assistant', 'Sorry, I encountered an error. Please try again.');
+            btn.disabled = false;
+            console.error('Chat error:', error);
+        });
 }
 
 function getFiltered() {
