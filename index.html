@@ -1043,6 +1043,167 @@
     /* ============================================================
        PHASE 8 — MOBILE RESPONSIVENESS
        ============================================================ */
+    /* ============================================================
+       FEEDBACK SYSTEM STYLES (Phases 1–8)
+       ============================================================ */
+
+    /* Feedback form elements */
+    .feedback-helper {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .feedback-error {
+        font-size: 12px;
+        color: var(--red);
+        margin-top: -10px;
+        margin-bottom: 10px;
+        display: none;
+        padding: 8px 12px;
+        background: color-mix(in srgb, var(--red) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+        border-radius: var(--radius-sm);
+    }
+    .feedback-error.show { display: block; }
+
+    .feedback-success {
+        font-size: 13px;
+        color: var(--green);
+        margin-top: 8px;
+        padding: 10px 14px;
+        background: color-mix(in srgb, var(--green) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+        border-radius: var(--radius-sm);
+        display: none;
+    }
+    .feedback-success.show { display: block; }
+
+    /* Feedback review filters / tabs */
+    .feedback-tabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+    .feedback-tab {
+        padding: 6px 14px;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .feedback-tab:hover { border-color: var(--accent); color: var(--text); }
+    .feedback-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Feedback insights summary */
+    .feedback-insights {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .insight-box {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        text-align: center;
+    }
+    .insight-box-count {
+        font-family: 'DM Mono', monospace;
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .insight-box-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 600;
+    }
+    .insight-box.accent .insight-box-count { color: var(--accent); }
+    .insight-box.red    .insight-box-count { color: var(--red); }
+    .insight-box.green  .insight-box-count { color: var(--green); }
+    .insight-box.yellow .insight-box-count { color: var(--yellow); }
+    .insight-box.purple .insight-box-count { color: #8b5cf6; }
+
+    /* Individual feedback items in review list */
+    .feedback-item {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        animation: fadeIn 0.2s ease;
+    }
+    .feedback-item:nth-child(even) { background: var(--bg-hover); }
+    .feedback-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .feedback-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .fb-bug     { background: color-mix(in srgb, var(--red) 15%, transparent);    color: var(--red); }
+    .fb-feature { background: color-mix(in srgb, var(--green) 15%, transparent);  color: var(--green); }
+    .fb-ui      { background: color-mix(in srgb, #8b5cf6 15%, transparent);       color: #8b5cf6; }
+    .fb-general { background: color-mix(in srgb, var(--yellow) 15%, transparent); color: var(--yellow); }
+
+    .feedback-timestamp {
+        font-size: 11px;
+        color: var(--text-dim);
+        font-family: 'DM Mono', monospace;
+    }
+    .feedback-message {
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    /* Export confirmation */
+    .export-confirm {
+        font-size: 12px;
+        color: var(--green);
+        margin-left: 10px;
+        display: none;
+        font-weight: 500;
+    }
+    .export-confirm.show { display: inline; }
+
+    .feedback-empty {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+    /* ============================================================
+       RESPONSIVE MOBILE
+       ============================================================ */
     @media (max-width: 600px) {
         .quick-actions { padding: 12px 12px 0; }
         .dashboard { padding: 12px; }
@@ -1359,6 +1520,94 @@
 <!-- ============================================================
      SECTION 5: CHAT (default COLLAPSED — handled via button)
      ============================================================ -->
+
+<!-- ============================================================
+     PHASE 1 — USER FEEDBACK PANEL (default COLLAPSED)
+     Collects bug reports, feature requests, UI improvements,
+     and general comments. Stores to localStorage.
+     ============================================================ -->
+<div class="section" id="secFeedback">
+    <div class="section-header" onclick="toggleSection('secFeedback')">
+        <div class="section-header-left">
+            <div class="section-icon">💬</div>
+            <div>
+                <div class="section-title-text">User Feedback</div>
+                <div class="section-subtitle">Help improve the app — share your thoughts</div>
+            </div>
+        </div>
+        <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-inner">
+
+            <p class="feedback-helper">💡 Your feedback helps improve the app. Thank you!</p>
+
+            <label for="feedbackType">Feedback Type</label>
+            <select id="feedbackType">
+                <option value="">— Select a type —</option>
+                <option value="bug">🐛 Bug report</option>
+                <option value="feature">✨ Feature request</option>
+                <option value="ui">🎨 UI improvement</option>
+                <option value="general">💬 General comment</option>
+            </select>
+
+            <label for="feedbackMessage">Your Feedback</label>
+            <textarea id="feedbackMessage" placeholder="Describe your feedback here… (at least 10 characters)" style="min-height:100px;"></textarea>
+
+            <!-- Phase 3: inline validation messages -->
+            <div class="feedback-error" id="feedbackError">Please fill in both fields. Message must be at least 10 characters.</div>
+            <div class="feedback-success" id="feedbackSuccess">✓ Feedback submitted — thank you!</div>
+
+            <button class="btn" id="submitFeedbackBtn" style="margin-top:4px;">Submit Feedback</button>
+
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     PHASE 4 — FEEDBACK REVIEW PANEL (default COLLAPSED)
+     Displays, groups, filters, and exports stored feedback.
+     ============================================================ -->
+<div class="section" id="secFeedbackReview">
+    <div class="section-header" onclick="toggleSection('secFeedbackReview')">
+        <div class="section-header-left">
+            <div class="section-icon">📋</div>
+            <div>
+                <div class="section-title-text">Feedback Review</div>
+                <div class="section-subtitle" id="feedbackReviewSubtitle">No feedback yet</div>
+            </div>
+        </div>
+        <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-inner">
+
+            <!-- Phase 7: Insights summary -->
+            <div class="feedback-insights" id="feedbackInsights"></div>
+
+            <div class="divider"></div>
+
+            <!-- Phase 5: Filter tabs -->
+            <div class="feedback-tabs" id="feedbackTabs">
+                <button class="feedback-tab active" data-filter="all">All</button>
+                <button class="feedback-tab" data-filter="bug">🐛 Bugs</button>
+                <button class="feedback-tab" data-filter="feature">✨ Features</button>
+                <button class="feedback-tab" data-filter="ui">🎨 UI</button>
+                <button class="feedback-tab" data-filter="general">💬 General</button>
+            </div>
+
+            <!-- Phase 6: Export button -->
+            <div style="display:flex;align-items:center;margin-bottom:14px;">
+                <button class="btn btn-small btn-secondary" id="exportFeedbackBtn">⬇ Export Feedback</button>
+                <span class="export-confirm" id="exportConfirm">✓ Feedback exported!</span>
+            </div>
+
+            <!-- Feedback list -->
+            <div id="feedbackList"></div>
+
+        </div>
+    </div>
+</div>
 ```
 
 </div><!-- /dashboard -->
@@ -2542,6 +2791,260 @@ document.getElementById('saveGoalBtn').onclick = createGoal;
 document.getElementById('goalCurrency').value = displayCurrency;
 
 // ============================================================
+// FEEDBACK SYSTEM (Phases 1–8)
+// ============================================================
+//
+// STORAGE:
+//   All feedback is saved to localStorage under the key "userFeedback"
+//   as a JSON array of feedbackObject entries. Each entry has:
+//     { id, timestamp, type, message }
+//   Feedback is appended on each submit and persists between sessions.
+//
+// GROUPING:
+//   The active filter tab ('all' | 'bug' | 'feature' | 'ui' | 'general')
+//   is stored in feedbackFilter. renderFeedbackList() reads it and
+//   filters the full array before rendering.
+//
+// EXPORT:
+//   exportFeedback() serialises the full localStorage array to JSON
+//   and triggers a file download as feedback-YYYY-MM-DD.json.
+// ============================================================
+
+var feedbackFilter = 'all'; // active review filter tab
+
+/* ---- Phase 2: Storage ---- */
+
+/**
+ * Load all feedback from localStorage.
+ * Returns an array (empty if none saved yet).
+ */
+function loadFeedback() {
+    try {
+        return JSON.parse(localStorage.getItem('userFeedback') || '[]');
+    } catch(e) {
+        return [];
+    }
+}
+
+/**
+ * Save a single feedbackObject by appending it to the stored array.
+ * @param {Object} fb  { id, timestamp, type, message }
+ */
+function saveFeedback(fb) {
+    var all = loadFeedback();
+    all.push(fb);
+    localStorage.setItem('userFeedback', JSON.stringify(all));
+}
+
+/* ---- Phase 3: Validation & submission ---- */
+
+/**
+ * Validate the feedback form, save on success, show appropriate messages.
+ */
+function submitFeedback() {
+    var type    = document.getElementById('feedbackType').value.trim();
+    var message = document.getElementById('feedbackMessage').value.trim();
+    var errEl   = document.getElementById('feedbackError');
+    var okEl    = document.getElementById('feedbackSuccess');
+
+    // Hide previous messages
+    errEl.classList.remove('show');
+    okEl.classList.remove('show');
+
+    // Validation rules
+    var errors = [];
+    if (!type)              errors.push('Please select a feedback type.');
+    if (message.length < 10) errors.push('Message must be at least 10 characters.');
+
+    if (errors.length > 0) {
+        errEl.textContent = errors.join(' ');
+        errEl.classList.add('show');
+        return;
+    }
+
+    // Build feedbackObject
+    var fb = {
+        id:        'fb_' + Date.now(),
+        timestamp: new Date().toISOString(),
+        type:      type,
+        message:   message
+    };
+
+    saveFeedback(fb);
+
+    // Clear form
+    document.getElementById('feedbackType').value   = '';
+    document.getElementById('feedbackMessage').value = '';
+
+    // Show success
+    okEl.classList.add('show');
+    setTimeout(function() { okEl.classList.remove('show'); }, 4000);
+
+    // Refresh review panel
+    renderFeedbackReview();
+}
+
+/* ---- Phase 4 & 5 & 7: Render review panel with insights + grouped list ---- */
+
+/** Human-readable labels and style classes per type */
+var feedbackMeta = {
+    bug:     { label: '🐛 Bug report',       cls: 'fb-bug',     insightCls: 'red'    },
+    feature: { label: '✨ Feature request',   cls: 'fb-feature', insightCls: 'green'  },
+    ui:      { label: '🎨 UI improvement',    cls: 'fb-ui',      insightCls: 'purple' },
+    general: { label: '💬 General comment',   cls: 'fb-general', insightCls: 'yellow' }
+};
+
+/**
+ * Render Phase 7 insights summary boxes.
+ * Shows total and per-type counts.
+ */
+function renderFeedbackInsights(all) {
+    var container = document.getElementById('feedbackInsights');
+    var counts = { bug: 0, feature: 0, ui: 0, general: 0 };
+    all.forEach(function(fb) { if (counts[fb.type] !== undefined) counts[fb.type]++; });
+
+    container.innerHTML =
+        '<div class="insight-box accent">' +
+            '<div class="insight-box-count">' + all.length + '</div>' +
+            '<div class="insight-box-label">Total</div>' +
+        '</div>' +
+        '<div class="insight-box red">' +
+            '<div class="insight-box-count">' + counts.bug + '</div>' +
+            '<div class="insight-box-label">Bugs</div>' +
+        '</div>' +
+        '<div class="insight-box green">' +
+            '<div class="insight-box-count">' + counts.feature + '</div>' +
+            '<div class="insight-box-label">Features</div>' +
+        '</div>' +
+        '<div class="insight-box purple">' +
+            '<div class="insight-box-count">' + counts.ui + '</div>' +
+            '<div class="insight-box-label">UI</div>' +
+        '</div>' +
+        '<div class="insight-box yellow">' +
+            '<div class="insight-box-count">' + counts.general + '</div>' +
+            '<div class="insight-box-label">General</div>' +
+        '</div>';
+}
+
+/**
+ * Format an ISO timestamp into a readable local string.
+ */
+function formatFeedbackDate(iso) {
+    try {
+        var d = new Date(iso);
+        return d.toLocaleDateString('da-DK') + ' ' + d.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+    } catch(e) { return iso; }
+}
+
+/**
+ * Render the full feedback review panel:
+ * insights → filter tabs (already in HTML) → filtered list.
+ */
+function renderFeedbackReview() {
+    var all      = loadFeedback();
+    var subtitle = document.getElementById('feedbackReviewSubtitle');
+    var listEl   = document.getElementById('feedbackList');
+
+    // Update section subtitle
+    subtitle.textContent = all.length === 0
+        ? 'No feedback yet'
+        : all.length + ' entr' + (all.length === 1 ? 'y' : 'ies');
+
+    // Phase 7: insights
+    renderFeedbackInsights(all);
+
+    // Phase 5: apply active filter
+    var filtered = feedbackFilter === 'all'
+        ? all
+        : all.filter(function(fb) { return fb.type === feedbackFilter; });
+
+    // Empty state
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="feedback-empty">No ' +
+            (feedbackFilter === 'all' ? '' : feedbackMeta[feedbackFilter] ? feedbackMeta[feedbackFilter].label + ' ' : '') +
+            'feedback yet.</div>';
+        return;
+    }
+
+    // Render newest-first
+    var sorted = filtered.slice().reverse();
+
+    listEl.innerHTML = '';
+    sorted.forEach(function(fb) {
+        var meta = feedbackMeta[fb.type] || { label: fb.type, cls: 'fb-general' };
+        var div = document.createElement('div');
+        div.className = 'feedback-item';
+        div.innerHTML =
+            '<div class="feedback-item-header">' +
+                '<span class="feedback-type-badge ' + meta.cls + '">' + meta.label + '</span>' +
+                '<span class="feedback-timestamp">' + formatFeedbackDate(fb.timestamp) + '</span>' +
+            '</div>' +
+            '<div class="feedback-message">' + escapeHtml(fb.message) + '</div>';
+        listEl.appendChild(div);
+    });
+}
+
+/**
+ * Minimal HTML escaping to prevent XSS in feedback messages.
+ */
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+/* ---- Phase 6: Export ---- */
+
+/**
+ * Export all feedback as a downloadable JSON file.
+ * Shows a brief confirmation message after download is triggered.
+ */
+function exportFeedback() {
+    var all = loadFeedback();
+    var json = JSON.stringify(all, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'feedback-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    // Brief confirmation
+    var confirm = document.getElementById('exportConfirm');
+    confirm.classList.add('show');
+    setTimeout(function() { confirm.classList.remove('show'); }, 3000);
+}
+
+/* ---- Event wiring ---- */
+
+// Submit button
+document.getElementById('submitFeedbackBtn').onclick = submitFeedback;
+
+// Also submit on Enter in textarea with Ctrl/Cmd
+document.getElementById('feedbackMessage').addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submitFeedback();
+});
+
+// Phase 5: filter tabs
+document.querySelectorAll('.feedback-tab').forEach(function(tab) {
+    tab.onclick = function() {
+        document.querySelectorAll('.feedback-tab').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        feedbackFilter = this.dataset.filter;
+        renderFeedbackReview();
+    };
+});
+
+// Phase 6: export button
+document.getElementById('exportFeedbackBtn').onclick = exportFeedback;
+
+// Initial render of review panel
+renderFeedbackReview();
+
+// ============================================================
 // INIT
 // ============================================================
 updateRates();
@@ -2549,6 +3052,7 @@ checkAutoUpdate();
 updateClearButton();
 render();
 renderGoals();
+renderFeedbackReview();
 recordIncomeSnapshot();
 setInterval(checkAutoUpdate, 60000);
 setInterval(updateNextDisplay, 60000);
