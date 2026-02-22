@@ -6,433 +6,1388 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Passive Income Portfolio</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0e1a; color: #e8edf4; padding: 20px 20px 100px; min-height: 100vh; }
-        h1 { font-size: 28px; margin-bottom: 10px; }
-        .card { background: #1a2237; border: 1px solid #2a3550; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .income-split { display: flex; gap: 20px; align-items: center; margin: 10px 0; }
-        .income-item { flex: 1; text-align: center; }
-        .income-label { font-size: 11px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }
-        .income-value { font-size: 24px; font-weight: 300; color: #e8edf4; }
-        .income-divider { width: 1px; height: 50px; background: #2a3550; }
-        .yield-metrics { display: flex; gap: 20px; justify-content: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2a3550; }
-        .yield-metric { display: flex; align-items: center; gap: 6px; }
-        .yield-label { font-size: 12px; color: #9ba5b8; }
-        .yield-value { font-size: 14px; font-weight: 600; color: #00ff88; }
-        .monthly-calendar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
-        .calendar-month { background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; text-align: center; transition: all 0.2s; }
-        .calendar-month:hover { background: #151b2e; border-color: #4d94ff; }
-        .calendar-month-name { font-size: 11px; color: #9ba5b8; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.5px; }
-        .calendar-month-amount { font-size: 18px; font-weight: 600; color: #e8edf4; }
-        .calendar-month-amount.has-income { color: #00ff88; }
-        .calendar-month-amount.zero { color: #9ba5b8; opacity: 0.5; }
-        .income-growth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .income-growth-header h3 { margin: 0; font-size: 18px; }
-        .time-range-toggles { display: flex; gap: 6px; }
-        .time-toggle { padding: 6px 12px; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 6px; color: #9ba5b8; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .time-toggle:hover { background: #151b2e; border-color: #4d94ff; }
-        .time-toggle.active { background: #4d94ff; color: white; border-color: #4d94ff; }
-        .growth-stats { display: flex; gap: 20px; margin-bottom: 15px; padding: 12px; background: #0a0e1a; border-radius: 8px; }
-        .growth-stat { flex: 1; text-align: center; }
-        .growth-stat-label { font-size: 11px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 4px; }
-        .growth-stat-value { font-size: 18px; font-weight: 600; }
-        .growth-stat-value.positive { color: #00ff88; }
-        .growth-stat-value.negative { color: #ff4466; }
-        .income-growth-chart { position: relative; height: 200px; margin-top: 10px; }
-        .chart-svg { width: 100%; height: 100%; }
-        .chart-line { fill: none; stroke: #4d94ff; stroke-width: 2; }
-        .chart-area { fill: url(#gradient); opacity: 0.3; }
-        .chart-dot { fill: #4d94ff; cursor: pointer; }
-        .chart-dot:hover { fill: #00ff88; }
-        .chart-grid { stroke: #2a3550; stroke-width: 1; }
-        .chart-label { fill: #9ba5b8; font-size: 11px; }
-        .chart-tooltip { position: absolute; background: #1a2237; border: 1px solid #4d94ff; border-radius: 6px; padding: 8px 12px; pointer-events: none; display: none; z-index: 100; }
-        .chart-tooltip.show { display: block; }
-        .label { font-size: 12px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 8px; }
-        .value { font-size: 32px; font-weight: 300; margin-bottom: 5px; }
-        .change { font-size: 14px; color: #9ba5b8; }
-        .positive { color: #00ff88; }
-        .negative { color: #ff4466; }
-        .btn { background: #4d94ff; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 16px; width: 100%; cursor: pointer; }
-        .btn:active { opacity: 0.8; }
-        .btn-small { width: auto; padding: 10px 20px; font-size: 14px; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); padding: 20px; overflow-y: auto; z-index: 1000; }
-        .modal.show { display: block; }
-        .modal-content { background: #1a2237; border-radius: 16px; padding: 24px; max-width: 500px; margin: 40px auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close { font-size: 30px; color: #9ba5b8; cursor: pointer; background: none; border: none; }
-        input, select, textarea { width: 100%; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 12px; color: #e8edf4; font-size: 16px; margin-bottom: 15px; font-family: inherit; }
-        textarea { min-height: 60px; resize: vertical; }
-        label { display: block; font-size: 14px; color: #9ba5b8; margin-bottom: 5px; }
-        .holding { background: #1a2237; border: 1px solid #2a3550; border-radius: 10px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
-        .holding:active { background: #202840; }
-        .holding-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .holding-name { font-size: 18px; font-weight: 600; }
-        .meta { font-size: 12px; color: #9ba5b8; margin-top: 4px; }
-        .section-title { font-size: 12px; text-transform: uppercase; color: #9ba5b8; margin: 20px 0 15px; display: flex; justify-content: space-between; align-items: center; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #151b2e; padding: 12px; display: flex; gap: 8px; }
-        .nav-btn { flex: 1; padding: 12px; background: #1a2237; border-radius: 8px; color: #9ba5b8; font-size: 14px; cursor: pointer; border: none; }
-        .status { font-size: 10px; margin-top: 3px; }
-        .edit-price-btn { background: #4d94ff; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; cursor: pointer; margin-left: 8px; font-weight: 600; }
-        .edit-price-btn:hover { background: #3d7fe6; }
-        .edit-price-btn:active { transform: scale(0.95); }
-        .inline-price-editor { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 10px; background: #0a0e1a; border-radius: 6px; }
-        .inline-price-input { width: 120px; padding: 6px 10px; background: #1a2237; border: 1px solid #4d94ff; border-radius: 4px; color: #e8edf4; font-size: 14px; }
-        .inline-price-currency { width: 70px; padding: 6px 10px; background: #1a2237; border: 1px solid #2a3550; border-radius: 4px; color: #e8edf4; font-size: 14px; }
-        .inline-price-save { background: #00ff88; color: #0a0e1a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600; }
-        .inline-price-cancel { background: #2a3550; color: #e8edf4; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
-        body.light .edit-price-btn { background: #007bff; }
-        body.light .edit-price-btn:hover { background: #0056b3; }
-        body.light .inline-price-editor { background: #f8f9fa; }
-        body.light .inline-price-input { background: #ffffff; border-color: #007bff; color: #212529; }
-        body.light .inline-price-currency { background: #ffffff; border-color: #dee2e6; color: #212529; }
-        body.light .inline-price-save { background: #28a745; color: white; }
-        body.light .inline-price-cancel { background: #6c757d; color: white; }
-        .currency-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        .currency-row input { flex: 2; margin-bottom: 0; }
-        .currency-row select { flex: 1; margin-bottom: 0; }
-        .live { color: #00ff88; }
-        .manual-badge { color: #ffc044; }
-        .failed { color: #ff4466; }
-        .badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 6px; font-weight: 600; }
-        .badge-fund { background: #2a3550; color: #9ba5b8; }
-        .badge-rsu { background: #2a3550; color: #9ba5b8; }
-        .badge-property { background: #4d94ff; color: white; }
-        .badge-savings { background: #00ff88; color: #0a0e1a; }
-        .badge-manual { background: #ffc044; color: #0a0e1a; font-weight: 600; cursor: help; }
-        .badge-manual:hover { background: #ffb020; }
-        .info-text { font-size: 12px; color: #9ba5b8; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
-        .next-update { font-size: 11px; color: #9ba5b8; margin-top: 5px; }
-        .loading-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #1a2237; padding: 20px 40px; border-radius: 12px; border: 2px solid #4d94ff; z-index: 2000; display: none; }
-        .loading-indicator.show { display: block; }
-        .error-list { background: #ff446620; border: 1px solid #ff4466; border-radius: 8px; padding: 12px; margin: 15px 0; font-size: 12px; }
-        .chart-container { position: relative; max-height: 250px; }
-        #historyChart { width: 100%; height: 300px; display: block; }
-        .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .cost-item label { font-size: 12px; margin-bottom: 5px; }
-        .cost-item input { margin-bottom: 0; }
-        .currency-selector { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 10px; }
-        .currency-selector label { font-size: 12px; color: #9ba5b8; text-transform: uppercase; margin: 0; }
-        .currency-selector select { width: auto; padding: 8px 12px; margin: 0; font-size: 14px; }
-        .chat-container { position: fixed; bottom: 80px; right: 20px; width: 380px; max-width: calc(100vw - 40px); height: 500px; background: #1a2237; border: 1px solid #2a3550; border-radius: 16px; display: none; flex-direction: column; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        .chat-container.show { display: flex; }
-        .chat-header { padding: 16px; border-bottom: 1px solid #2a3550; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h3 { font-size: 16px; margin: 0; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .chat-message { padding: 12px; border-radius: 8px; max-width: 85%; word-wrap: break-word; line-height: 1.5; }
-        .chat-message.user { background: #4d94ff; color: white; align-self: flex-end; }
-        .chat-message.assistant { background: #2a3550; color: #e8edf4; align-self: flex-start; }
-        .chat-input-container { padding: 12px; border-top: 1px solid #2a3550; display: flex; gap: 8px; }
-        .chat-input { flex: 1; background: #0a0e1a; border: 1px solid #2a3550; border-radius: 8px; padding: 10px; color: #e8edf4; font-size: 14px; margin: 0; }
-        .chat-send-btn { background: #4d94ff; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; }
-        .chat-send-btn:disabled { opacity: 0.5; }
-        .typing-indicator { padding: 12px; background: #2a3550; border-radius: 8px; align-self: flex-start; }
-        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9ba5b8; margin: 0 2px; animation: typing 1.4s infinite; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing { 0%,60%,100% { opacity:0.3; } 30% { opacity:1; } }
-        .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #2a3550; }
-        .settings-section:last-child { border-bottom: none; }
-        .settings-section h4 { margin-bottom: 10px; font-size: 14px; }
-        .btn-secondary { background: #2a3550; margin-top: 10px; }
-        .warning-text { color: #ffc044; font-size: 12px; margin-top: 5px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-group .btn { flex: 1; }
-        #theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; padding: 0.5rem 1rem; background: #4d94ff; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        input[type="file"] { display: none; }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 ```
-    /* Multi-select filter styles */
-    .filter-section { margin-bottom: 20px; }
-    .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .filter-title { font-size: 12px; color: #9ba5b8; text-transform: uppercase; font-weight: 600; }
-    .clear-filters-btn { padding: 6px 12px; background: transparent; color: #9ba5b8; border: 1px solid #2a3550; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
-    .clear-filters-btn:hover { background: #2a3550; color: #e8edf4; border-color: #4d94ff; }
-    .clear-filters-btn:active { transform: scale(0.95); }
-    .filter-presets { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .preset-btn { padding: 8px 14px; background: linear-gradient(135deg, #4d94ff 0%, #3d7fe6 100%); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .preset-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(77, 148, 255, 0.3); }
-    .preset-btn:active { transform: translateY(0); }
-    .filter-checkboxes { display: flex; gap: 12px; flex-wrap: wrap; }
-    .filter-checkbox { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #1a2237; border: 1px solid #2a3550; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; }
-    .filter-checkbox:hover { background: #202840; }
-    .filter-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4d94ff; }
-    .filter-checkbox span { font-size: 13px; color: #e8edf4; font-weight: 500; }
-    .filter-checkbox input[type="checkbox"]:checked + span { color: #4d94ff; font-weight: 600; }
-    .filter-checkbox:has(input:checked) { background: #1a2850; border-color: #4d94ff; }
-    
-    .holdings-container { animation: fadeIn 0.3s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* Light mode */
-    body.light { background: #f8f9fa; color: #212529; }
-    body.light .card, body.light .holding, body.light .modal-content, body.light .chat-container, body.light .loading-indicator { background: #ffffff; border-color: #dee2e6; }
-    body.light input, body.light select, body.light textarea { background: #f8f9fa; color: #212529; border-color: #ced4da; }
-    body.light .bottom-nav { background: #ffffff; border-top: 1px solid #dee2e6; }
-    body.light .nav-btn { background: #ffffff; color: #495057; }
-    body.light .currency-selector { background: #ffffff; border-color: #dee2e6; }
-    body.light .income-value { color: #212529; }
-    body.light .income-divider { background: #dee2e6; }
-    body.light .yield-metrics { border-top-color: #dee2e6; }
-    body.light .yield-value { color: #28a745; }
-    body.light #goalType, body.light #goalCurrency, body.light #goalTarget, body.light #goalLabel { background: #ffffff; border-color: #dee2e6; color: #212529; }
-    .goal-progress-bar { width: 100%; height: 8px; background: #2a3550; border-radius: 4px; overflow: hidden; margin-top: 10px; }
-    .goal-progress-fill { height: 100%; background: #4d94ff; border-radius: 4px; transition: width 0.3s ease; }
-    body.light .goal-progress-bar { background: #e9ecef; }
-    body.light .goal-progress-fill { background: #007bff; }
+<!-- ============================================================
+     UI STRUCTURE OVERVIEW (Post 8-prompt UI Improvement Pass)
+     ============================================================
+     PHASE 1: Collapsible accordion sections
+       - Portfolio Overview (default open)
+       - Income & Projections (collapsed)
+       - Holdings (collapsed)
+       - Goals (collapsed)
+       - Chat (collapsed)
+
+     PHASE 2: Consistent spacing & alignment
+       - 16–20px panel padding, 12–16px gaps
+       - Left-aligned text, center-aligned numbers in tables
+
+     PHASE 3: Modernized typography & colors
+       - DM Sans (body) + DM Mono (numbers)
+       - Softer dark background, refined accent palette
+
+     PHASE 4: Holdings table UX
+       - Alternating rows, hover highlight, sort, type icons
+
+     PHASE 5: Quick-action buttons at top of dashboard
+
+     PHASE 6: Polished chat panel (fixed input, bubbles, typing)
+
+     PHASE 7: Sticky top navigation bar
+
+     PHASE 8: Final polish, cleanup, mobile responsiveness
+     ============================================================ -->
+
+<style>
+    /* ============================================================
+       CSS VARIABLES — Single source of truth for theming
+       ============================================================ */
+    :root {
+        --bg:        #080c18;
+        --bg-card:   #111827;
+        --bg-hover:  #1a2235;
+        --bg-input:  #0d1424;
+        --border:    #1e2d47;
+        --border-mid:#2a3d5a;
+        --text:      #e2e8f2;
+        --text-muted:#7a8fa8;
+        --text-dim:  #4a5d74;
+        --accent:    #3b82f6;
+        --accent-h:  #2563eb;
+        --green:     #10b981;
+        --red:       #ef4444;
+        --yellow:    #f59e0b;
+        --radius:    12px;
+        --radius-sm: 8px;
+        --nav-h:     56px;
+        --shadow:    0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    body.light {
+        --bg:        #f1f5f9;
+        --bg-card:   #ffffff;
+        --bg-hover:  #f8fafc;
+        --bg-input:  #f1f5f9;
+        --border:    #e2e8f0;
+        --border-mid:#cbd5e1;
+        --text:      #1e293b;
+        --text-muted:#64748b;
+        --text-dim:  #94a3b8;
+        --accent:    #2563eb;
+        --accent-h:  #1d4ed8;
+        --green:     #059669;
+        --red:       #dc2626;
+        --yellow:    #d97706;
+        --shadow:    0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'DM Sans', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+        line-height: 1.6;
+        padding-top: var(--nav-h);
+        padding-bottom: 80px;
+        min-height: 100vh;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    /* ============================================================
+       PHASE 7 — STICKY TOP NAVIGATION BAR
+       ============================================================ */
+    .top-nav {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--nav-h);
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        z-index: 1100;
+        box-shadow: var(--shadow);
+    }
+
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text);
+    }
+
+    .nav-logo {
+        width: 32px; height: 32px;
+        background: linear-gradient(135deg, var(--accent), var(--green));
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+    }
+
+    .nav-title {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+    }
+
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-icon-btn {
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        padding: 6px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .nav-icon-btn:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border-mid); }
+
+    /* ============================================================
+       PHASE 5 — QUICK-ACTION BUTTONS
+       ============================================================ */
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        padding: 16px 20px 0;
+        flex-wrap: wrap;
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .quick-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .quick-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .quick-btn .qicon { font-size: 14px; }
+
+    /* ============================================================
+       MAIN CONTENT WRAPPER
+       ============================================================ */
+    .dashboard {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 16px 20px;
+    }
+
+    /* ============================================================
+       PHASE 1 — COLLAPSIBLE ACCORDION SECTIONS
+       ============================================================ */
+    .section {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 12px;
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+    }
+    .section:hover { box-shadow: var(--shadow); }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s;
+    }
+    .section-header:hover { background: var(--bg-hover); }
+
+    .section-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-icon {
+        font-size: 18px;
+        width: 32px;
+        height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--bg-input);
+        border-radius: var(--radius-sm);
+        flex-shrink: 0;
+    }
+
+    .section-title-text {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+    }
+
+    .section-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 1px;
+    }
+
+    .section-chevron {
+        font-size: 12px;
+        color: var(--text-dim);
+        transition: transform 0.25s ease;
+        flex-shrink: 0;
+    }
+    .section.open .section-chevron { transform: rotate(180deg); }
+
+    /* Smooth expand/collapse animation */
+    .section-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .section.open .section-body { max-height: 9999px; }
+
+    .section-inner {
+        padding: 0 20px 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    /* Dividers between logical groups */
+    .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 16px 0;
+    }
+
+    /* ============================================================
+       PHASE 2 & 3 — SPACING, TYPOGRAPHY, CARDS
+       ============================================================ */
+    .label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .value {
+        font-family: 'DM Mono', monospace;
+        font-size: 30px;
+        font-weight: 400;
+        letter-spacing: -1px;
+        margin-bottom: 4px;
+    }
+
+    .change {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+
+    /* Income split */
+    .income-split {
+        display: flex;
+        gap: 20px;
+        align-items: stretch;
+        margin: 16px 0 12px;
+    }
+    .income-item { flex: 1; }
+    .income-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    .income-value {
+        font-family: 'DM Mono', monospace;
+        font-size: 22px;
+        font-weight: 400;
+        color: var(--text);
+    }
+    .income-divider {
+        width: 1px;
+        background: var(--border);
+        align-self: stretch;
+    }
+
+    /* Yield metrics */
+    .yield-metrics {
+        display: flex;
+        gap: 20px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+    .yield-metric { display: flex; align-items: center; gap: 6px; }
+    .yield-label { font-size: 12px; color: var(--text-muted); }
+    .yield-value { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--green); }
+
+    /* Mini card within section */
+    .inner-card {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+
+    /* Stats row */
+    .stats-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .stat-box {
+        flex: 1;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        text-align: center;
+    }
+    .stat-box-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+    .stat-box-value { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+
+    /* ============================================================
+       SECTION HEADER H3 — inside section-inner
+       ============================================================ */
+    .sub-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0 12px;
+    }
+    .sub-header h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    /* Time range toggles */
+    .time-range-toggles { display: flex; gap: 4px; }
+    .time-toggle {
+        padding: 5px 10px;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+    }
+    .time-toggle:hover { border-color: var(--accent); color: var(--text); }
+    .time-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .history-range-toggle {
+        padding: 5px 10px;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+    }
+    .history-range-toggle:hover { border-color: var(--accent); color: var(--text); }
+    .history-range-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Growth stats */
+    .growth-stats {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .growth-stat { flex: 1; text-align: center; }
+    .growth-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; }
+    .growth-stat-value { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; }
+    .growth-stat-value.positive { color: var(--green); }
+    .growth-stat-value.negative { color: var(--red); }
+
+    /* Income growth chart */
+    .income-growth-chart { position: relative; height: 200px; margin-top: 8px; }
+    .chart-svg { width: 100%; height: 100%; }
+    .chart-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+    .chart-area { fill: url(#gradient); opacity: 0.25; }
+    .chart-dot { fill: var(--accent); cursor: pointer; }
+    .chart-dot:hover { fill: var(--green); }
+    .chart-grid { stroke: var(--border); stroke-width: 1; }
+    .chart-label { fill: var(--text-muted); font-size: 11px; font-family: 'DM Mono', monospace; }
+    .chart-tooltip {
+        position: absolute;
+        background: var(--bg-card);
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        padding: 8px 12px;
+        pointer-events: none;
+        display: none;
+        z-index: 100;
+        font-size: 13px;
+    }
+    .chart-tooltip.show { display: block; }
+
+    /* Canvas chart */
+    .chart-container { position: relative; max-height: 260px; }
+    #historyChart { width: 100%; height: 260px; display: block; }
+
+    /* Monthly calendar */
+    .monthly-calendar {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .calendar-month {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        text-align: center;
+        transition: all 0.15s;
+    }
+    .calendar-month:hover { background: var(--bg-hover); border-color: var(--accent); }
+    .calendar-month-name { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.6px; }
+    .calendar-month-amount { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); }
+    .calendar-month-amount.has-income { color: var(--green); }
+    .calendar-month-amount.zero { color: var(--text-dim); }
+
+    /* ============================================================
+       PHASE 4 — HOLDINGS TABLE UX
+       ============================================================ */
+    .filter-section { margin-bottom: 16px; }
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .filter-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.8px; }
+    .clear-filters-btn {
+        padding: 4px 10px;
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        display: none;
+    }
+    .clear-filters-btn:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border-mid); }
+
+    .filter-presets { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .preset-btn {
+        padding: 6px 12px;
+        background: var(--bg-input);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+    }
+    .preset-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .filter-checkboxes { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        cursor: pointer;
+        transition: all 0.15s;
+        user-select: none;
+        font-size: 13px;
+    }
+    .filter-checkbox:hover { background: var(--bg-hover); }
+    .filter-checkbox input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent); }
+    .filter-checkbox span { color: var(--text-muted); font-weight: 500; }
+    .filter-checkbox input[type="checkbox"]:checked + span { color: var(--accent); font-weight: 600; }
+    .filter-checkbox:has(input:checked) { background: color-mix(in srgb, var(--accent) 12%, var(--bg-input)); border-color: var(--accent); }
+
+    /* Holdings search + sort bar */
+    .holdings-toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        align-items: center;
+    }
+    .holdings-toolbar input[type="text"] {
+        flex: 1;
+        min-width: 140px;
+    }
+    .holdings-toolbar select { width: auto; min-width: 160px; }
+
+    /* Section title with add button */
+    .section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin: 16px 0 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+    }
+
+    /* Individual holding cards */
+    .holding {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+        position: relative;
+    }
+    /* Alternating row backgrounds */
+    .holding:nth-child(even) { background: var(--bg-hover); }
+    .holding:hover {
+        background: color-mix(in srgb, var(--accent) 8%, var(--bg-card));
+        border-color: var(--border-mid);
+        transform: translateX(2px);
+    }
+    .holding:active { opacity: 0.8; }
+
+    /* Type icon pill on holding */
+    .holding-type-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+    .type-stock  { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+    .type-fund   { background: color-mix(in srgb, var(--yellow) 20%, transparent); color: var(--yellow); }
+    .type-rsu    { background: color-mix(in srgb, #8b5cf6 20%, transparent); color: #8b5cf6; }
+    .type-property { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+    .type-savings { background: color-mix(in srgb, var(--green) 20%, transparent); color: var(--green); }
+
+    .holding-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .holding-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .holding-value {
+        font-family: 'DM Mono', monospace;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+        text-align: right;
+        flex-shrink: 0;
+        margin-left: 12px;
+    }
+    .meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    /* Table horizontal scroll on mobile */
+    .holdings-container { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ============================================================
+       BADGES
+       ============================================================ */
+    .badge { padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    .badge-fund   { background: color-mix(in srgb, var(--yellow) 15%, transparent); color: var(--yellow); }
+    .badge-rsu    { background: color-mix(in srgb, #8b5cf6 15%, transparent); color: #8b5cf6; }
+    .badge-property { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+    .badge-savings { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }
+    .badge-manual { background: color-mix(in srgb, var(--yellow) 15%, transparent); color: var(--yellow); cursor: help; }
+
+    /* Price status */
+    .live    { color: var(--green); font-size: 11px; }
+    .manual-badge { color: var(--yellow); font-size: 11px; }
+    .failed  { color: var(--red); font-size: 11px; }
+    .status  { font-size: 11px; margin-top: 4px; display: inline-block; }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================ */
+    .btn {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        width: 100%;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.15s, opacity 0.15s;
+    }
+    .btn:hover { background: var(--accent-h); }
+    .btn:active { opacity: 0.8; }
+    .btn-small { width: auto; padding: 8px 16px; font-size: 13px; }
+    .btn-secondary { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); margin-top: 8px; }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: var(--red); }
+    .btn-danger:hover { background: #c53030; }
+
+    .btn-group { display: flex; gap: 10px; }
+    .btn-group .btn { flex: 1; }
+
+    /* ============================================================
+       FORMS
+       ============================================================ */
+    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+    input, select, textarea {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 11px 14px;
+        color: var(--text);
+        font-size: 15px;
+        margin-bottom: 14px;
+        font-family: inherit;
+        transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+    textarea { min-height: 60px; resize: vertical; }
+    .info-text { font-size: 12px; color: var(--text-muted); margin-top: -10px; margin-bottom: 12px; font-style: italic; }
+    .currency-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .currency-row input { flex: 2; margin-bottom: 0; }
+    .currency-row select { flex: 1; margin-bottom: 0; }
+    .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .cost-item label { font-size: 12px; margin-bottom: 4px; }
+    .cost-item input { margin-bottom: 0; }
+
+    /* ============================================================
+       MODALS
+       ============================================================ */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        backdrop-filter: blur(4px);
+        padding: 20px;
+        overflow-y: auto;
+        z-index: 2000;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 500px;
+        margin: 40px auto;
+        box-shadow: var(--shadow);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .modal-header h2 { font-size: 18px; font-weight: 600; }
+    .close {
+        font-size: 26px;
+        color: var(--text-muted);
+        cursor: pointer;
+        background: none;
+        border: none;
+        line-height: 1;
+        padding: 4px;
+    }
+    .close:hover { color: var(--text); }
+
+    /* ============================================================
+       CURRENCY SELECTOR
+       ============================================================ */
+    .currency-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        margin-bottom: 12px;
+    }
+    .currency-selector label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin: 0; white-space: nowrap; }
+    .currency-selector select { width: auto; padding: 6px 10px; margin: 0; font-size: 13px; }
+
+    /* ============================================================
+       GOALS
+       ============================================================ */
+    .goal-form { background: var(--bg-input); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .goal-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .goal-form-grid select, .goal-form-grid input { margin-bottom: 0; }
+    .goal-progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+    .goal-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
     .goal-actions { display: flex; gap: 6px; }
-    .goal-edit-btn, .goal-delete-btn { padding: 4px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
-    .goal-edit-btn { background: #4d94ff; color: white; }
-    .goal-edit-btn:hover { background: #3d84ef; }
-    .goal-delete-btn { background: #dc3545; color: white; }
-    .goal-delete-btn:hover { background: #c82333; }
-    .goal-completed { border: 2px solid #00ff88 !important; background: #0d1a14 !important; }
-    .goal-completed-badge { display: inline-block; padding: 3px 8px; background: #00ff88; color: #0a0e1a; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
-    .goal-checkmark { font-size: 18px; color: #00ff88; margin-right: 6px; }
-    body.light .goal-completed { border-color: #28a745 !important; background: #d4edda !important; }
-    body.light .goal-completed-badge { background: #28a745; color: white; }
-    body.light .goal-checkmark { color: #28a745; }
-    .goal-toast { position: fixed; top: 80px; right: 20px; background: #00ff88; color: #0a0e1a; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,255,136,0.3); font-weight: 600; z-index: 10000; animation: slideIn 0.3s ease; }
-    .goal-toast-icon { font-size: 20px; margin-right: 10px; }
-    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    body.light .goal-toast { background: #28a745; color: white; box-shadow: 0 4px 12px rgba(40,167,69,0.3); }
-    body.light .calendar-month { background: #f8f9fa; border-color: #dee2e6; }
-    body.light .calendar-month:hover { background: #e9ecef; border-color: #007bff; }
-    body.light .calendar-month-amount { color: #212529; }
-    body.light .calendar-month-amount.has-income { color: #28a745; }
-    body.light .calendar-month-amount.zero { color: #6c757d; }
-    body.light .time-toggle { background: #f8f9fa; border-color: #dee2e6; color: #6c757d; }
-    body.light .time-toggle:hover { background: #e9ecef; border-color: #007bff; }
-    body.light .time-toggle.active { background: #007bff; color: white; border-color: #007bff; }
-    body.light .growth-stats { background: #f8f9fa; }
-    body.light .growth-stat-value.positive { color: #28a745; }
-    body.light .chart-grid { stroke: #dee2e6; }
-    body.light .chart-label { fill: #6c757d; }
-    body.light .chart-tooltip { background: #ffffff; border-color: #007bff; }
-    body.light .chat-message.assistant { background: #f0f0f0; color: #212529; }
-    body.light .chat-input { background: #ffffff; color: #212529; }
-    body.light .settings-section { border-color: #dee2e6; }
-    body.light #theme-toggle { background: #007bff; }
-    body.light .clear-filters-btn { color: #6c757d; border-color: #dee2e6; }
-    body.light .clear-filters-btn:hover { background: #f8f9fa; color: #212529; border-color: #007bff; }
-    body.light .preset-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
-    body.light .preset-btn:hover { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); }
-    body.light .filter-checkbox { background: #ffffff; border-color: #dee2e6; }
-    body.light .filter-checkbox:hover { background: #f8f9fa; }
-    body.light .filter-checkbox span { color: #212529; }
-    body.light .filter-checkbox input[type="checkbox"]:checked + span { color: #007bff; }
-    body.light .filter-checkbox:has(input:checked) { background: #e7f3ff; border-color: #007bff; }
+    .goal-edit-btn, .goal-delete-btn {
+        padding: 4px 10px;
+        font-size: 11px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: inherit;
+    }
+    .goal-edit-btn { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); }
+    .goal-edit-btn:hover { background: var(--border); }
+    .goal-delete-btn { background: color-mix(in srgb, var(--red) 15%, transparent); color: var(--red); border: 1px solid color-mix(in srgb, var(--red) 30%, transparent); }
+    .goal-delete-btn:hover { background: var(--red); color: #fff; }
+    .goal-completed { border: 1px solid var(--green) !important; background: color-mix(in srgb, var(--green) 8%, var(--bg-input)) !important; }
+    .goal-completed .goal-progress-fill { background: var(--green); }
+    .goal-completed-badge { display: inline-block; padding: 2px 7px; background: var(--green); color: #fff; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 6px; }
+    .goal-checkmark { font-size: 14px; color: var(--green); margin-right: 4px; }
+    .goal-toast {
+        position: fixed; top: 70px; right: 16px;
+        background: var(--green); color: #fff;
+        padding: 14px 18px; border-radius: var(--radius-sm);
+        box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+        font-weight: 600; font-size: 14px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    }
+    .goal-toast-icon { margin-right: 8px; }
+    @keyframes slideIn { from { transform: translateX(300px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ============================================================
+       PHASE 6 — CHAT PANEL (polished)
+       ============================================================ */
+    .chat-container {
+        position: fixed;
+        bottom: 64px; right: 16px;
+        width: 360px;
+        max-width: calc(100vw - 32px);
+        height: 480px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: none;
+        flex-direction: column;
+        z-index: 999;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        overflow: hidden;
+    }
+    .chat-container.show { display: flex; }
+
+    .chat-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-card);
+        flex-shrink: 0;
+    }
+    .chat-header h3 { font-size: 14px; font-weight: 600; margin: 0; }
+
+    /* Scrollable message area — fixed height */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        scroll-behavior: smooth;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+
+    /* Message bubbles */
+    .chat-message {
+        padding: 10px 14px;
+        border-radius: 14px;
+        max-width: 82%;
+        word-wrap: break-word;
+        line-height: 1.5;
+        font-size: 13px;
+        animation: bubbleIn 0.18s ease;
+    }
+    @keyframes bubbleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .chat-message.user {
+        background: var(--accent);
+        color: #fff;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+    }
+    .chat-message.assistant {
+        background: var(--bg-hover);
+        color: var(--text);
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        border: 1px solid var(--border);
+    }
+
+    /* Typing indicator — "Assistant is thinking..." */
+    .typing-indicator {
+        padding: 10px 14px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        border-bottom-left-radius: 4px;
+        align-self: flex-start;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .typing-indicator span {
+        display: inline-block;
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--text-dim);
+        animation: typing 1.4s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,60%,100% { opacity:0.3; transform: scale(0.8); } 30% { opacity:1; transform: scale(1); } }
+
+    /* Fixed chat input bar */
+    .chat-input-container {
+        padding: 10px 12px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 8px;
+        background: var(--bg-card);
+        flex-shrink: 0;
+    }
+    .chat-input {
+        flex: 1;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 9px 14px;
+        color: var(--text);
+        font-size: 13px;
+        margin: 0;
+        font-family: inherit;
+    }
+    .chat-input:focus { outline: none; border-color: var(--accent); }
+    .chat-send-btn {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 9px 18px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        transition: background 0.15s;
+        white-space: nowrap;
+    }
+    .chat-send-btn:hover { background: var(--accent-h); }
+    .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ============================================================
+       BOTTOM NAV
+       ============================================================ */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border);
+        padding: 8px 12px;
+        display: flex;
+        gap: 8px;
+        z-index: 1000;
+    }
+    .nav-btn {
+        flex: 1;
+        padding: 10px;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+    }
+    .nav-btn:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border-mid); }
+
+    /* ============================================================
+       MISC / UTILITY
+       ============================================================ */
+    .loading-indicator {
+        position: fixed; top: 50%; left: 50%;
+        transform: translate(-50%,-50%);
+        background: var(--bg-card);
+        padding: 20px 40px;
+        border-radius: var(--radius);
+        border: 1px solid var(--accent);
+        z-index: 2000;
+        display: none;
+        font-size: 14px;
+    }
+    .loading-indicator.show { display: block; }
+
+    .error-list {
+        background: color-mix(in srgb, var(--red) 10%, transparent);
+        border: 1px solid var(--red);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        margin: 12px 0;
+        font-size: 12px;
+        color: var(--red);
+    }
+
+    .next-update { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .settings-section {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+    }
+    .settings-section:last-child { border-bottom: none; }
+    .settings-section h4 { margin-bottom: 10px; font-size: 14px; font-weight: 600; }
+    .warning-text { color: var(--yellow); font-size: 12px; margin-top: 6px; }
+
+    input[type="file"] { display: none; }
+
+    /* Inline price editor */
+    .edit-price-btn {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 11px;
+        cursor: pointer;
+        margin-left: 6px;
+        font-weight: 600;
+        font-family: inherit;
+    }
+    .edit-price-btn:hover { background: var(--accent-h); }
+    .inline-price-editor {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 10px;
+        padding: 10px;
+        background: var(--bg);
+        border-radius: 6px;
+        flex-wrap: wrap;
+    }
+    .inline-price-input {
+        width: 110px; padding: 6px 10px;
+        background: var(--bg-card); border: 1px solid var(--accent);
+        border-radius: 4px; color: var(--text); font-size: 14px; margin: 0;
+    }
+    .inline-price-currency {
+        width: 70px; padding: 6px 10px;
+        background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: 4px; color: var(--text); font-size: 14px; margin: 0;
+    }
+    .inline-price-save {
+        background: var(--green); color: #fff;
+        border: none; border-radius: 4px; padding: 6px 12px;
+        font-size: 12px; cursor: pointer; font-weight: 600; font-family: inherit;
+    }
+    .inline-price-cancel {
+        background: var(--bg-hover); color: var(--text);
+        border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px;
+        font-size: 12px; cursor: pointer; font-family: inherit;
+    }
+
+    /* ============================================================
+       PHASE 8 — MOBILE RESPONSIVENESS
+       ============================================================ */
+    @media (max-width: 600px) {
+        .quick-actions { padding: 12px 12px 0; }
+        .dashboard { padding: 12px; }
+
+        .section-inner { padding: 0 12px 16px; }
+
+        .income-split { flex-direction: column; gap: 12px; }
+        .income-divider { width: 100%; height: 1px; align-self: auto; }
+
+        .stats-row { flex-wrap: wrap; }
+        .stat-box { min-width: calc(50% - 6px); }
+
+        .growth-stats { flex-wrap: wrap; }
+        .growth-stat { min-width: calc(50% - 6px); }
+
+        .monthly-calendar { grid-template-columns: repeat(3, 1fr); }
+
+        /* Holdings scroll on small screens */
+        .holdings-container { overflow-x: auto; }
+
+        .goal-form-grid { grid-template-columns: 1fr; }
+
+        .chat-container { bottom: 60px; right: 8px; left: 8px; width: auto; max-width: none; height: 400px; }
+
+        .top-nav .nav-icon-btn span.label { display: none; }
+
+        .nav-btn { font-size: 11px; padding: 8px 4px; }
+        .quick-btn span:not(.qicon) { display: none; }
+
+        .modal-content { margin: 16px auto; padding: 16px; }
+
+        .cost-grid { grid-template-columns: 1fr; }
+    }
 </style>
 ```
 
 </head>
 <body class="dark">
 
-<button id="theme-toggle">☀️ Light</button>
+<!-- ============================================================
+     PHASE 7 — STICKY TOP NAVIGATION BAR
+     ============================================================ -->
 
-<div class="loading-indicator" id="loadingIndicator"><div>⏳ Updating prices...</div></div>
+<nav class="top-nav">
+    <a class="nav-brand" href="#">
+        <div class="nav-logo">💰</div>
+        <div>
+            <div class="nav-title">Passive Income</div>
+        </div>
+    </a>
+    <div class="nav-actions">
+        <button class="nav-icon-btn" id="theme-toggle">☀️ <span class="label">Light</span></button>
+        <button class="nav-icon-btn" id="navSettingsBtn">⚙️ <span class="label">Settings</span></button>
+    </div>
+</nav>
 
-<h1>Passive Income</h1>
-<div class="meta" id="lastUpdate" style="margin-bottom:5px;">Never updated</div>
-<div class="next-update" id="nextUpdate">Next auto-update: calculating...</div>
+<div class="loading-indicator" id="loadingIndicator"><div>⏳ Updating prices…</div></div>
+
+<!-- ============================================================
+     PHASE 5 — QUICK-ACTION BUTTONS
+     ============================================================ -->
+
+<div class="quick-actions">
+    <button class="quick-btn" id="qaAddHolding"><span class="qicon">＋</span> Add Holding</button>
+    <button class="quick-btn" id="qaAddGoal"><span class="qicon">🎯</span> Add Goal</button>
+    <button class="quick-btn" id="qaUpdatePrices"><span class="qicon">🔄</span> Update Prices</button>
+</div>
+
+<div class="dashboard">
+
+```
 <div id="errorContainer"></div>
 
-<div class="currency-selector">
-    <label for="displayCurrency">Display Currency:</label>
-    <select id="displayCurrency">
-        <option value="DKK">DKK</option>
-        <option value="EUR">EUR</option>
-        <option value="USD">USD</option>
-    </select>
-</div>
-
-<div class="card">
-    <div class="label">Portfolio Value <span id="filterLabel">(All)</span></div>
-    <div class="value" id="totalValue">0 DKK</div>
-    <div class="change" id="totalChange">—</div>
-</div>
-
-<div class="card">
-    <div class="label">Income Projection <span id="incomeFilterLabel">(All)</span></div>
-    <div class="income-split">
-        <div class="income-item">
-            <div class="income-label">Monthly</div>
-            <div class="income-value" id="monthlyIncome">0 DKK</div>
+<!-- ============================================================
+     SECTION 1: PORTFOLIO OVERVIEW (default OPEN)
+     ============================================================ -->
+<div class="section open" id="secOverview">
+    <div class="section-header" onclick="toggleSection('secOverview')">
+        <div class="section-header-left">
+            <div class="section-icon">📊</div>
+            <div>
+                <div class="section-title-text">Portfolio Overview</div>
+                <div class="section-subtitle" id="overviewSubtitle">Loading…</div>
+            </div>
         </div>
-        <div class="income-divider"></div>
-        <div class="income-item">
-            <div class="income-label">Annual</div>
-            <div class="income-value" id="annualIncome">0 DKK</div>
+        <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-inner">
+            <!-- Status & currency -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px;flex-wrap:wrap;gap:8px;">
+                <div>
+                    <div class="meta" id="lastUpdate">Never updated</div>
+                    <div class="next-update" id="nextUpdate">Next auto-update: calculating…</div>
+                </div>
+                <div class="currency-selector" style="margin:0;padding:6px 12px;">
+                    <label for="displayCurrency">Currency:</label>
+                    <select id="displayCurrency">
+                        <option value="DKK">DKK</option>
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Portfolio Value -->
+            <div class="label">Portfolio Value <span id="filterLabel">(All)</span></div>
+            <div class="value" id="totalValue">0 DKK</div>
+            <div class="change" id="totalChange">—</div>
+
+            <div class="divider"></div>
+
+            <!-- Income projection -->
+            <div class="label">Income Projection <span id="incomeFilterLabel">(All)</span></div>
+            <div class="income-split">
+                <div class="income-item">
+                    <div class="income-label">Monthly</div>
+                    <div class="income-value" id="monthlyIncome">0 DKK</div>
+                </div>
+                <div class="income-divider"></div>
+                <div class="income-item">
+                    <div class="income-label">Annual</div>
+                    <div class="income-value" id="annualIncome">0 DKK</div>
+                </div>
+            </div>
+            <div class="yield-metrics">
+                <div class="yield-metric">
+                    <span class="yield-label">Current Yield:</span>
+                    <span id="yieldPercent" class="yield-value">0.0%</span>
+                </div>
+                <div class="yield-metric">
+                    <span class="yield-label">Yield-on-Cost:</span>
+                    <span id="yieldOnCostPercent" class="yield-value">0.0%</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Allocation Chart -->
+            <div class="sub-header"><h3>Portfolio Allocation</h3></div>
+            <div class="chart-container"><canvas id="allocationChart"></canvas></div>
         </div>
     </div>
-    <div class="yield-metrics">
-        <div class="yield-metric">
-            <span class="yield-label">Current Yield:</span>
-            <span id="yieldPercent" class="yield-value">0.0%</span>
+</div>
+
+<!-- ============================================================
+     SECTION 2: INCOME & PROJECTIONS (default COLLAPSED)
+     ============================================================ -->
+<div class="section" id="secIncome">
+    <div class="section-header" onclick="toggleSection('secIncome')">
+        <div class="section-header-left">
+            <div class="section-icon">📈</div>
+            <div>
+                <div class="section-title-text">Income &amp; Projections</div>
+                <div class="section-subtitle">Calendar, growth chart, portfolio history</div>
+            </div>
         </div>
-        <div class="yield-metric">
-            <span class="yield-label">Yield-on-Cost:</span>
-            <span id="yieldOnCostPercent" class="yield-value">0.0%</span>
+        <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-inner">
+
+            <!-- Monthly Income Calendar -->
+            <div class="sub-header"><h3>Monthly Income Calendar</h3></div>
+            <div id="monthlyCalendar" class="monthly-calendar"></div>
+
+            <div class="divider"></div>
+
+            <!-- Income Growth -->
+            <div class="sub-header">
+                <h3>Income Growth</h3>
+                <div class="time-range-toggles">
+                    <button class="time-toggle active" data-range="30">30D</button>
+                    <button class="time-toggle" data-range="365">1Y</button>
+                    <button class="time-toggle" data-range="all">All</button>
+                </div>
+            </div>
+            <div id="incomeGrowthStats" class="growth-stats"></div>
+            <div id="incomeGrowthChart" class="income-growth-chart"></div>
+
+            <div class="divider"></div>
+
+            <!-- Portfolio History -->
+            <div class="sub-header">
+                <h3>Portfolio History</h3>
+                <div class="time-range-toggles">
+                    <button class="history-range-toggle active" data-range="30d">30D</button>
+                    <button class="history-range-toggle" data-range="12m">12M</button>
+                    <button class="history-range-toggle" data-range="all">All</button>
+                </div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label for="historyMetric" style="font-size:12px;color:var(--text-muted);display:inline;margin-right:8px;">Show:</label>
+                <select id="historyMetric" style="width:auto;padding:6px 10px;font-size:13px;display:inline-block;">
+                    <option value="value">Total Value</option>
+                    <option value="income">Annual Income</option>
+                    <option value="yield">Yield %</option>
+                </select>
+            </div>
+            <canvas id="historyChart" width="800" height="260"></canvas>
+
         </div>
     </div>
 </div>
 
-<div class="card">
-    <h3 style="margin-bottom:15px;">Monthly Income Calendar</h3>
-    <div id="monthlyCalendar" class="monthly-calendar"></div>
-</div>
+<!-- ============================================================
+     SECTION 3: HOLDINGS (default COLLAPSED)
+     ============================================================ -->
+<div class="section" id="secHoldings">
+    <div class="section-header" onclick="toggleSection('secHoldings')">
+        <div class="section-header-left">
+            <div class="section-icon">🗂️</div>
+            <div>
+                <div class="section-title-text">Holdings</div>
+                <div class="section-subtitle" id="holdingsSubtitle">Filter, sort, and manage assets</div>
+            </div>
+        </div>
+        <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-inner">
 
-<div class="card">
-    <div class="income-growth-header">
-        <h3>Income Growth</h3>
-        <div class="time-range-toggles">
-            <button class="time-toggle active" data-range="30">30D</button>
-            <button class="time-toggle" data-range="365">1Y</button>
-            <button class="time-toggle" data-range="all">All</button>
+            <!-- Filters -->
+            <div class="filter-section" style="padding-top:4px;">
+                <div class="filter-header">
+                    <span class="filter-title">Filter by Type</span>
+                    <button class="clear-filters-btn" id="clearFiltersBtn">✕ Clear</button>
+                </div>
+                <div class="filter-presets">
+                    <button class="preset-btn" data-preset="liquid">💧 Liquid</button>
+                    <button class="preset-btn" data-preset="longterm">📈 Long-term</button>
+                    <button class="preset-btn" data-preset="income">💰 Income</button>
+                </div>
+                <div class="filter-checkboxes">
+                    <label class="filter-checkbox"><input type="checkbox" data-type="stock"><span>Stocks</span></label>
+                    <label class="filter-checkbox"><input type="checkbox" data-type="fund"><span>Funds</span></label>
+                    <label class="filter-checkbox"><input type="checkbox" data-type="rsu"><span>RSU</span></label>
+                    <label class="filter-checkbox"><input type="checkbox" data-type="property"><span>Property</span></label>
+                    <label class="filter-checkbox"><input type="checkbox" data-type="savings"><span>Savings</span></label>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Toolbar: search + sort + add -->
+            <div class="holdings-toolbar">
+                <input type="text" id="searchInput" placeholder="🔍 Search holdings…" style="flex:1;min-width:120px;margin:0;">
+                <select id="sortSelect" style="min-width:160px;margin:0;">
+                    <option value="value-desc">Value (High → Low)</option>
+                    <option value="value-asc">Value (Low → High)</option>
+                    <option value="yield-desc">Yield (High → Low)</option>
+                    <option value="name">Name (A–Z)</option>
+                </select>
+                <button class="btn btn-small" id="addBtn">＋ Add</button>
+            </div>
+
+            <div id="holdings" class="holdings-container"></div>
+
         </div>
     </div>
-    <div id="incomeGrowthStats" class="growth-stats"></div>
-    <div id="incomeGrowthChart" class="income-growth-chart"></div>
 </div>
 
-<div class="card">
-    <div class="income-growth-header">
-        <h3>Portfolio History</h3>
-        <div class="time-range-toggles">
-            <button class="history-range-toggle active" data-range="30d">30D</button>
-            <button class="history-range-toggle" data-range="12m">12M</button>
-            <button class="history-range-toggle" data-range="all">All</button>
+<!-- ============================================================
+     SECTION 4: GOALS (default COLLAPSED)
+     ============================================================ -->
+<div class="section" id="secGoals">
+    <div class="section-header" onclick="toggleSection('secGoals')">
+        <div class="section-header-left">
+            <div class="section-icon">🎯</div>
+            <div>
+                <div class="section-title-text">Financial Goals</div>
+                <div class="section-subtitle" id="goalsSubtitle">Set and track financial targets</div>
+            </div>
+        </div>
+        <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-inner">
+
+            <div class="goal-form">
+                <div class="goal-form-grid">
+                    <div>
+                        <label>Goal Type</label>
+                        <select id="goalType">
+                            <option value="netWorth">Net Worth</option>
+                            <option value="savings">Savings</option>
+                            <option value="income">Annual Income</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Currency</label>
+                        <select id="goalCurrency">
+                            <option value="DKK">DKK</option>
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                </div>
+                <label>Target Amount</label>
+                <input type="number" id="goalTarget" placeholder="e.g., 1000000" style="margin-bottom:10px;">
+                <label>Label</label>
+                <input type="text" id="goalLabel" placeholder="e.g., Reach 1M net worth" style="margin-bottom:12px;">
+                <button id="saveGoalBtn" class="btn">Create Goal</button>
+            </div>
+
+            <div id="goalsList"></div>
+
         </div>
     </div>
-    <div style="margin-bottom:15px;">
-        <label for="historyMetric" style="font-size:12px;color:#9ba5b8;margin-right:10px;">Show:</label>
-        <select id="historyMetric" style="padding:6px 10px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;font-size:14px;">
-            <option value="value">Total Value</option>
-            <option value="income">Annual Income</option>
-            <option value="yield">Yield %</option>
-        </select>
-    </div>
-    <canvas id="historyChart" width="800" height="300"></canvas>
 </div>
 
-<div class="card">
-    <h3 style="margin-bottom:15px;">Portfolio Allocation</h3>
-    <div class="chart-container"><canvas id="allocationChart"></canvas></div>
-</div>
-
-<div class="card">
-    <h3 style="margin-bottom:15px;">Financial Goals</h3>
-
+<!-- ============================================================
+     SECTION 5: CHAT (default COLLAPSED — handled via button)
+     ============================================================ -->
 ```
-<div class="goal-form">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-        <div>
-            <label style="font-size:12px;color:#9ba5b8;">Goal Type</label>
-            <select id="goalType" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
-                <option value="netWorth">Net Worth</option>
-                <option value="savings">Savings</option>
-                <option value="income">Annual Income</option>
-            </select>
-        </div>
-        <div>
-            <label style="font-size:12px;color:#9ba5b8;">Currency</label>
-            <select id="goalCurrency" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
-                <option value="DKK">DKK</option>
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-            </select>
-        </div>
-    </div>
-    <div style="margin-bottom:10px;">
-        <label style="font-size:12px;color:#9ba5b8;">Target Amount</label>
-        <input type="number" id="goalTarget" placeholder="e.g., 1000000" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
-    </div>
-    <div style="margin-bottom:10px;">
-        <label style="font-size:12px;color:#9ba5b8;">Label</label>
-        <input type="text" id="goalLabel" placeholder="e.g., Reach 1M net worth" style="width:100%;padding:8px;background:#1a2237;border:1px solid #2a3550;border-radius:4px;color:#e8edf4;">
-    </div>
-    <button id="saveGoalBtn" class="btn" style="width:100%;background:#4d94ff;">Create Goal</button>
-</div>
 
-<div id="goalsList" style="margin-top:20px;"></div>
-```
+</div><!-- /dashboard -->
 
-</div>
-
-<div class="filter-section">
-    <div class="filter-header">
-        <span class="filter-title">FILTER BY TYPE</span>
-        <button class="clear-filters-btn" id="clearFiltersBtn" title="Remove all filters and show all holdings">
-            ✕ Clear All
-        </button>
-    </div>
-
-```
-<div class="filter-presets">
-    <button class="preset-btn" data-preset="liquid" title="Stocks + Savings">💧 Liquid Assets</button>
-    <button class="preset-btn" data-preset="longterm" title="Property + Funds">📈 Long-term</button>
-    <button class="preset-btn" data-preset="income" title="Stocks + Funds + Property">💰 Income Producers</button>
-</div>
-
-<div class="filter-checkboxes">
-    <label class="filter-checkbox">
-        <input type="checkbox" data-type="stock">
-        <span>Stocks</span>
-    </label>
-    <label class="filter-checkbox">
-        <input type="checkbox" data-type="fund">
-        <span>Funds</span>
-    </label>
-    <label class="filter-checkbox">
-        <input type="checkbox" data-type="rsu">
-        <span>RSU</span>
-    </label>
-    <label class="filter-checkbox">
-        <input type="checkbox" data-type="property">
-        <span>Property</span>
-    </label>
-    <label class="filter-checkbox">
-        <input type="checkbox" data-type="savings">
-        <span>Savings</span>
-    </label>
-</div>
-```
-
-</div>
-
-<div class="section-title">
-    <span>HOLDINGS</span>
-    <button class="btn btn-small" id="addBtn">+ Add</button>
-</div>
-
-<div style="margin:1rem 0;display:flex;gap:1rem;flex-wrap:wrap;">
-    <input type="text" id="searchInput" placeholder="Search..." style="flex:1;min-width:150px;padding:0.5rem;">
-    <select id="sortSelect" style="width:auto;min-width:150px;">
-        <option value="value-desc">Value (High to Low)</option>
-        <option value="value-asc">Value (Low to High)</option>
-        <option value="yield-desc">Yield (High to Low)</option>
-        <option value="name">Name (A-Z)</option>
-    </select>
-</div>
-
-<div id="holdings" class="holdings-container"></div>
+<!-- ============================================================
+     PHASE 6 — POLISHED CHAT PANEL
+     ============================================================ -->
 
 <div class="chat-container" id="chatContainer">
     <div class="chat-header">
         <h3>💰 Passive Income Advisor</h3>
         <button class="close" id="closeChatBtn">×</button>
     </div>
+    <!-- Scrollable message area -->
     <div class="chat-messages" id="chatMessages">
         <div class="chat-message assistant">
-            👋 Hi! I am your passive income advisor. Ask me about your portfolio, dividends, property valuations, or savings rates!
+            👋 Hi! I'm your passive income advisor. Ask me about your portfolio, dividends, property valuations, or savings rates!
         </div>
     </div>
+    <!-- Fixed input at bottom -->
     <div class="chat-input-container">
-        <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your portfolio...">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your portfolio…">
         <button class="chat-send-btn" id="chatSendBtn">Send</button>
     </div>
 </div>
+
+<!-- ============================================================
+     SETTINGS MODAL
+     ============================================================ -->
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
@@ -449,7 +1404,7 @@
         </div>
         <div class="settings-section">
             <h4>Manual Price Mode</h4>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                 <input type="checkbox" id="manualPriceToggle" style="width:auto;margin:0;">
                 <label for="manualPriceToggle" style="margin:0;cursor:pointer;">Enable Manual Price Mode</label>
             </div>
@@ -457,7 +1412,7 @@
         </div>
         <div class="settings-section">
             <h4>Goal Notifications</h4>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                 <input type="checkbox" id="goalNotificationsToggle" style="width:auto;margin:0;">
                 <label for="goalNotificationsToggle" style="margin:0;cursor:pointer;">Notify me when a goal is reached</label>
             </div>
@@ -465,11 +1420,13 @@
         </div>
         <div class="settings-section">
             <h4>Data Management</h4>
-            <button class="btn" id="clearAllData" style="background:#ff4466;">Clear All Data</button>
-            <div class="warning-text">This deletes everything. Export first!</div>
+            <button class="btn btn-danger" id="clearAllData">Clear All Data</button>
+            <div class="warning-text">⚠️ This deletes everything. Export first!</div>
         </div>
     </div>
 </div>
+
+<!-- ADD / EDIT HOLDING MODAL -->
 
 <div class="modal" id="modal">
     <div class="modal-content">
@@ -536,7 +1493,7 @@
 
     <div id="propertyFields" style="display:none;">
         <label>Address</label>
-        <textarea id="address" placeholder="e.g. Vestergade 12, 1456 Kobenhavn K"></textarea>
+        <textarea id="address" placeholder="e.g. Vestergade 12, 1456 København K"></textarea>
         <label>Property Value</label>
         <div class="currency-row">
             <input type="number" step="0.01" id="propertyValue" placeholder="Market value">
@@ -571,12 +1528,14 @@
         <div class="info-text">Enter 3.5 for 3.5 percent interest per year</div>
     </div>
 
-    <button class="btn" id="saveBtn" style="margin-top:10px;">Save</button>
-    <button class="btn" id="deleteBtn" style="display:none;background:#ff4466;margin-top:10px;">Delete</button>
+    <button class="btn" id="saveBtn" style="margin-top:6px;">Save</button>
+    <button class="btn btn-danger" id="deleteBtn" style="display:none;margin-top:8px;">Delete</button>
 </div>
 ```
 
 </div>
+
+<!-- Bottom navigation -->
 
 <div class="bottom-nav">
     <button class="nav-btn" id="dashBtn">Dashboard</button>
@@ -589,21 +1548,8 @@
 
 <script>
 // ============================================================================
-// PASSIVE INCOME PORTFOLIO TRACKER
-// ============================================================================
-// Features:
-// - Multi-asset tracking: Stocks, Funds, RSU, Property, Savings
-// - Multi-currency support: DKK, EUR, USD
-// - Income forecasting: Monthly projections, dividend calendar, growth tracking
-// - Yield metrics: Current yield, yield-on-cost
-// - Historical tracking: Daily income snapshots with growth visualization
-// - Portfolio History: Daily tracking of value, income, yield with charts
-// - Goal Tracking: Set and track financial goals with progress bars
-// - Auto price updates: TwelveData API integration
-// - Manual Price Mode: For unsupported exchanges (.CO, .MC, etc.)
-// - AI chat: Pollinations.ai powered advisor
-// - Multi-select filtering: Combine any asset types
-// - Import/Export: JSON backup/restore
+// PASSIVE INCOME PORTFOLIO TRACKER — JavaScript (all logic preserved)
+// UI upgraded via 8-prompt improvement pass. No functional changes.
 // ============================================================================
 
 var API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
@@ -624,6 +1570,10 @@ var goals = JSON.parse(localStorage.getItem('goals') || '[]');
 var manualPriceMode = localStorage.getItem('manualPriceMode') === 'true';
 var goalNotificationsEnabled = localStorage.getItem('goalNotifications') === 'true';
 var notifiedGoals = JSON.parse(localStorage.getItem('notifiedGoals') || '[]');
+var activeTimeRange = 30;
+var activeHistoryRange = 'all';
+var activeHistoryMetric = 'value';
+
 document.getElementById('displayCurrency').value = displayCurrency;
 
 var filterPresets = {
@@ -632,51 +1582,32 @@ var filterPresets = {
     income: ['stock', 'fund', 'property']
 };
 
-function toDKK(amount, currency) {
-    return (amount || 0) * (rates[currency] || 1);
+// ============================================================
+// PHASE 1 — COLLAPSIBLE SECTIONS
+// ============================================================
+function toggleSection(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('open');
 }
 
-function fromDKK(dkk, currency) {
-    if (currency === 'DKK') return dkk;
-    return dkk / (rates[currency] || 1);
-}
-
-function fmt(amount, currency) {
-    var syms = { DKK: 'DKK', EUR: 'EUR', USD: 'USD' };
-    return Math.round(amount).toLocaleString('da-DK') + ' ' + (syms[currency] || currency);
-}
-
-function save() {
-    localStorage.setItem('portfolio', JSON.stringify(portfolio));
-}
-
-// ============================================================================
-// HOLDING VALUE & INCOME CALCULATIONS
-// ============================================================================
+// ============================================================
+// CORE CALCULATION HELPERS
+// ============================================================
+function toDKK(amount, currency) { return (amount || 0) * (rates[currency] || 1); }
+function fromDKK(dkk, currency) { if (currency === 'DKK') return dkk; return dkk / (rates[currency] || 1); }
+function fmt(amount, currency) { return Math.round(amount).toLocaleString('da-DK') + ' ' + (currency || 'DKK'); }
+function save() { localStorage.setItem('portfolio', JSON.stringify(portfolio)); }
 
 function holdingValue(h) {
-    if (h.type === 'property') {
-        return toDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
-    }
-    if (h.type === 'savings') {
-        return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
-    }
-    
-    // Price selection logic for stocks/funds/RSU:
-    // 1. For funds: Always use manualPrice (funds require manual entry)
-    // 2. For stocks/RSU:
-    //    - currentPrice: Set by API fetch OR manual price override
-    //    - manualPrice: Legacy field (backup)
-    //    - cost: Fallback to cost basis if no price available
+    if (h.type === 'property') return toDKK(h.propertyValue || 0, h.propertyCurrency || 'DKK');
+    if (h.type === 'savings') return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK');
     var price = h.type === 'fund'
         ? (h.manualPrice || 0)
         : (h.currentPrice || h.manualPrice || h.cost || 0);
-    
-    // Value = shares × price (converted to DKK)
     return (h.shares || 0) * toDKK(price, h.priceCurrency || h.costCurrency || 'DKK');
 }
 
-// Calculate annual income for a single holding
 function holdingIncome(h) {
     if (h.type === 'property') {
         var rental = toDKK(h.rentalIncome || 0, h.rentalCurrency || 'DKK');
@@ -684,264 +1615,95 @@ function holdingIncome(h) {
         var tc = toDKK((c.tax||0)+(c.power||0)+(c.water||0)+(c.gas||0)+(c.internet||0)+(c.other||0), h.costsCurrency || 'DKK');
         return rental - tc;
     }
-    if (h.type === 'savings') {
-        return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK') * ((h.interestRate || 0) / 100);
-    }
+    if (h.type === 'savings') return toDKK(h.savingsAmount || 0, h.savingsCurrency || 'DKK') * ((h.interestRate || 0) / 100);
     return toDKK((h.dividend || 0) * (h.shares || 0), h.dividendCurrency || h.costCurrency || 'DKK');
 }
 
-// Calculate yield-on-cost (dividend income / original cost basis)
 function holdingYieldOnCost(h) {
-    if (h.type === 'property' || h.type === 'savings') {
-        return 0;
-    }
-    
+    if (h.type === 'property' || h.type === 'savings') return 0;
     var annualIncome = holdingIncome(h);
     var costBasis = toDKK((h.cost || 0) * (h.shares || 0), h.costCurrency || 'DKK');
-    
     if (costBasis === 0) return 0;
-    
     return (annualIncome / costBasis) * 100;
 }
 
-// Simple monthly projection (annual / 12)
-function calculateMonthlyIncome(annualIncome) {
-    return annualIncome / 12;
-}
+function calculateMonthlyIncome(annualIncome) { return annualIncome / 12; }
 
-// Calculate portfolio totals (works with mixed manual/API prices)
-// This function ensures correct calculation regardless of price source:
-// - Stocks with API prices: Uses currentPrice from API
-// - Stocks with manual prices: Uses currentPrice (set by fetchPrice from manualPriceOverride)
-// - Funds: Uses manualPrice field
-// - Property: Uses propertyValue
-// - Savings: Uses savingsAmount
-// All calculations aggregate correctly because holdingValue() handles each type
-function calculatePortfolioTotals(holdings) {
-    var totVal = 0;
-    var totCost = 0;
-    var totInc = 0;
-    
-    holdings.forEach(function(h) {
-        totVal += holdingValue(h);
-        totCost += (h.type === 'property' || h.type === 'savings') 
-            ? holdingValue(h) 
-            : toDKK((h.cost || 0) * (h.shares || 0), h.costCurrency || 'DKK');
-        totInc += holdingIncome(h);
-    });
-    
-    return { value: totVal, cost: totCost, income: totInc };
-}
-
-// ============================================================================
-// GOAL TRACKING SYSTEM
-// ============================================================================
-// Track financial goals with progress visualization
-// Supports: Net Worth, Savings, Annual Income goals
-// Features: Progress bars, completion indicators, optional notifications
-// Data stored locally in browser (no backend required)
-
-function loadGoals() {
-    // Load goals from localStorage
-    return JSON.parse(localStorage.getItem('goals') || '[]');
-}
-
-function saveGoals(goalsArray) {
-    // Save goals to localStorage and update global variable
-    localStorage.setItem('goals', JSON.stringify(goalsArray));
-    goals = goalsArray;
-}
+// ============================================================
+// GOAL SYSTEM
+// ============================================================
+function loadGoals() { return JSON.parse(localStorage.getItem('goals') || '[]'); }
+function saveGoals(arr) { localStorage.setItem('goals', JSON.stringify(arr)); goals = arr; }
 
 function createGoal() {
-    // Create a new goal from form inputs
-    // Validates inputs, generates unique ID, saves to localStorage
     var type = document.getElementById('goalType').value;
     var target = parseFloat(document.getElementById('goalTarget').value);
     var currency = document.getElementById('goalCurrency').value;
     var label = document.getElementById('goalLabel').value.trim();
-    
-    // Validate inputs
-    if (!target || target <= 0) {
-        alert('Please enter a valid target amount');
-        return;
-    }
-    
-    if (!label) {
-        alert('Please enter a label for your goal');
-        return;
-    }
-    
-    // Create new goal object
-    var newGoal = {
-        id: 'goal_' + Date.now(),
-        type: type,
-        target: target,
-        currency: currency,
-        label: label
-    };
-    
-    // Add to goals array
+    if (!target || target <= 0) { alert('Please enter a valid target amount'); return; }
+    if (!label) { alert('Please enter a label for your goal'); return; }
+    var newGoal = { id: 'goal_' + Date.now(), type: type, target: target, currency: currency, label: label };
     var currentGoals = loadGoals();
     currentGoals.push(newGoal);
     saveGoals(currentGoals);
-    
-    // Clear form
     document.getElementById('goalTarget').value = '';
     document.getElementById('goalLabel').value = '';
-    
-    // Re-render goals list
     renderGoals();
 }
 
 function calculateGoalProgress(goal) {
-    // Calculate current progress toward a goal
-    // Returns: { currentValue, percentage, isCompleted, progressBarWidth }
-    // 
-    // Goal Types:
-    // - netWorth: Sum of all holdings (stocks, property, savings, etc.)
-    // - savings: Sum of only savings-type holdings
-    // - income: Sum of all annual income (dividends, rental, interest)
-    //
-    // Currency conversion: Values converted to goal currency for display
-    
     var currentValue = 0;
-    
-    if (goal.type === 'netWorth') {
-        // Net worth = total portfolio value
-        portfolio.holdings.forEach(function(h) {
-            currentValue += holdingValue(h);
-        });
-    } else if (goal.type === 'savings') {
-        // Savings = sum of holdings with type 'savings'
-        portfolio.holdings.forEach(function(h) {
-            if (h.type === 'savings') {
-                currentValue += holdingValue(h);
-            }
-        });
-    } else if (goal.type === 'income') {
-        // Income = total annual income
-        portfolio.holdings.forEach(function(h) {
-            currentValue += holdingIncome(h);
-        });
-    }
-    
-    // Convert current value to goal currency if different
+    if (goal.type === 'netWorth') { portfolio.holdings.forEach(function(h) { currentValue += holdingValue(h); }); }
+    else if (goal.type === 'savings') { portfolio.holdings.forEach(function(h) { if (h.type === 'savings') currentValue += holdingValue(h); }); }
+    else if (goal.type === 'income') { portfolio.holdings.forEach(function(h) { currentValue += holdingIncome(h); }); }
     var targetInDKK = toDKK(goal.target, goal.currency);
-    
-    // Current value is already in DKK from holdingValue/holdingIncome
-    // Convert to goal currency for display
     var currentInGoalCurrency = fromDKK(currentValue, goal.currency);
-    
-    // Calculate percentage
     var percentage = targetInDKK > 0 ? (currentValue / targetInDKK * 100) : 0;
-    
-    // Check if goal is completed
-    var isCompleted = percentage >= 100;
-    
-    // Cap progress bar at 100%, but keep actual percentage for display
-    var progressBarWidth = Math.min(percentage, 100);
-    
-    return {
-        currentValue: currentInGoalCurrency,
-        percentage: percentage,
-        isCompleted: isCompleted,
-        progressBarWidth: progressBarWidth
-    };
+    return { currentValue: currentInGoalCurrency, percentage: percentage, isCompleted: percentage >= 100, progressBarWidth: Math.min(percentage, 100) };
 }
 
 function editGoal(goalId) {
-    // Edit an existing goal
     var currentGoals = loadGoals();
     var goal = currentGoals.find(function(g) { return g.id === goalId; });
-    
     if (!goal) return;
-    
-    // Prompt for new values (inline editing)
     var newTarget = prompt('New target amount:', goal.target);
-    if (newTarget === null) return; // Cancelled
-    
+    if (newTarget === null) return;
     newTarget = parseFloat(newTarget);
-    if (!newTarget || newTarget <= 0) {
-        alert('Please enter a valid target amount');
-        return;
-    }
-    
+    if (!newTarget || newTarget <= 0) { alert('Please enter a valid target amount'); return; }
     var newLabel = prompt('New label:', goal.label);
-    if (newLabel === null) return; // Cancelled
-    
+    if (newLabel === null) return;
     newLabel = newLabel.trim();
-    if (!newLabel) {
-        alert('Please enter a label');
-        return;
-    }
-    
-    // Update goal
-    goal.target = newTarget;
-    goal.label = newLabel;
-    
-    // Save and re-render
-    saveGoals(currentGoals);
-    renderGoals();
+    if (!newLabel) { alert('Please enter a label'); return; }
+    goal.target = newTarget; goal.label = newLabel;
+    saveGoals(currentGoals); renderGoals();
 }
 
 function deleteGoal(goalId) {
-    // Delete a goal after confirmation
-    if (!confirm('Are you sure you want to delete this goal?')) {
-        return;
-    }
-    
-    var currentGoals = loadGoals();
-    var filtered = currentGoals.filter(function(g) { return g.id !== goalId; });
-    
-    saveGoals(filtered);
-    renderGoals();
+    if (!confirm('Delete this goal?')) return;
+    var filtered = loadGoals().filter(function(g) { return g.id !== goalId; });
+    saveGoals(filtered); renderGoals();
 }
 
-// ============================================================================
-// GOAL NOTIFICATIONS
-// ============================================================================
-// Optional toast notifications when goals are completed
-// Tracks which goals have been notified to prevent duplicates
-
-function showGoalToast(goalLabel) {
-    // Display animated toast notification for completed goal
-    // Auto-dismisses after 4 seconds with slide-out animation
+function showGoalToast(label) {
     var toast = document.createElement('div');
     toast.className = 'goal-toast';
-    toast.innerHTML = '<span class="goal-toast-icon">🎉</span> Goal Reached: ' + goalLabel;
-    
+    toast.innerHTML = '<span class="goal-toast-icon">🎉</span> Goal Reached: ' + label;
     document.body.appendChild(toast);
-    
-    // Remove after 4 seconds
     setTimeout(function() {
         toast.style.animation = 'slideIn 0.3s ease reverse';
-        setTimeout(function() {
-            document.body.removeChild(toast);
-        }, 300);
+        setTimeout(function() { document.body.removeChild(toast); }, 300);
     }, 4000);
 }
 
 function checkGoalNotifications() {
-    // Check if any goals just reached 100% and show notifications
-    // Only notifies once per goal (tracked in notifiedGoals array)
-    // If goal falls below 100%, removes from notified list (can notify again)
-    // Respects goalNotificationsEnabled setting
     if (!goalNotificationsEnabled) return;
-    
-    var currentGoals = loadGoals();
-    
-    currentGoals.forEach(function(goal) {
-        var progress = calculateGoalProgress(goal);
-        
-        // Goal just completed and not yet notified
-        if (progress.isCompleted && !notifiedGoals.includes(goal.id)) {
-            showGoalToast(goal.label);
-            notifiedGoals.push(goal.id);
+    loadGoals().forEach(function(goal) {
+        var p = calculateGoalProgress(goal);
+        if (p.isCompleted && !notifiedGoals.includes(goal.id)) {
+            showGoalToast(goal.label); notifiedGoals.push(goal.id);
             localStorage.setItem('notifiedGoals', JSON.stringify(notifiedGoals));
         }
-        
-        // Goal fell below 100%, remove from notified list
-        if (!progress.isCompleted && notifiedGoals.includes(goal.id)) {
+        if (!p.isCompleted && notifiedGoals.includes(goal.id)) {
             notifiedGoals = notifiedGoals.filter(function(id) { return id !== goal.id; });
             localStorage.setItem('notifiedGoals', JSON.stringify(notifiedGoals));
         }
@@ -949,406 +1711,170 @@ function checkGoalNotifications() {
 }
 
 function renderGoals() {
-    // Display all goals in the goals list
     var container = document.getElementById('goalsList');
     var currentGoals = loadGoals();
-    
-    if (currentGoals.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#9ba5b8;font-size:14px;">No goals yet. Create your first goal above!</div>';
+    var count = currentGoals.length;
+
+    // Update subtitle
+    document.getElementById('goalsSubtitle').textContent = count === 0
+        ? 'No goals yet' : count + ' goal' + (count !== 1 ? 's' : '');
+
+    if (count === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:14px;">No goals yet. Create your first goal above!</div>';
         return;
     }
-    
     container.innerHTML = '';
-    
     currentGoals.forEach(function(goal) {
-        // Calculate progress
-        var progress = calculateGoalProgress(goal);
-        
+        var p = calculateGoalProgress(goal);
         var goalDiv = document.createElement('div');
-        var baseStyle = 'padding:15px;background:#1a2237;border-radius:8px;margin-bottom:10px;';
-        
-        // Add completed class if goal reached
-        if (progress.isCompleted) {
-            goalDiv.className = 'goal-completed';
-            goalDiv.style.cssText = baseStyle;
-        } else {
-            goalDiv.style.cssText = baseStyle;
-        }
-        
-        var typeLabel = goal.type === 'netWorth' ? 'Net Worth' 
-                      : goal.type === 'savings' ? 'Savings' 
-                      : 'Annual Income';
-        
-        // Add checkmark and badge for completed goals
-        var checkmark = progress.isCompleted ? '<span class="goal-checkmark">✓</span>' : '';
-        var badge = progress.isCompleted ? '<span class="goal-completed-badge">Goal Reached!</span>' : '';
-        
-        goalDiv.innerHTML = 
-            '<div>' +
-                '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
-                    '<div style="flex:1;">' +
-                        '<div style="font-weight:600;margin-bottom:4px;">' + checkmark + goal.label + badge + '</div>' +
-                        '<div style="font-size:12px;color:#9ba5b8;">' + typeLabel + ' • Target: ' + goal.target.toLocaleString() + ' ' + goal.currency + '</div>' +
-                    '</div>' +
-                    '<div style="display:flex;align-items:center;gap:10px;">' +
-                        '<div style="text-align:right;font-size:14px;font-weight:600;color:' + (progress.isCompleted ? '#00ff88' : '#4d94ff') + ';">' + progress.percentage.toFixed(1) + '%</div>' +
-                        '<div class="goal-actions">' +
-                            '<button class="goal-edit-btn" onclick="editGoal(\'' + goal.id + '\')">Edit</button>' +
-                            '<button class="goal-delete-btn" onclick="deleteGoal(\'' + goal.id + '\')">Delete</button>' +
-                        '</div>' +
+        goalDiv.style.cssText = 'padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;background:var(--bg-input);transition:all 0.15s;';
+        if (p.isCompleted) goalDiv.className = 'goal-completed';
+        var typeLabel = goal.type === 'netWorth' ? 'Net Worth' : goal.type === 'savings' ? 'Savings' : 'Annual Income';
+        var checkmark = p.isCompleted ? '<span class="goal-checkmark">✓</span>' : '';
+        var badge = p.isCompleted ? '<span class="goal-completed-badge">Goal Reached!</span>' : '';
+        goalDiv.innerHTML =
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
+                '<div style="flex:1;">' +
+                    '<div style="font-weight:600;font-size:14px;margin-bottom:3px;">' + checkmark + goal.label + badge + '</div>' +
+                    '<div style="font-size:12px;color:var(--text-muted);">' + typeLabel + ' · Target: ' + goal.target.toLocaleString() + ' ' + goal.currency + '</div>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:10px;margin-left:12px;">' +
+                    '<div style="font-family:DM Mono,monospace;font-size:13px;font-weight:500;color:' + (p.isCompleted ? 'var(--green)' : 'var(--accent)') + ';">' + p.percentage.toFixed(1) + '%</div>' +
+                    '<div class="goal-actions">' +
+                        '<button class="goal-edit-btn" onclick="editGoal(\'' + goal.id + '\')">Edit</button>' +
+                        '<button class="goal-delete-btn" onclick="deleteGoal(\'' + goal.id + '\')">Delete</button>' +
                     '</div>' +
                 '</div>' +
-                '<div style="font-size:12px;color:#9ba5b8;margin-bottom:8px;">Current: ' + Math.round(progress.currentValue).toLocaleString() + ' ' + goal.currency + '</div>' +
-                '<div class="goal-progress-bar">' +
-                    '<div class="goal-progress-fill" style="width:' + progress.progressBarWidth + '%"></div>' +
-                '</div>' +
-            '</div>';
-        
+            '</div>' +
+            '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Current: ' + Math.round(p.currentValue).toLocaleString() + ' ' + goal.currency + '</div>' +
+            '<div class="goal-progress-bar"><div class="goal-progress-fill" style="width:' + p.progressBarWidth + '%"></div></div>';
         container.appendChild(goalDiv);
     });
 }
 
-// ============================================================================
-// PORTFOLIO HISTORY TRACKING
-// ============================================================================
-// Tracks daily snapshots of portfolio value, income, and yield for trending
-// Data stored locally in browser (no backend required)
-// One snapshot per day to track long-term portfolio growth
-
-function loadHistory() {
-    // Load history from localStorage
-    return JSON.parse(localStorage.getItem('portfolioHistory') || '[]');
-}
-
-function saveHistory(history) {
-    // Save history to localStorage and update global variable
-    localStorage.setItem('portfolioHistory', JSON.stringify(history));
-    portfolioHistory = history;
-}
+// ============================================================
+// PORTFOLIO HISTORY
+// ============================================================
+function loadHistory() { return JSON.parse(localStorage.getItem('portfolioHistory') || '[]'); }
+function saveHistory(h) { localStorage.setItem('portfolioHistory', JSON.stringify(h)); portfolioHistory = h; }
 
 function recordDailySnapshot(totalValue, annualIncome) {
-    // Records one snapshot per day (prevents duplicates)
-    // Called automatically by render() after portfolio totals are calculated
-    // Values are in DKK for consistency across currency changes
-    
-    var today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
-    // Load current history
+    var today = new Date().toISOString().split('T')[0];
     var history = loadHistory();
-    
-    // Check if snapshot for today already exists
-    var alreadyRecorded = history.some(function(entry) {
-        return entry.date === today;
-    });
-    
-    if (alreadyRecorded) {
-        return; // Don't duplicate - only one snapshot per day
-    }
-    
-    // Calculate yield percentage
+    if (history.some(function(e) { return e.date === today; })) return;
     var yieldPercent = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
-    
-    // Create new snapshot entry
-    var snapshot = {
-        date: today,
-        totalValue: totalValue,        // Portfolio value in DKK
-        annualIncome: annualIncome,    // Annual income in DKK
-        yield: yieldPercent            // Yield percentage
-    };
-    
-    // Append to history
-    history.push(snapshot);
-    
-    // Sort by date (oldest first)
-    history.sort(function(a, b) {
-        return a.date.localeCompare(b.date);
-    });
-    
-    // Limit to last 3 years for performance (1095 days)
-    if (history.length > 1095) {
-        history = history.slice(-1095);
-    }
-    
-    // Save to localStorage
+    history.push({ date: today, totalValue: totalValue, annualIncome: annualIncome, yield: yieldPercent });
+    history.sort(function(a, b) { return a.date.localeCompare(b.date); });
+    if (history.length > 1095) history = history.slice(-1095);
     saveHistory(history);
 }
 
 function getChartData(range) {
-    // Filters history by time range and prepares data for charting
-    // Range options: '30d' (last 30 days), '12m' (last 12 months), 'all' (entire history)
-    // Returns four parallel arrays ready for chart rendering
-    
     var history = loadHistory();
-    
-    // Return empty arrays if no history
-    if (history.length === 0) {
-        return {
-            labels: [],
-            values: [],
-            income: [],
-            yield: []
-        };
-    }
-    
-    // Calculate cutoff date based on range
+    if (history.length === 0) return { labels: [], values: [], income: [], yield: [] };
     var cutoffDate = new Date();
     var filtered = history;
-    
-    if (range === '30d') {
-        cutoffDate.setDate(cutoffDate.getDate() - 30);
-        filtered = history.filter(function(entry) {
-            return new Date(entry.date) >= cutoffDate;
-        });
-    } else if (range === '12m') {
-        cutoffDate.setMonth(cutoffDate.getMonth() - 12);
-        filtered = history.filter(function(entry) {
-            return new Date(entry.date) >= cutoffDate;
-        });
-    }
-    // 'all' range uses all data (no filtering)
-    
-    // Extract parallel arrays for charting
-    var labels = [];
-    var values = [];
-    var income = [];
-    var yieldData = [];
-    
-    filtered.forEach(function(entry) {
-        labels.push(entry.date);
-        values.push(entry.totalValue);
-        income.push(entry.annualIncome);
-        yieldData.push(entry.yield);
-    });
-    
-    return {
-        labels: labels,      // Date strings (YYYY-MM-DD)
-        values: values,      // Total portfolio values
-        income: income,      // Annual income amounts
-        yield: yieldData     // Yield percentages
-    };
+    if (range === '30d') { cutoffDate.setDate(cutoffDate.getDate() - 30); filtered = history.filter(function(e) { return new Date(e.date) >= cutoffDate; }); }
+    else if (range === '12m') { cutoffDate.setMonth(cutoffDate.getMonth() - 12); filtered = history.filter(function(e) { return new Date(e.date) >= cutoffDate; }); }
+    var labels = [], values = [], income = [], yieldData = [];
+    filtered.forEach(function(e) { labels.push(e.date); values.push(e.totalValue); income.push(e.annualIncome); yieldData.push(e.yield); });
+    return { labels: labels, values: values, income: income, yield: yieldData };
 }
 
 function drawHistoryChart(labels, values, metric) {
-    // Draws a line chart on canvas element showing portfolio history
-    // Uses pure Canvas API (no external chart libraries)
-    // Metric parameter determines Y-axis formatting: 'value', 'income', or 'yield'
-    
-    metric = metric || 'value'; // Default to value
-    
+    metric = metric || 'value';
     var canvas = document.getElementById('historyChart');
     if (!canvas || !canvas.getContext) return;
-    
     var ctx = canvas.getContext('2d');
-    var width = canvas.width;
-    var height = canvas.height;
-    
-    // Clear canvas before redrawing
+    var width = canvas.width; var height = canvas.height;
     ctx.clearRect(0, 0, width, height);
-    
-    // Show message if no data available
     if (!labels || labels.length === 0) {
-        ctx.fillStyle = '#9ba5b8';
-        ctx.font = '14px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText('No history data yet. Check back tomorrow!', width / 2, height / 2);
-        return;
+        ctx.fillStyle = '#7a8fa8'; ctx.font = '14px DM Sans, system-ui'; ctx.textAlign = 'center';
+        ctx.fillText('No history data yet. Check back tomorrow!', width / 2, height / 2); return;
     }
-    
-    // Chart padding for axes and labels
     var padding = { top: 30, right: 40, bottom: 40, left: 60 };
     var chartWidth = width - padding.left - padding.right;
     var chartHeight = height - padding.top - padding.bottom;
-    
-    // Calculate value range for auto-scaling
     var maxValue = Math.max.apply(Math, values);
     var minValue = Math.min.apply(Math, values);
-    var valueRange = maxValue - minValue;
-    
-    // Add 10% padding to range for better visualization
-    var rangePadding = valueRange * 0.1;
-    maxValue += rangePadding;
-    minValue -= rangePadding;
+    var rangePadding = (maxValue - minValue) * 0.1;
+    maxValue += rangePadding; minValue -= rangePadding;
     if (minValue < 0) minValue = 0;
-    
-    // Scale functions to convert data to pixel coordinates
-    var xScale = function(index) {
-        return padding.left + (index / Math.max(1, labels.length - 1)) * chartWidth;
-    };
-    
-    var yScale = function(value) {
-        var range = maxValue - minValue;
-        if (range === 0) return padding.top + chartHeight / 2;
-        return padding.top + chartHeight - ((value - minValue) / range) * chartHeight;
-    };
-    
-    // Draw horizontal grid lines
-    ctx.strokeStyle = '#2a3550';
-    ctx.lineWidth = 1;
+    var xScale = function(i) { return padding.left + (i / Math.max(1, labels.length - 1)) * chartWidth; };
+    var yScale = function(v) { var r = maxValue - minValue; if (r === 0) return padding.top + chartHeight / 2; return padding.top + chartHeight - ((v - minValue) / r) * chartHeight; };
+    ctx.strokeStyle = 'rgba(42,61,90,0.5)'; ctx.lineWidth = 1;
     for (var i = 0; i <= 5; i++) {
         var y = padding.top + (chartHeight / 5) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
-        ctx.stroke();
-        
-        // Y-axis labels with metric-appropriate formatting
-        var value = maxValue - ((maxValue - minValue) / 5) * i;
-        var labelText;
-        if (metric === 'yield') {
-            labelText = value.toFixed(1) + '%';  // e.g., "3.5%"
-        } else {
-            labelText = Math.round(value / 1000) + 'K';  // e.g., "1200K"
-        }
-        ctx.fillStyle = '#9ba5b8';
-        ctx.font = '11px system-ui';
-        ctx.textAlign = 'right';
-        ctx.fillText(labelText, padding.left - 10, y + 4);
+        ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(padding.left + chartWidth, y); ctx.stroke();
+        var val = maxValue - ((maxValue - minValue) / 5) * i;
+        var lbl = metric === 'yield' ? val.toFixed(1) + '%' : Math.round(val / 1000) + 'K';
+        ctx.fillStyle = '#7a8fa8'; ctx.font = '11px DM Mono, monospace'; ctx.textAlign = 'right';
+        ctx.fillText(lbl, padding.left - 10, y + 4);
     }
-    
-    // Draw the line chart connecting all data points
-    ctx.strokeStyle = '#4d94ff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    
+    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath();
     for (var i = 0; i < labels.length; i++) {
-        var x = xScale(i);
-        var y = yScale(values[i]);
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
+        var x = xScale(i); var y = yScale(values[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
-    
-    // Draw dots at each data point
-    ctx.fillStyle = '#4d94ff';
+    ctx.fillStyle = '#3b82f6';
     for (var i = 0; i < labels.length; i++) {
-        var x = xScale(i);
-        var y = yScale(values[i]);
-        
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(xScale(i), yScale(values[i]), 3, 0, Math.PI * 2); ctx.fill();
     }
-    
-    // Draw X-axis date labels (show max 8 labels to avoid crowding)
-    ctx.fillStyle = '#9ba5b8';
-    ctx.font = '11px system-ui';
-    ctx.textAlign = 'center';
-    var labelStep = Math.ceil(labels.length / 8);
-    for (var i = 0; i < labels.length; i += labelStep) {
-        var x = xScale(i);
-        var dateStr = labels[i];
-        // Format date: MM/DD
-        var parts = dateStr.split('-');
-        if (parts.length === 3) {
-            dateStr = parts[1] + '/' + parts[2];
-        }
-        ctx.fillText(dateStr, x, height - padding.bottom + 20);
+    ctx.fillStyle = '#7a8fa8'; ctx.font = '11px DM Mono, monospace'; ctx.textAlign = 'center';
+    var step = Math.ceil(labels.length / 8);
+    for (var i = 0; i < labels.length; i += step) {
+        var parts = labels[i].split('-');
+        ctx.fillText(parts.length === 3 ? parts[1] + '/' + parts[2] : labels[i], xScale(i), height - padding.bottom + 20);
     }
 }
 
-// Record daily income snapshot (prevents duplicates)
 function recordIncomeSnapshot() {
     var today = new Date().toISOString().split('T')[0];
-    
-    // Check if already recorded today
-    var alreadyRecorded = incomeHistory.some(function(entry) {
-        return entry.date === today;
-    });
-    
-    if (alreadyRecorded) {
-        return;
-    }
-    
-    // Calculate total income across all holdings
+    if (incomeHistory.some(function(e) { return e.date === today; })) return;
     var totalIncome = 0;
-    portfolio.holdings.forEach(function(h) {
-        totalIncome += holdingIncome(h);
-    });
-    
-    // Validate income is a number
-    if (isNaN(totalIncome) || !isFinite(totalIncome)) {
-        totalIncome = 0;
-    }
-    
-    // Store snapshot
-    incomeHistory.push({
-        date: today,
-        income: totalIncome
-    });
-    
-    // Keep sorted by date
-    incomeHistory.sort(function(a, b) {
-        return a.date.localeCompare(b.date);
-    });
-    
-    // Limit history to last 3 years for performance
-    if (incomeHistory.length > 1095) {
-        incomeHistory = incomeHistory.slice(-1095);
-    }
-    
+    portfolio.holdings.forEach(function(h) { totalIncome += holdingIncome(h); });
+    if (isNaN(totalIncome) || !isFinite(totalIncome)) totalIncome = 0;
+    incomeHistory.push({ date: today, income: totalIncome });
+    incomeHistory.sort(function(a, b) { return a.date.localeCompare(b.date); });
+    if (incomeHistory.length > 1095) incomeHistory = incomeHistory.slice(-1095);
     localStorage.setItem('incomeHistory', JSON.stringify(incomeHistory));
 }
 
-// Distribute annual income across months based on dividend frequency
 function getMonthlyDividendMap() {
-    var monthlyMap = {
-        'January': 0, 'February': 0, 'March': 0, 'April': 0,
-        'May': 0, 'June': 0, 'July': 0, 'August': 0,
-        'September': 0, 'October': 0, 'November': 0, 'December': 0
-    };
-    
-    var filtered = getFiltered();
-    
-    filtered.forEach(function(h) {
-        var annualIncome = holdingIncome(h);
-        var freq = h.dividendFrequency || 'annual';
-        
-        if (freq === 'none' || annualIncome === 0) {
-            return;
-        }
-        
-        if (freq === 'monthly') {
-            var monthlyAmount = annualIncome / 12;
-            Object.keys(monthlyMap).forEach(function(month) {
-                monthlyMap[month] += monthlyAmount;
-            });
-        } else if (freq === 'quarterly') {
-            var quarterlyAmount = annualIncome / 4;
-            monthlyMap['March'] += quarterlyAmount;
-            monthlyMap['June'] += quarterlyAmount;
-            monthlyMap['September'] += quarterlyAmount;
-            monthlyMap['December'] += quarterlyAmount;
-        } else if (freq === 'semiannual') {
-            var semiAmount = annualIncome / 2;
-            monthlyMap['June'] += semiAmount;
-            monthlyMap['December'] += semiAmount;
-        } else if (freq === 'annual') {
-            monthlyMap['December'] += annualIncome;
-        }
+    var map = { 'January':0,'February':0,'March':0,'April':0,'May':0,'June':0,'July':0,'August':0,'September':0,'October':0,'November':0,'December':0 };
+    getFiltered().forEach(function(h) {
+        var ai = holdingIncome(h); var freq = h.dividendFrequency || 'annual';
+        if (freq === 'none' || ai === 0) return;
+        if (freq === 'monthly') { Object.keys(map).forEach(function(m) { map[m] += ai / 12; }); }
+        else if (freq === 'quarterly') { map.March += ai/4; map.June += ai/4; map.September += ai/4; map.December += ai/4; }
+        else if (freq === 'semiannual') { map.June += ai/2; map.December += ai/2; }
+        else { map.December += ai; }
     });
-    
-    return monthlyMap;
+    return map;
 }
 
-document.getElementById('displayCurrency').onchange = function(e) {
-    displayCurrency = e.target.value;
-    localStorage.setItem('displayCurrency', displayCurrency);
-    render();
-};
-
+// ============================================================
+// THEME
+// ============================================================
 var theme = localStorage.getItem('theme') || 'dark';
 document.body.className = theme;
 var themeBtn = document.getElementById('theme-toggle');
-themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+themeBtn.innerHTML = theme === 'dark' ? '☀️ <span class="label">Light</span>' : '🌙 <span class="label">Dark</span>';
 themeBtn.onclick = function() {
     theme = theme === 'dark' ? 'light' : 'dark';
     document.body.className = theme;
     localStorage.setItem('theme', theme);
-    themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    themeBtn.innerHTML = theme === 'dark' ? '☀️ <span class="label">Light</span>' : '🌙 <span class="label">Dark</span>';
+};
+
+// ============================================================
+// CURRENCY & RATES
+// ============================================================
+document.getElementById('displayCurrency').onchange = function(e) {
+    displayCurrency = e.target.value;
+    localStorage.setItem('displayCurrency', displayCurrency);
+    render();
 };
 
 function updateRates() {
@@ -1358,11 +1884,13 @@ function updateRates() {
         .catch(function() {});
 }
 
+// ============================================================
+// AUTO-UPDATE SCHEDULING
+// ============================================================
 function getNextUpdate() {
     var now = new Date();
     var cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
-    var h = cet.getHours();
-    var next = new Date(cet);
+    var h = cet.getHours(); var next = new Date(cet);
     if (h < 8) next.setHours(8,0,0,0);
     else if (h < 22) next.setHours(22,0,0,0);
     else { next.setDate(next.getDate()+1); next.setHours(8,0,0,0); }
@@ -1370,10 +1898,8 @@ function getNextUpdate() {
 }
 
 function updateNextDisplay() {
-    var next = getNextUpdate();
-    var diff = next - Date.now();
-    var h = Math.floor(diff / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
+    var next = getNextUpdate(); var diff = next - Date.now();
+    var h = Math.floor(diff / 3600000); var m = Math.floor((diff % 3600000) / 60000);
     var t = next.toLocaleTimeString('da-DK', {hour:'2-digit',minute:'2-digit'});
     document.getElementById('nextUpdate').textContent = 'Next auto-update ' + (h < 1 ? 'in '+m+' min' : 'in '+h+'h '+m+'m') + ' at ' + t;
 }
@@ -1381,89 +1907,50 @@ function updateNextDisplay() {
 function checkAutoUpdate() {
     var now = new Date();
     var cet = new Date(now.getTime() + (now.getTimezoneOffset() + 60) * 60000);
-    var hour = cet.getHours();
-    var min = cet.getMinutes();
+    var hour = cet.getHours(); var min = cet.getMinutes();
     if ((hour === 8 || hour === 22) && min < 5) {
         var key = cet.toISOString().split('T')[0] + '-' + hour;
         if (portfolio.lastScheduledUpdate !== key) {
-            portfolio.lastScheduledUpdate = key;
-            save();
-            refreshPrices();
+            portfolio.lastScheduledUpdate = key; save(); refreshPrices();
         }
     }
 }
 
+// ============================================================
+// PRICE FETCHING
+// ============================================================
 function fetchPrice(h) {
-    // ============================================================================
-    // MANUAL PRICE MODE LOGIC
-    // ============================================================================
-    // Priority 1: If manual price mode is ON and holding has a manual price override,
-    // use that price instead of making an API call. This allows users to manually
-    // enter prices for stocks from unsupported exchanges (.CO, .MC, etc.)
     if (manualPriceMode && h.manualPriceOverride && h.manualPriceOverride > 0) {
-        h.currentPrice = h.manualPriceOverride;
-        h.priceCurrency = h.manualPriceCurrency || 'DKK';
-        h.fetchError = false;
-        h.isManualPrice = true; // Flag for UI badge display
-        return Promise.resolve(); // Skip API call
+        h.currentPrice = h.manualPriceOverride; h.priceCurrency = h.manualPriceCurrency || 'DKK';
+        h.fetchError = false; h.isManualPrice = true; return Promise.resolve();
     }
-    
-    // Mark as not using manual price (for UI indicators)
     h.isManualPrice = false;
-    
-    // ============================================================================
-    // SKIP API FETCH FOR NON-STOCK TYPES
-    // ============================================================================
-    // Funds, property, and savings don't use API prices
-    if (!h.ticker || h.type === 'fund' || h.type === 'property' || h.type === 'savings') {
-        return Promise.resolve();
-    }
-    
-    // ============================================================================
-    // SKIP UNSUPPORTED EXCHANGES
-    // ============================================================================
-    // TwelveData free tier doesn't support exchanges with dots in ticker (.CO, .MC, etc.)
-    // Mark as fetch error so user knows to use manual price mode
+    if (!h.ticker || h.type === 'fund' || h.type === 'property' || h.type === 'savings') return Promise.resolve();
     var sym = h.ticker.toUpperCase();
-    if (sym.indexOf('.') !== -1) { 
-        h.fetchError = true; 
-        return Promise.resolve(); 
-    }
-    
-    // ============================================================================
-    // FETCH FROM API
-    // ============================================================================
+    if (sym.indexOf('.') !== -1) { h.fetchError = true; return Promise.resolve(); }
     return fetch('https://api.twelvedata.com/quote?symbol=' + sym + '&apikey=' + API_KEY)
         .then(function(r) { return r.json(); })
         .then(function(j) {
             if (j.close || j.previous_close) {
-                h.currentPrice = parseFloat(j.close || j.previous_close);
-                h.priceCurrency = j.currency || 'USD';
-                h.fetchError = false;
-            } else {
-                h.fetchError = true;
-                fetchErrors.push(h.name + ': fetch failed');
-            }
+                h.currentPrice = parseFloat(j.close || j.previous_close); h.priceCurrency = j.currency || 'USD'; h.fetchError = false;
+            } else { h.fetchError = true; fetchErrors.push(h.name + ': fetch failed'); }
         })
         .catch(function() { h.fetchError = true; fetchErrors.push(h.name + ': fetch failed'); });
 }
 
 function refreshPrices() {
     if (isRefreshing) return;
-    isRefreshing = true;
-    fetchErrors = [];
+    isRefreshing = true; fetchErrors = [];
     document.getElementById('loadingIndicator').classList.add('show');
-    document.getElementById('refreshBtn').textContent = 'Updating...';
+    document.getElementById('refreshBtn').textContent = 'Updating…';
     document.getElementById('refreshBtn').disabled = true;
     updateRates().then(function() {
         return Promise.all(portfolio.holdings.map(fetchPrice));
     }).then(function() {
-        portfolio.lastUpdate = new Date().toISOString();
-        save();
+        portfolio.lastUpdate = new Date().toISOString(); save();
         var ec = document.getElementById('errorContainer');
-        ec.innerHTML = fetchErrors.length ? '<div class="error-list"><strong>Some prices failed:</strong>' + fetchErrors.map(function(e){ return '<div>' + e + '</div>'; }).join('') + '</div>' : '';
-        render();
-        recordIncomeSnapshot();
+        ec.innerHTML = fetchErrors.length ? '<div class="error-list"><strong>Some prices failed:</strong>' + fetchErrors.map(function(e){ return '<div>'+e+'</div>'; }).join('') + '</div>' : '';
+        render(); recordIncomeSnapshot();
         document.getElementById('loadingIndicator').classList.remove('show');
         document.getElementById('refreshBtn').textContent = 'Refresh';
         document.getElementById('refreshBtn').disabled = false;
@@ -1471,6 +1958,9 @@ function refreshPrices() {
     });
 }
 
+// ============================================================
+// FORM HELPERS
+// ============================================================
 function toggleFields() {
     var type = document.getElementById('type').value;
     document.getElementById('stockFields').style.display = (type==='stock'||type==='fund'||type==='rsu') ? 'block' : 'none';
@@ -1479,19 +1969,9 @@ function toggleFields() {
     document.getElementById('tickerWrap').style.display = type==='fund' ? 'none' : 'block';
     document.getElementById('priceHint').style.display = type==='fund' ? 'none' : 'block';
     document.getElementById('fundHint').style.display = type==='fund' ? 'block' : 'none';
-    
-    // Show manual price field only when manual price mode is ON and type is stock/fund/rsu
-    var showManualPrice = manualPriceMode && (type==='stock'||type==='fund'||type==='rsu');
-    document.getElementById('manualPriceWrap').style.display = showManualPrice ? 'block' : 'none';
-    
+    document.getElementById('manualPriceWrap').style.display = (manualPriceMode && (type==='stock'||type==='fund'||type==='rsu')) ? 'block' : 'none';
     var freqField = document.getElementById('dividendFrequency');
-    if (type === 'property') {
-        freqField.value = 'monthly';
-    } else if (type === 'savings') {
-        freqField.value = 'monthly';
-    } else {
-        freqField.value = 'quarterly';
-    }
+    if (type === 'property' || type === 'savings') freqField.value = 'monthly'; else freqField.value = 'quarterly';
 }
 
 function clearForm() {
@@ -1499,22 +1979,16 @@ function clearForm() {
         document.getElementById(id).value = '';
     });
     document.getElementById('type').value = 'stock';
-    document.getElementById('costCurrency').value = 'DKK';
-    document.getElementById('priceCurrency').value = 'DKK';
-    document.getElementById('dividendCurrency').value = 'DKK';
+    ['costCurrency','priceCurrency','dividendCurrency','manualPriceCurrency','propertyCurrency','rentalCurrency','costsCurrency','savingsCurrency'].forEach(function(id) {
+        document.getElementById(id).value = 'DKK';
+    });
     document.getElementById('dividendFrequency').value = 'annual';
-    document.getElementById('manualPriceCurrency').value = 'DKK';
-    document.getElementById('propertyCurrency').value = 'DKK';
-    document.getElementById('rentalCurrency').value = 'DKK';
-    document.getElementById('costsCurrency').value = 'DKK';
-    document.getElementById('savingsCurrency').value = 'DKK';
     document.getElementById('deleteBtn').style.display = 'none';
     toggleFields();
 }
 
 function editHolding(idx) {
-    editingIdx = idx;
-    var h = portfolio.holdings[idx];
+    editingIdx = idx; var h = portfolio.holdings[idx];
     document.getElementById('modalTitle').textContent = 'Edit Holding';
     document.getElementById('type').value = h.type;
     document.getElementById('name').value = h.name || '';
@@ -1530,12 +2004,9 @@ function editHolding(idx) {
         document.getElementById('rentalIncome').value = h.rentalIncome || '';
         document.getElementById('rentalCurrency').value = h.rentalCurrency || 'DKK';
         var c = h.costs || {};
-        document.getElementById('costTax').value = c.tax || '';
-        document.getElementById('costPower').value = c.power || '';
-        document.getElementById('costWater').value = c.water || '';
-        document.getElementById('costGas').value = c.gas || '';
-        document.getElementById('costInternet').value = c.internet || '';
-        document.getElementById('costOther').value = c.other || '';
+        ['Tax','Power','Water','Gas','Internet','Other'].forEach(function(k) {
+            document.getElementById('cost' + k).value = c[k.toLowerCase()] || '';
+        });
         document.getElementById('costsCurrency').value = h.costsCurrency || 'DKK';
     } else {
         document.getElementById('ticker').value = h.ticker || '';
@@ -1561,70 +2032,43 @@ function saveHolding() {
     var h = { type: type, name: name };
     if (type === 'savings') {
         var amt = parseFloat(document.getElementById('savingsAmount').value) || 0;
-        if (amt <= 0) { alert('Savings amount must be greater than 0.'); return; }
-        h.savingsAmount = amt;
-        h.savingsCurrency = document.getElementById('savingsCurrency').value;
+        if (amt <= 0) { alert('Savings amount must be > 0.'); return; }
+        h.savingsAmount = amt; h.savingsCurrency = document.getElementById('savingsCurrency').value;
         h.interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
     } else if (type === 'property') {
         var val = parseFloat(document.getElementById('propertyValue').value) || 0;
-        if (val <= 0) { alert('Property value must be greater than 0.'); return; }
+        if (val <= 0) { alert('Property value must be > 0.'); return; }
         h.address = document.getElementById('address').value.trim();
-        h.propertyValue = val;
-        h.propertyCurrency = document.getElementById('propertyCurrency').value;
+        h.propertyValue = val; h.propertyCurrency = document.getElementById('propertyCurrency').value;
         h.rentalIncome = parseFloat(document.getElementById('rentalIncome').value) || 0;
         h.rentalCurrency = document.getElementById('rentalCurrency').value;
-        h.costs = {
-            tax: parseFloat(document.getElementById('costTax').value) || 0,
-            power: parseFloat(document.getElementById('costPower').value) || 0,
-            water: parseFloat(document.getElementById('costWater').value) || 0,
-            gas: parseFloat(document.getElementById('costGas').value) || 0,
-            internet: parseFloat(document.getElementById('costInternet').value) || 0,
-            other: parseFloat(document.getElementById('costOther').value) || 0
-        };
+        h.costs = { tax: parseFloat(document.getElementById('costTax').value)||0, power: parseFloat(document.getElementById('costPower').value)||0, water: parseFloat(document.getElementById('costWater').value)||0, gas: parseFloat(document.getElementById('costGas').value)||0, internet: parseFloat(document.getElementById('costInternet').value)||0, other: parseFloat(document.getElementById('costOther').value)||0 };
         h.costsCurrency = document.getElementById('costsCurrency').value;
     } else {
         var shares = parseFloat(document.getElementById('shares').value) || 0;
         var cost = parseFloat(document.getElementById('cost').value) || 0;
-        if (shares <= 0 || cost <= 0) { alert('Shares and cost must be greater than 0.'); return; }
+        if (shares <= 0 || cost <= 0) { alert('Shares and cost must be > 0.'); return; }
         var ticker = document.getElementById('ticker').value.trim().toUpperCase();
         if (type !== 'fund' && !ticker) { alert('Ticker is required for stocks and RSU.'); return; }
         var manualPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
         if (type === 'fund' && manualPrice <= 0) { alert('Current price is required for funds.'); return; }
         h.ticker = type !== 'fund' ? ticker : undefined;
-        h.shares = shares;
-        h.cost = cost;
-        h.costCurrency = document.getElementById('costCurrency').value;
+        h.shares = shares; h.cost = cost; h.costCurrency = document.getElementById('costCurrency').value;
         h.manualPrice = manualPrice > 0 ? manualPrice : undefined;
         h.priceCurrency = document.getElementById('priceCurrency').value;
         h.dividend = parseFloat(document.getElementById('dividend').value) || 0;
         h.dividendCurrency = document.getElementById('dividendCurrency').value;
         h.dividendFrequency = document.getElementById('dividendFrequency').value;
-        
-        // Save manual price if provided
-        var manualPriceInput = parseFloat(document.getElementById('manualPrice').value);
-        if (manualPriceInput > 0) {
-            h.manualPriceOverride = manualPriceInput;
-            h.manualPriceCurrency = document.getElementById('manualPriceCurrency').value;
-        } else {
-            h.manualPriceOverride = null;
-            h.manualPriceCurrency = null;
-        }
-        
+        var mpo = parseFloat(document.getElementById('manualPrice').value);
+        h.manualPriceOverride = mpo > 0 ? mpo : null;
+        h.manualPriceCurrency = mpo > 0 ? document.getElementById('manualPriceCurrency').value : null;
         if (editingIdx !== null && portfolio.holdings[editingIdx] && portfolio.holdings[editingIdx].currentPrice) {
             h.currentPrice = portfolio.holdings[editingIdx].currentPrice;
         }
     }
-    if (editingIdx !== null) {
-        portfolio.holdings[editingIdx] = h;
-        editingIdx = null;
-    } else {
-        portfolio.holdings.push(h);
-    }
-    save();
-    document.getElementById('modal').classList.remove('show');
-    clearForm();
-    render();
-    recordIncomeSnapshot();
+    if (editingIdx !== null) { portfolio.holdings[editingIdx] = h; editingIdx = null; }
+    else { portfolio.holdings.push(h); }
+    save(); document.getElementById('modal').classList.remove('show'); clearForm(); render(); recordIncomeSnapshot();
     if ((type === 'stock' || type === 'rsu') && h.ticker) {
         var newIdx = portfolio.holdings.length - 1;
         fetchPrice(portfolio.holdings[newIdx]).then(function() { save(); render(); recordIncomeSnapshot(); });
@@ -1633,106 +2077,76 @@ function saveHolding() {
 
 function deleteHolding() {
     if (!confirm('Delete this holding?')) return;
-    portfolio.holdings.splice(editingIdx, 1);
-    editingIdx = null;
-    save();
-    document.getElementById('modal').classList.remove('show');
-    clearForm();
-    render();
-    recordIncomeSnapshot();
+    portfolio.holdings.splice(editingIdx, 1); editingIdx = null;
+    save(); document.getElementById('modal').classList.remove('show'); clearForm(); render(); recordIncomeSnapshot();
 }
 
-// ============================================================================
-// MANUAL PRICE INLINE EDITOR
-// ============================================================================
-// These functions allow quick price updates without opening the full edit modal
-
+// ============================================================
+// INLINE PRICE EDITOR
+// ============================================================
 function showInlinePriceEditor(idx) {
     var h = portfolio.holdings[idx];
     var holdingEl = document.getElementById('holding-' + idx);
     if (!holdingEl) return;
-    
     var currentPrice = h.manualPriceOverride || h.currentPrice || h.cost || 0;
     var currentCurrency = h.manualPriceCurrency || h.priceCurrency || h.costCurrency || 'DKK';
-    
-    var editorHtml = '<div class="inline-price-editor" id="priceEditor-' + idx + '">' +
-        '<input type="number" step="0.01" class="inline-price-input" id="priceInput-' + idx + '" value="' + currentPrice + '" placeholder="Price">' +
-        '<select class="inline-price-currency" id="priceCurrencySelect-' + idx + '">' +
-            '<option value="DKK"' + (currentCurrency==='DKK'?' selected':'') + '>DKK</option>' +
-            '<option value="EUR"' + (currentCurrency==='EUR'?' selected':'') + '>EUR</option>' +
-            '<option value="USD"' + (currentCurrency==='USD'?' selected':'') + '>USD</option>' +
+    var editorHtml = '<div class="inline-price-editor" id="priceEditor-'+idx+'">' +
+        '<input type="number" step="0.01" class="inline-price-input" id="priceInput-'+idx+'" value="'+currentPrice+'" placeholder="Price">' +
+        '<select class="inline-price-currency" id="priceCurrencySelect-'+idx+'">' +
+            '<option value="DKK"'+(currentCurrency==='DKK'?' selected':'')+'>DKK</option>' +
+            '<option value="EUR"'+(currentCurrency==='EUR'?' selected':'')+'>EUR</option>' +
+            '<option value="USD"'+(currentCurrency==='USD'?' selected':'')+'>USD</option>' +
         '</select>' +
-        '<button class="inline-price-save" onclick="saveInlinePrice(' + idx + ')">Save</button>' +
-        '<button class="inline-price-cancel" onclick="cancelInlinePrice(' + idx + ')">Cancel</button>' +
+        '<button class="inline-price-save" onclick="saveInlinePrice('+idx+')">Save</button>' +
+        '<button class="inline-price-cancel" onclick="cancelInlinePrice('+idx+')">Cancel</button>' +
     '</div>';
-    
-    var existingEditor = document.getElementById('priceEditor-' + idx);
-    if (existingEditor) {
-        existingEditor.remove();
-    } else {
-        holdingEl.insertAdjacentHTML('beforeend', editorHtml);
-        document.getElementById('priceInput-' + idx).focus();
-    }
+    var existing = document.getElementById('priceEditor-'+idx);
+    if (existing) existing.remove(); else { holdingEl.insertAdjacentHTML('beforeend', editorHtml); document.getElementById('priceInput-'+idx).focus(); }
 }
 
 function saveInlinePrice(idx) {
-    var priceInput = document.getElementById('priceInput-' + idx);
-    var currencySelect = document.getElementById('priceCurrencySelect-' + idx);
-    
+    var priceInput = document.getElementById('priceInput-'+idx);
+    var currencySelect = document.getElementById('priceCurrencySelect-'+idx);
     var newPrice = parseFloat(priceInput.value);
-    if (!newPrice || newPrice <= 0) {
-        alert('Please enter a valid price');
-        return;
-    }
-    
+    if (!newPrice || newPrice <= 0) { alert('Please enter a valid price'); return; }
     var h = portfolio.holdings[idx];
-    h.manualPriceOverride = newPrice;
-    h.manualPriceCurrency = currencySelect.value;
-    h.currentPrice = newPrice;
-    h.priceCurrency = currencySelect.value;
-    h.isManualPrice = true;
-    h.fetchError = false;
-    
-    save();
-    render();
-    recordIncomeSnapshot();
+    h.manualPriceOverride = newPrice; h.manualPriceCurrency = currencySelect.value;
+    h.currentPrice = newPrice; h.priceCurrency = currencySelect.value;
+    h.isManualPrice = true; h.fetchError = false;
+    save(); render(); recordIncomeSnapshot();
 }
 
-function cancelInlinePrice(idx) {
-    var editor = document.getElementById('priceEditor-' + idx);
-    if (editor) editor.remove();
-}
+function cancelInlinePrice(idx) { var e = document.getElementById('priceEditor-'+idx); if (e) e.remove(); }
 
+// ============================================================
+// IMPORT / EXPORT
+// ============================================================
 function exportData() {
     var blob = new Blob([JSON.stringify(portfolio, null, 2)], {type:'application/json'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
-    a.href = url;
-    a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = 'portfolio-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click(); URL.revokeObjectURL(url);
 }
 
 document.getElementById('importFile').onchange = function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
+    var file = e.target.files[0]; if (!file) return;
     var reader = new FileReader();
     reader.onload = function(ev) {
         try {
             var imp = JSON.parse(ev.target.result);
             if (!Array.isArray(imp.holdings)) { alert('Invalid file.'); return; }
             if (confirm('Import ' + imp.holdings.length + ' holdings? This replaces current data.')) {
-                portfolio = imp;
-                save();
-                render();
-                alert('Imported successfully!');
+                portfolio = imp; save(); render(); alert('Imported successfully!');
             }
         } catch(err) { alert('Error: ' + err.message); }
     };
-    reader.readAsText(file);
-    e.target.value = '';
+    reader.readAsText(file); e.target.value = '';
 };
 
+// ============================================================
+// CHAT
+// ============================================================
 function toggleChat() {
     var c = document.getElementById('chatContainer');
     c.classList.toggle('show');
@@ -1745,26 +2159,24 @@ function addMsg(role, text) {
     d.className = 'chat-message ' + role;
     d.textContent = text;
     msgs.appendChild(d);
-    d.scrollIntoView({behavior:'smooth'});
+    msgs.scrollTop = msgs.scrollHeight;
 }
 
 function sendChatMessage() {
     var input = document.getElementById('chatInput');
     var msg = input.value.trim();
     if (!msg) return;
-    addMsg('user', msg);
-    input.value = '';
+    addMsg('user', msg); input.value = '';
     var btn = document.getElementById('chatSendBtn');
     btn.disabled = true;
 
     var typing = document.createElement('div');
     typing.className = 'typing-indicator';
-    typing.innerHTML = '<span></span><span></span><span></span>';
+    typing.innerHTML = 'Assistant is thinking… <span></span><span></span><span></span>';
     document.getElementById('chatMessages').appendChild(typing);
-    typing.scrollIntoView({behavior:'smooth'});
+    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
-    var totalVal = 0;
-    var totalInc = 0;
+    var totalVal = 0; var totalInc = 0;
     portfolio.holdings.forEach(function(h) { totalVal += holdingValue(h); totalInc += holdingIncome(h); });
     var yld = totalVal > 0 ? (totalInc/totalVal*100).toFixed(2) : '0.00';
     var names = portfolio.holdings.map(function(h){ return h.name + ' (' + h.type + ')'; }).join(', ') || 'none yet';
@@ -1772,13 +2184,10 @@ function sendChatMessage() {
     var systemMsg = 'You are a helpful passive income investment advisor. ' +
         'Portfolio value: ' + Math.round(totalVal).toLocaleString() + ' DKK. ' +
         'Annual income: ' + Math.round(totalInc).toLocaleString() + ' DKK (' + yld + '% yield). ' +
-        'Holdings: ' + names + '. ' +
-        'Give concise practical advice. For Danish property valuations recommend Boligsiden.dk.';
+        'Holdings: ' + names + '. Give concise practical advice. For Danish property valuations recommend Boligsiden.dk.';
 
     var messages = [{ role: 'system', content: systemMsg }];
-    for (var i = Math.max(0, chatHistory.length-6); i < chatHistory.length; i++) {
-        messages.push(chatHistory[i]);
-    }
+    for (var i = Math.max(0, chatHistory.length-6); i < chatHistory.length; i++) messages.push(chatHistory[i]);
     messages.push({ role: 'user', content: msg });
 
     fetch('https://text.pollinations.ai/openai', {
@@ -1786,29 +2195,22 @@ function sendChatMessage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: 'openai', messages: messages, max_tokens: 400, temperature: 0.7 })
     })
-    .then(function(res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-    })
+    .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
     .then(function(data) {
         var reply = 'Sorry, I could not get a response. Please try again.';
         if (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
             reply = data.choices[0].message.content.trim();
         }
-        chatHistory.push({role:'user',content:msg});
-        chatHistory.push({role:'assistant',content:reply});
+        chatHistory.push({role:'user',content:msg}); chatHistory.push({role:'assistant',content:reply});
         if (chatHistory.length > 12) chatHistory.splice(0, chatHistory.length - 12);
-        typing.remove();
-        addMsg('assistant', reply);
-        btn.disabled = false;
+        typing.remove(); addMsg('assistant', reply); btn.disabled = false;
     })
-    .catch(function() {
-        typing.remove();
-        addMsg('assistant', 'Chat is unavailable right now. Please try again in a moment.');
-        btn.disabled = false;
-    });
+    .catch(function() { typing.remove(); addMsg('assistant', 'Chat is unavailable right now. Please try again in a moment.'); btn.disabled = false; });
 }
 
+// ============================================================
+// FILTERING & SORTING
+// ============================================================
 function getFiltered() {
     var list = portfolio.holdings.filter(function(h) {
         if (activeFilters.length === 0) return true;
@@ -1824,10 +2226,7 @@ function getFiltered() {
     }
     list.sort(function(a,b) {
         if (sortBy === 'value-asc') return holdingValue(a)-holdingValue(b);
-        if (sortBy === 'yield-desc') {
-            var va=holdingValue(a), vb=holdingValue(b);
-            return (vb>0?holdingIncome(b)/vb:0)-(va>0?holdingIncome(a)/va:0);
-        }
+        if (sortBy === 'yield-desc') { var va=holdingValue(a),vb=holdingValue(b); return (vb>0?holdingIncome(b)/vb:0)-(va>0?holdingIncome(a)/va:0); }
         if (sortBy === 'name') return a.name.localeCompare(b.name);
         return holdingValue(b)-holdingValue(a);
     });
@@ -1836,236 +2235,117 @@ function getFiltered() {
 
 function updateFilters() {
     activeFilters = [];
-    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked').forEach(function(checkbox) {
-        activeFilters.push(checkbox.dataset.type);
-    });
-    updateClearButton();
-    render();
+    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked').forEach(function(cb) { activeFilters.push(cb.dataset.type); });
+    updateClearButton(); render();
 }
+function syncCheckboxes() { document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(cb) { cb.checked = activeFilters.indexOf(cb.dataset.type) !== -1; }); }
+function applyPreset(name) { var types = filterPresets[name]; if (!types) return; activeFilters = types.slice(); syncCheckboxes(); updateClearButton(); render(); }
+function clearFilters() { activeFilters = []; document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(cb) { cb.checked = false; }); updateClearButton(); render(); }
+function updateClearButton() { var btn = document.getElementById('clearFiltersBtn'); if (btn) btn.style.display = activeFilters.length > 0 ? 'block' : 'none'; }
 
-function syncCheckboxes() {
-    document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(checkbox) {
-        var type = checkbox.dataset.type;
-        checkbox.checked = activeFilters.indexOf(type) !== -1;
-    });
-}
+// ============================================================
+// PHASE 4 — TYPE ICONS for holdings
+// ============================================================
+var typeIcons = { stock: '📈', fund: '💼', rsu: '🏢', property: '🏠', savings: '💰' };
 
-function applyPreset(presetName) {
-    var types = filterPresets[presetName];
-    if (!types) return;
-    activeFilters = types.slice();
-    syncCheckboxes();
-    updateClearButton();
-    render();
-}
-
-function clearFilters() {
-    activeFilters = [];
-    document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(checkbox) {
-        checkbox.checked = false;
-    });
-    updateClearButton();
-    render();
-}
-
-function updateClearButton() {
-    var clearBtn = document.getElementById('clearFiltersBtn');
-    if (clearBtn) {
-        clearBtn.style.display = activeFilters.length > 0 ? 'block' : 'none';
-    }
-}
-
+// ============================================================
+// CHARTS
+// ============================================================
 function renderChart(filtered) {
     var ctx = document.getElementById('allocationChart').getContext('2d');
-    var types = {};
-    var total = 0;
+    var types = {}; var total = 0;
     filtered.forEach(function(h) { var v=holdingValue(h); types[h.type]=(types[h.type]||0)+v; total+=v; });
     var keys = Object.keys(types);
     var labels = keys.map(function(t) { var pct=total>0?(types[t]/total*100).toFixed(1):0; return t.charAt(0).toUpperCase()+t.slice(1)+' ('+pct+'%)'; });
     var vals = keys.map(function(t) { return types[t]; });
     if (allocationChart) {
-        allocationChart.data.labels = labels;
-        allocationChart.data.datasets[0].data = vals;
-        allocationChart.update('none');
+        allocationChart.data.labels = labels; allocationChart.data.datasets[0].data = vals; allocationChart.update('none');
     } else {
         allocationChart = new Chart(ctx, {
             type: 'pie',
-            data: { labels: labels, datasets:[{data:vals, backgroundColor:['#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40']}] },
+            data: { labels: labels, datasets:[{data:vals, backgroundColor:['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4']}] },
             options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:function(c){ return fmt(fromDKK(c.raw,displayCurrency),displayCurrency); }}} } }
         });
     }
 }
 
-// Render 12-month calendar showing expected income per month
 function renderMonthlyCalendar() {
-    var monthlyMap = getMonthlyDividendMap();
+    var map = getMonthlyDividendMap();
     var container = document.getElementById('monthlyCalendar');
     container.innerHTML = '';
-    
-    var monthOrder = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    monthOrder.forEach(function(month) {
-        var amountDKK = monthlyMap[month];
-        var amountDisplay = fromDKK(amountDKK, displayCurrency);
-        
-        var monthDiv = document.createElement('div');
-        monthDiv.className = 'calendar-month';
-        
-        var nameDiv = document.createElement('div');
-        nameDiv.className = 'calendar-month-name';
-        nameDiv.textContent = month.substring(0, 3);
-        
-        var amountDiv = document.createElement('div');
-        amountDiv.className = 'calendar-month-amount';
-        if (amountDKK > 0) {
-            amountDiv.classList.add('has-income');
-            amountDiv.textContent = fmt(amountDisplay, displayCurrency);
-        } else {
-            amountDiv.classList.add('zero');
-            amountDiv.textContent = '—';
-        }
-        
-        monthDiv.appendChild(nameDiv);
-        monthDiv.appendChild(amountDiv);
-        container.appendChild(monthDiv);
+    ['January','February','March','April','May','June','July','August','September','October','November','December'].forEach(function(month) {
+        var amtDKK = map[month]; var amtDisplay = fromDKK(amtDKK, displayCurrency);
+        var div = document.createElement('div'); div.className = 'calendar-month';
+        var nameDiv = document.createElement('div'); nameDiv.className = 'calendar-month-name'; nameDiv.textContent = month.substring(0, 3);
+        var amtDiv = document.createElement('div'); amtDiv.className = 'calendar-month-amount';
+        if (amtDKK > 0) { amtDiv.classList.add('has-income'); amtDiv.textContent = fmt(amtDisplay, displayCurrency); }
+        else { amtDiv.classList.add('zero'); amtDiv.textContent = '—'; }
+        div.appendChild(nameDiv); div.appendChild(amtDiv); container.appendChild(div);
     });
 }
 
-// Render income growth chart with time range filter
 function renderIncomeGrowthChart(days) {
     var container = document.getElementById('incomeGrowthChart');
     var statsContainer = document.getElementById('incomeGrowthStats');
-    
     if (incomeHistory.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No historical data yet. Check back tomorrow!</div>';
-        statsContainer.innerHTML = '';
-        return;
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No historical data yet. Check back tomorrow!</div>';
+        statsContainer.innerHTML = ''; return;
     }
-    
     var cutoffDate = new Date();
-    if (days !== 'all') {
-        cutoffDate.setDate(cutoffDate.getDate() - days);
-    }
-    
-    var filtered = incomeHistory.filter(function(entry) {
-        if (days === 'all') return true;
-        return new Date(entry.date) >= cutoffDate;
-    });
-    
+    if (days !== 'all') cutoffDate.setDate(cutoffDate.getDate() - days);
+    var filtered = incomeHistory.filter(function(e) { if (days === 'all') return true; return new Date(e.date) >= cutoffDate; });
     if (filtered.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">Not enough data for this time range</div>';
-        statsContainer.innerHTML = '';
-        return;
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Not enough data for this range</div>';
+        statsContainer.innerHTML = ''; return;
     }
-    
     var startIncome = fromDKK(filtered[0].income, displayCurrency);
     var endIncome = fromDKK(filtered[filtered.length - 1].income, displayCurrency);
     var change = endIncome - startIncome;
     var changePct = startIncome > 0 ? (change / startIncome * 100) : 0;
-    
     var maxIncome = Math.max.apply(Math, filtered.map(function(e) { return e.income; }));
     var minIncome = Math.min.apply(Math, filtered.map(function(e) { return e.income; }));
-    
-    statsContainer.innerHTML = 
-        '<div class="growth-stat">' +
-            '<div class="growth-stat-label">Start</div>' +
-            '<div class="growth-stat-value">' + fmt(startIncome, displayCurrency) + '</div>' +
-        '</div>' +
-        '<div class="growth-stat">' +
-            '<div class="growth-stat-label">Current</div>' +
-            '<div class="growth-stat-value">' + fmt(endIncome, displayCurrency) + '</div>' +
-        '</div>' +
-        '<div class="growth-stat">' +
-            '<div class="growth-stat-label">Change</div>' +
-            '<div class="growth-stat-value ' + (change >= 0 ? 'positive' : 'negative') + '">' +
-                (change >= 0 ? '+' : '') + fmt(change, displayCurrency) + ' (' + changePct.toFixed(1) + '%)' +
-            '</div>' +
-        '</div>';
-    
-    var width = container.offsetWidth || 800;
-    var height = 200;
-    var padding = { top: 20, right: 20, bottom: 30, left: 50 };
+    statsContainer.innerHTML =
+        '<div class="growth-stat"><div class="growth-stat-label">Start</div><div class="growth-stat-value">' + fmt(startIncome, displayCurrency) + '</div></div>' +
+        '<div class="growth-stat"><div class="growth-stat-label">Current</div><div class="growth-stat-value">' + fmt(endIncome, displayCurrency) + '</div></div>' +
+        '<div class="growth-stat"><div class="growth-stat-label">Change</div><div class="growth-stat-value ' + (change >= 0 ? 'positive' : 'negative') + '">' + (change >= 0 ? '+' : '') + fmt(change, displayCurrency) + ' (' + changePct.toFixed(1) + '%)</div></div>';
+
+    var width = container.offsetWidth || 800; var height = 200;
+    var padding = { top: 20, right: 20, bottom: 30, left: 55 };
     var chartWidth = width - padding.left - padding.right;
     var chartHeight = height - padding.top - padding.bottom;
-    
-    var xScale = function(i) {
-        return padding.left + (i / Math.max(1, filtered.length - 1)) * chartWidth;
-    };
-    
-    var yScale = function(value) {
-        var range = maxIncome - minIncome;
-        if (range === 0) return padding.top + chartHeight / 2;
-        return padding.top + chartHeight - ((value - minIncome) / range) * chartHeight;
-    };
-    
-    var pathData = filtered.map(function(entry, i) {
-        var x = xScale(i);
-        var y = yScale(entry.income);
-        return (i === 0 ? 'M' : 'L') + x + ',' + y;
-    }).join(' ');
-    
-    var areaData = 'M' + padding.left + ',' + (padding.top + chartHeight) + ' ' +
-        pathData.substring(1) + ' L' + xScale(filtered.length - 1) + ',' + (padding.top + chartHeight) + ' Z';
-    
+    var xScale = function(i) { return padding.left + (i / Math.max(1, filtered.length - 1)) * chartWidth; };
+    var yScale = function(v) { var r = maxIncome - minIncome; if (r === 0) return padding.top + chartHeight / 2; return padding.top + chartHeight - ((v - minIncome) / r) * chartHeight; };
+    var pathData = filtered.map(function(e, i) { return (i === 0 ? 'M' : 'L') + xScale(i) + ',' + yScale(e.income); }).join(' ');
+    var areaData = 'M' + padding.left + ',' + (padding.top + chartHeight) + ' ' + pathData.substring(1) + ' L' + xScale(filtered.length - 1) + ',' + (padding.top + chartHeight) + ' Z';
     var svg = '<svg class="chart-svg" viewBox="0 0 ' + width + ' ' + height + '">' +
-        '<defs>' +
-            '<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">' +
-                '<stop offset="0%" style="stop-color:#4d94ff;stop-opacity:0.5" />' +
-                '<stop offset="100%" style="stop-color:#4d94ff;stop-opacity:0" />' +
-            '</linearGradient>' +
-        '</defs>';
-    
+        '<defs><linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.4" /><stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" /></linearGradient></defs>';
     for (var i = 0; i <= 4; i++) {
         var yPos = padding.top + (chartHeight / 4) * i;
         svg += '<line class="chart-grid" x1="' + padding.left + '" y1="' + yPos + '" x2="' + (padding.left + chartWidth) + '" y2="' + yPos + '" />';
         var val = maxIncome - ((maxIncome - minIncome) / 4) * i;
-        svg += '<text class="chart-label" x="' + (padding.left - 10) + '" y="' + (yPos + 4) + '" text-anchor="end">' + 
-            Math.round(fromDKK(val, displayCurrency) / 1000) + 'K</text>';
+        svg += '<text class="chart-label" x="' + (padding.left - 8) + '" y="' + (yPos + 4) + '" text-anchor="end">' + Math.round(fromDKK(val, displayCurrency) / 1000) + 'K</text>';
     }
-    
-    svg += '<path class="chart-area" d="' + areaData + '" />';
-    svg += '<path class="chart-line" d="' + pathData + '" />';
-    
-    filtered.forEach(function(entry, i) {
-        var x = xScale(i);
-        var y = yScale(entry.income);
-        svg += '<circle class="chart-dot" cx="' + x + '" cy="' + y + '" r="4" data-date="' + entry.date + '" data-income="' + entry.income + '" />';
-    });
-    
-    svg += '</svg>';
-    svg += '<div class="chart-tooltip" id="chartTooltip"></div>';
-    
+    svg += '<path class="chart-area" d="' + areaData + '" /><path class="chart-line" d="' + pathData + '" />';
+    filtered.forEach(function(e, i) { svg += '<circle class="chart-dot" cx="' + xScale(i) + '" cy="' + yScale(e.income) + '" r="4" data-date="' + e.date + '" data-income="' + e.income + '" />'; });
+    svg += '</svg><div class="chart-tooltip" id="chartTooltip"></div>';
     container.innerHTML = svg;
-    
     document.querySelectorAll('.chart-dot').forEach(function(dot) {
         dot.onmouseover = function(e) {
-            var tooltip = document.getElementById('chartTooltip');
-            var date = this.getAttribute('data-date');
-            var income = parseFloat(this.getAttribute('data-income'));
-            var displayIncome = fromDKK(income, displayCurrency);
-            tooltip.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">' + date + '</div>' +
-                '<div>' + fmt(displayIncome, displayCurrency) + '</div>';
-            tooltip.style.left = e.offsetX + 10 + 'px';
-            tooltip.style.top = e.offsetY - 40 + 'px';
-            tooltip.classList.add('show');
+            var tt = document.getElementById('chartTooltip');
+            tt.innerHTML = '<div style="font-weight:600;margin-bottom:3px;">' + this.getAttribute('data-date') + '</div>' +
+                '<div>' + fmt(fromDKK(parseFloat(this.getAttribute('data-income')), displayCurrency), displayCurrency) + '</div>';
+            tt.style.left = e.offsetX + 10 + 'px'; tt.style.top = e.offsetY - 40 + 'px';
+            tt.classList.add('show');
         };
-        dot.onmouseout = function() {
-            document.getElementById('chartTooltip').classList.remove('show');
-        };
+        dot.onmouseout = function() { document.getElementById('chartTooltip').classList.remove('show'); };
     });
 }
 
+// ============================================================
+// MAIN RENDER
+// ============================================================
 function render() {
     var filtered = getFiltered();
-    
-    // Calculate portfolio totals across all holdings
-    // Works correctly with mixed price sources:
-    // - API-fetched prices (stocks/RSU with live data)
-    // - Manual prices (unsupported exchanges like .CO, .MC)
-    // - Fund prices (always manual)
-    // - Property valuations
-    // - Savings amounts
     var totVal=0, totCost=0, totInc=0;
     filtered.forEach(function(h) {
         totVal += holdingValue(h);
@@ -2073,24 +2353,12 @@ function render() {
         totInc += holdingIncome(h);
     });
 
-    var dVal  = fromDKK(totVal, displayCurrency);
-    var dInc  = fromDKK(totInc, displayCurrency);
-    var dChg  = fromDKK(totVal-totCost, displayCurrency);
-    var chgPct = totCost ? ((totVal-totCost)/totCost*100) : 0;
-    var yldPct = totVal  ? (totInc/totVal*100) : 0;
-
-    var totYieldOnCost = 0;
-    filtered.forEach(function(h) {
-        if (h.type !== 'property' && h.type !== 'savings') {
-            totYieldOnCost += toDKK((h.cost || 0) * (h.shares || 0), h.costCurrency || 'DKK');
-        }
-    });
-    var yocPct = totYieldOnCost > 0 ? (totInc/totYieldOnCost*100) : 0;
-
-    var monthlyInc = calculateMonthlyIncome(totInc);
-    var dMonthlyInc = fromDKK(monthlyInc, displayCurrency);
-    
-    // Record daily portfolio snapshot (in DKK for consistency)
+    var dVal=fromDKK(totVal,displayCurrency), dInc=fromDKK(totInc,displayCurrency);
+    var dChg=fromDKK(totVal-totCost,displayCurrency), chgPct=totCost?((totVal-totCost)/totCost*100):0;
+    var yldPct=totVal?(totInc/totVal*100):0;
+    var totYoc=0; filtered.forEach(function(h) { if (h.type!=='property'&&h.type!=='savings') totYoc+=toDKK((h.cost||0)*(h.shares||0),h.costCurrency||'DKK'); });
+    var yocPct=totYoc>0?(totInc/totYoc*100):0;
+    var monthlyInc=calculateMonthlyIncome(totInc), dMonthlyInc=fromDKK(monthlyInc,displayCurrency);
     recordDailySnapshot(totVal, totInc);
 
     document.getElementById('totalValue').textContent = fmt(dVal, displayCurrency);
@@ -2100,26 +2368,31 @@ function render() {
     document.getElementById('yieldOnCostPercent').textContent = yocPct.toFixed(2)+'%';
 
     var chgEl = document.getElementById('totalChange');
-    chgEl.textContent = (dChg>=0?'+':'') + fmt(dChg,displayCurrency) + ' (' + chgPct.toFixed(1) + '%)';
-    chgEl.className = 'change ' + (dChg>=0?'positive':'negative');
+    chgEl.textContent = (dChg>=0?'+':'')+fmt(dChg,displayCurrency)+' ('+chgPct.toFixed(1)+'%)';
+    chgEl.className = 'change '+(dChg>=0?'positive':'negative');
 
-    var lbl = activeFilters.length === 0 
-        ? 'All' 
-        : activeFilters.map(function(t){ return t.charAt(0).toUpperCase() + t.slice(1); }).join(' + ');
+    var lbl = activeFilters.length===0 ? 'All' : activeFilters.map(function(t){ return t.charAt(0).toUpperCase()+t.slice(1); }).join(' + ');
     document.getElementById('filterLabel').textContent = '('+lbl+')';
     document.getElementById('incomeFilterLabel').textContent = '('+lbl+')';
 
+    // Update overview subtitle
+    document.getElementById('overviewSubtitle').textContent = fmt(dVal, displayCurrency) + ' · ' + yldPct.toFixed(1) + '% yield';
+
+    // Update holdings subtitle
+    document.getElementById('holdingsSubtitle').textContent = filtered.length + ' holding' + (filtered.length !== 1 ? 's' : '') + (activeFilters.length ? ' (filtered)' : '');
+
+    // RENDER HOLDINGS
     var container = document.getElementById('holdings');
     container.innerHTML = '';
-
     if (filtered.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ba5b8;">No holdings found</div>';
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No holdings found</div>';
     } else {
         filtered.forEach(function(h) {
             var val=holdingValue(h), inc=holdingIncome(h);
             var yld=val?(inc/val*100):0;
             var dv=fromDKK(val,displayCurrency), di=fromDKK(Math.abs(inc),displayCurrency);
             var badge='', lines='', status='';
+            var icon = typeIcons[h.type] || '📋';
 
             if (h.type==='savings') {
                 badge='<span class="badge badge-savings">SAVINGS</span>';
@@ -2133,59 +2406,41 @@ function render() {
                 var cv=toDKK((h.cost||0)*(h.shares||0),h.costCurrency||'DKK');
                 var chg=val-cv, dCv=fromDKK(cv,displayCurrency), dChg2=fromDKK(chg,displayCurrency);
                 var chgP=cv?(chg/cv*100):0;
-                
-                // Add type badges
-                if (h.type==='fund') { 
-                    badge='<span class="badge badge-fund">FUND</span>'; 
-                }
-                else if (h.type==='rsu') { 
-                    badge='<span class="badge badge-rsu">RSU</span>'; 
-                }
-                
-                // Add manual price badge if applicable
-                if (h.isManualPrice) {
-                    badge += '<span class="badge badge-manual" title="Price manually entered">MANUAL</span>';
-                }
-                
-                // Set status indicator
-                if (h.type==='fund') {
-                    status='<span class="status manual-badge">Manual price</span>';
-                } else if (h.type!=='fund') {
-                    if (h.isManualPrice) {
-                        status='<span class="status manual-badge" title="This price was manually entered">Manual price</span>';
-                    } else if (h.fetchError) {
-                        status='<span class="status failed">Fetch failed</span>';
-                    } else if (h.currentPrice) {
-                        status='<span class="status live">Live price</span>';
-                    }
-                }
-                
+                if (h.type==='fund') badge='<span class="badge badge-fund">FUND</span>';
+                else if (h.type==='rsu') badge='<span class="badge badge-rsu">RSU</span>';
+                if (h.isManualPrice) badge+='<span class="badge badge-manual" title="Price manually entered">MANUAL</span>';
+                if (h.type==='fund') status='<span class="status manual-badge">Manual price</span>';
+                else if (h.isManualPrice) status='<span class="status manual-badge">Manual price</span>';
+                else if (h.fetchError) status='<span class="status failed">Fetch failed</span>';
+                else if (h.currentPrice) status='<span class="status live">● Live</span>';
                 lines='<div class="meta">'+(h.shares||0)+' shares @ '+(h.cost||0).toFixed(2)+' '+(h.costCurrency||'DKK')+' = '+fmt(dCv,displayCurrency)+' cost</div>';
                 lines+='<div class="meta '+(chg>=0?'positive':'negative')+'">'+(chg>=0?'+':'')+fmt(dChg2,displayCurrency)+' ('+chgP.toFixed(1)+'%)</div>';
             }
 
             var incLabel=inc>=0?'Income':'Cost';
-            var yocDisplay = '';
-            
-            if (h.type !== 'property' && h.type !== 'savings') {
-                var yoc = holdingYieldOnCost(h);
-                if (yoc > 0) {
-                    yocDisplay = '<div class="meta">Yield-on-Cost: <span class="positive">' + yoc.toFixed(2) + '%</span></div>';
-                }
+            var yocDisplay='';
+            if (h.type!=='property'&&h.type!=='savings') {
+                var yoc=holdingYieldOnCost(h);
+                if (yoc>0) yocDisplay='<div class="meta">YOC: <span class="positive">'+yoc.toFixed(2)+'%</span></div>';
             }
-            
+
             var d=document.createElement('div');
-            d.className='holding';
-            var hIdx=portfolio.holdings.indexOf(h);
-            d.id = 'holding-' + hIdx;
-            
-            var editPriceBtn = '';
-            if (manualPriceMode && (h.type === 'stock' || h.type === 'fund' || h.type === 'rsu')) {
-                editPriceBtn = '<button class="edit-price-btn" onclick="event.stopPropagation(); showInlinePriceEditor(' + hIdx + ')">Edit Price</button>';
+            d.className='holding'; var hIdx=portfolio.holdings.indexOf(h); d.id='holding-'+hIdx;
+
+            var editPriceBtn='';
+            if (manualPriceMode&&(h.type==='stock'||h.type==='fund'||h.type==='rsu')) {
+                editPriceBtn='<button class="edit-price-btn" onclick="event.stopPropagation();showInlinePriceEditor('+hIdx+')">Edit Price</button>';
             }
-            
+
             d.onclick=(function(i){ return function(){ editHolding(i); }; })(hIdx);
-            d.innerHTML='<div class="holding-header"><span class="holding-name">'+h.name+badge+editPriceBtn+'</span><span>'+fmt(dv,displayCurrency)+'</span></div>'+lines+'<div class="meta">'+incLabel+': '+fmt(di,displayCurrency)+'/yr ('+yld.toFixed(1)+'%)</div>'+yocDisplay+status;
+            d.innerHTML=
+                '<div class="holding-header">' +
+                    '<span class="holding-name">' + icon + ' ' + h.name + badge + editPriceBtn + '</span>' +
+                    '<span class="holding-value">'+fmt(dv,displayCurrency)+'</span>' +
+                '</div>' +
+                lines +
+                '<div class="meta">'+incLabel+': <span class="'+(inc>=0?'positive':'negative')+'">'+fmt(di,displayCurrency)+'</span>/yr ('+yld.toFixed(1)+'%)</div>' +
+                yocDisplay + status;
             container.appendChild(d);
         });
     }
@@ -2193,24 +2448,21 @@ function render() {
     renderChart(filtered);
     renderMonthlyCalendar();
     renderIncomeGrowthChart(activeTimeRange);
-    
-    // Draw portfolio history chart
-    var historyData = getChartData(activeHistoryRange);
-    var chartValues = activeHistoryMetric === 'value' ? historyData.values 
-                    : activeHistoryMetric === 'income' ? historyData.income 
-                    : historyData.yield;
+    var historyData=getChartData(activeHistoryRange);
+    var chartValues=activeHistoryMetric==='value'?historyData.values:activeHistoryMetric==='income'?historyData.income:historyData.yield;
     drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
-    
-    // Update goals progress
     renderGoals();
     checkGoalNotifications();
-    
+
     if (portfolio.lastUpdate) {
-        document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date(portfolio.lastUpdate).toLocaleString('da-DK');
+        document.getElementById('lastUpdate').textContent='Last update: '+new Date(portfolio.lastUpdate).toLocaleString('da-DK');
     }
     updateNextDisplay();
 }
 
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
 document.getElementById('addBtn').onclick = function() { editingIdx=null; clearForm(); document.getElementById('modalTitle').textContent='Add Holding'; document.getElementById('modal').classList.add('show'); };
 document.getElementById('closeBtn').onclick = function() { document.getElementById('modal').classList.remove('show'); };
 document.getElementById('saveBtn').onclick = saveHolding;
@@ -2222,91 +2474,81 @@ document.getElementById('type').onchange = toggleFields;
 document.getElementById('chatSendBtn').onclick = sendChatMessage;
 document.getElementById('chatInput').onkeypress = function(e) { if (e.key==='Enter') sendChatMessage(); };
 document.getElementById('settingsBtn').onclick = function() { document.getElementById('settingsModal').classList.add('show'); };
+document.getElementById('navSettingsBtn').onclick = function() { document.getElementById('settingsModal').classList.add('show'); };
 document.getElementById('closeSettingsBtn').onclick = function() { document.getElementById('settingsModal').classList.remove('show'); };
 document.getElementById('exportBtn').onclick = exportData;
 document.getElementById('importBtn').onclick = function() { document.getElementById('importFile').click(); };
 document.getElementById('clearAllData').onclick = function() { if (confirm('Delete ALL data? Cannot be undone!')) { localStorage.clear(); location.reload(); } };
+document.getElementById('dashBtn').onclick = function() {
+    document.getElementById('secOverview').classList.add('open');
+    document.getElementById('secOverview').scrollIntoView({behavior:'smooth'});
+};
 
 document.getElementById('manualPriceToggle').checked = manualPriceMode;
 document.getElementById('manualPriceToggle').onchange = function() {
-    manualPriceMode = this.checked;
-    localStorage.setItem('manualPriceMode', manualPriceMode);
-    // If modal is open, refresh fields visibility
-    if (document.getElementById('modal').classList.contains('show')) {
-        toggleFields();
-    }
+    manualPriceMode = this.checked; localStorage.setItem('manualPriceMode', manualPriceMode);
+    if (document.getElementById('modal').classList.contains('show')) toggleFields();
 };
 
 document.getElementById('goalNotificationsToggle').checked = goalNotificationsEnabled;
 document.getElementById('goalNotificationsToggle').onchange = function() {
-    goalNotificationsEnabled = this.checked;
-    localStorage.setItem('goalNotifications', goalNotificationsEnabled);
+    goalNotificationsEnabled = this.checked; localStorage.setItem('goalNotifications', goalNotificationsEnabled);
 };
 
 document.getElementById('searchInput').oninput = function(e) { searchTerm=e.target.value; render(); };
 document.getElementById('sortSelect').onchange = function(e) { sortBy=e.target.value; render(); };
 
-document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(checkbox) {
-    checkbox.onchange = updateFilters;
-});
-
-document.querySelectorAll('.preset-btn').forEach(function(btn) {
-    btn.onclick = function() {
-        applyPreset(btn.dataset.preset);
-    };
-});
-
+document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(cb) { cb.onchange = updateFilters; });
+document.querySelectorAll('.preset-btn').forEach(function(btn) { btn.onclick = function() { applyPreset(btn.dataset.preset); }; });
 document.getElementById('clearFiltersBtn').onclick = clearFilters;
-
-var activeTimeRange = 30;
-var activeHistoryRange = 'all';
-var activeHistoryMetric = 'value';
 
 document.querySelectorAll('.time-toggle').forEach(function(toggle) {
     toggle.onclick = function() {
-        document.querySelectorAll('.time-toggle').forEach(function(t) {
-            t.classList.remove('active');
-        });
+        document.querySelectorAll('.time-toggle').forEach(function(t) { t.classList.remove('active'); });
         this.classList.add('active');
-        var range = this.dataset.range;
-        activeTimeRange = range === 'all' ? 'all' : parseInt(range);
+        var range = this.dataset.range; activeTimeRange = range==='all'?'all':parseInt(range);
         renderIncomeGrowthChart(activeTimeRange);
     };
 });
 
 document.querySelectorAll('.history-range-toggle').forEach(function(toggle) {
     toggle.onclick = function() {
-        document.querySelectorAll('.history-range-toggle').forEach(function(t) {
-            t.classList.remove('active');
-        });
-        this.classList.add('active');
-        activeHistoryRange = this.dataset.range;
-        var historyData = getChartData(activeHistoryRange);
-        var chartValues = activeHistoryMetric === 'value' ? historyData.values 
-                        : activeHistoryMetric === 'income' ? historyData.income 
-                        : historyData.yield;
-        drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+        document.querySelectorAll('.history-range-toggle').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active'); activeHistoryRange = this.dataset.range;
+        var hd=getChartData(activeHistoryRange);
+        drawHistoryChart(hd.labels, activeHistoryMetric==='value'?hd.values:activeHistoryMetric==='income'?hd.income:hd.yield, activeHistoryMetric);
     };
 });
 
 document.getElementById('historyMetric').onchange = function() {
     activeHistoryMetric = this.value;
-    var historyData = getChartData(activeHistoryRange);
-    var chartValues = activeHistoryMetric === 'value' ? historyData.values 
-                    : activeHistoryMetric === 'income' ? historyData.income 
-                    : historyData.yield;
-    drawHistoryChart(historyData.labels, chartValues, activeHistoryMetric);
+    var hd=getChartData(activeHistoryRange);
+    drawHistoryChart(hd.labels, activeHistoryMetric==='value'?hd.values:activeHistoryMetric==='income'?hd.income:hd.yield, activeHistoryMetric);
 };
 
-// Goal tracking event handlers
-document.getElementById('saveGoalBtn').onclick = createGoal;
-document.getElementById('goalCurrency').value = displayCurrency; // Default to display currency
+// Phase 5 — Quick action buttons
+document.getElementById('qaAddHolding').onclick = function() {
+    editingIdx=null; clearForm(); document.getElementById('modalTitle').textContent='Add Holding';
+    document.getElementById('modal').classList.add('show');
+};
+document.getElementById('qaAddGoal').onclick = function() {
+    document.getElementById('secGoals').classList.add('open');
+    document.getElementById('secGoals').scrollIntoView({behavior:'smooth'});
+};
+document.getElementById('qaUpdatePrices').onclick = refreshPrices;
 
+// Goal form
+document.getElementById('saveGoalBtn').onclick = createGoal;
+document.getElementById('goalCurrency').value = displayCurrency;
+
+// ============================================================
+// INIT
+// ============================================================
 updateRates();
 checkAutoUpdate();
 updateClearButton();
 render();
-renderGoals(); // Initialize goals display
+renderGoals();
 recordIncomeSnapshot();
 setInterval(checkAutoUpdate, 60000);
 setInterval(updateNextDisplay, 60000);
