@@ -728,7 +728,21 @@
 // ============================================================================
 
 var API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
-var portfolio = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
+
+// Initialize portfolio with safety checks
+try {
+    var storedPortfolio = localStorage.getItem('portfolio');
+    if (storedPortfolio) {
+        portfolio = JSON.parse(storedPortfolio);
+        if (!portfolio.holdings) portfolio.holdings = [];
+    } else {
+        portfolio = {holdings:[], lastUpdate:null, lastScheduledUpdate:null};
+    }
+} catch(e) {
+    console.error('Portfolio load error:', e);
+    portfolio = {holdings:[], lastUpdate:null, lastScheduledUpdate:null};
+}
+
 var editingIdx = null;
 var isRefreshing = false;
 var activeFilters = [];
@@ -745,7 +759,9 @@ var goals = JSON.parse(localStorage.getItem('goals') || '[]');
 var manualPriceMode = localStorage.getItem('manualPriceMode') === 'true';
 var goalNotificationsEnabled = localStorage.getItem('goalNotifications') === 'true';
 var notifiedGoals = JSON.parse(localStorage.getItem('notifiedGoals') || '[]');
-document.getElementById('displayCurrency').value = displayCurrency;
+// Set display currency safely
+var displayCurrencyEl = document.getElementById('displayCurrency');
+if (displayCurrencyEl) displayCurrencyEl.value = displayCurrency;
 
 var filterPresets = {
     liquid: ['stock', 'savings'],
@@ -3012,14 +3028,26 @@ document.getElementById('historyMetric').onchange = function() {
 
 // Goal tracking event handlers
 document.getElementById('saveGoalBtn').onclick = createGoal;
-document.getElementById('goalCurrency').value = displayCurrency; // Default to display currency
+var goalCurrencyEl = document.getElementById('goalCurrency');
+if (goalCurrencyEl) goalCurrencyEl.value = displayCurrency; // Default to display currency
 
-updateRates();
-checkAutoUpdate();
-updateClearButton();
-render();
-renderGoals(); // Initialize goals display
-recordIncomeSnapshot();
+// Initialize app
+console.log('Initializing portfolio app...');
+console.log('Portfolio holdings:', portfolio.holdings.length);
+
+try {
+    updateRates();
+    checkAutoUpdate();
+    updateClearButton();
+    render();
+    renderGoals(); // Initialize goals display
+    recordIncomeSnapshot();
+    
+    console.log('App initialized successfully!');
+} catch(e) {
+    console.error('Initialization error:', e);
+}
+
 setInterval(checkAutoUpdate, 60000);
 setInterval(updateNextDisplay, 60000);
 setInterval(recordIncomeSnapshot, 3600000);
