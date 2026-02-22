@@ -2323,18 +2323,37 @@ function getPortfolioContext() {
         },
         
         // Goals if any exist
-        goals: loadGoals().map(function(g) {
-            var progress = calculateGoalProgress(g);
-            return {
-                label: g.label,
-                type: g.type,
-                target: g.target,
-                currency: g.currency,
-                currentValue: progress.currentValue,
-                percentage: progress.percentage,
-                isCompleted: progress.isCompleted
-            };
-        }),
+        goals: (function() {
+            try {
+                return loadGoals().map(function(g) {
+                    try {
+                        var progress = calculateGoalProgress(g);
+                        return {
+                            label: g.label,
+                            type: g.type,
+                            target: g.target,
+                            currency: g.currency,
+                            currentValue: progress.currentValue,
+                            percentage: progress.percentage,
+                            isCompleted: progress.isCompleted
+                        };
+                    } catch(e) {
+                        // If goal progress calculation fails, return basic info
+                        return {
+                            label: g.label,
+                            type: g.type,
+                            target: g.target,
+                            currency: g.currency,
+                            currentValue: 0,
+                            percentage: 0,
+                            isCompleted: false
+                        };
+                    }
+                });
+            } catch(e) {
+                return [];
+            }
+        })(),
         
         // Display currency
         displayCurrency: displayCurrency,
