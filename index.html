@@ -197,43 +197,6 @@
     .goal-toast-icon { font-size: 20px; margin-right: 10px; }
     @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     body.light .goal-toast { background: #28a745; color: white; box-shadow: 0 4px 12px rgba(40,167,69,0.3); }
-    .simulator-panel { background: #1a2237; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-    .simulator-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 15px; }
-    .simulator-header h3 { margin: 0; }
-    .simulator-toggle { font-size: 20px; color: #9ba5b8; transition: transform 0.3s ease; }
-    .simulator-toggle.open { transform: rotate(180deg); }
-    .simulator-content { display: none; }
-    .simulator-content.show { display: block; }
-    .simulator-section { margin-bottom: 20px; padding: 15px; background: #0a0e1a; border-radius: 6px; }
-    .simulator-section h4 { margin: 0 0 12px 0; font-size: 14px; color: #9ba5b8; text-transform: uppercase; }
-    .simulator-input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .simulator-input { width: 100%; padding: 8px 12px; background: #1a2237; border: 1px solid #2a3550; border-radius: 4px; color: #e8edf4; font-size: 14px; }
-    .simulator-btn { width: 100%; padding: 12px; background: #4d94ff; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
-    .simulator-btn:hover { background: #3d84ef; }
-    body.light .simulator-panel { background: #f8f9fa; }
-    body.light .simulator-section { background: #ffffff; border: 1px solid #dee2e6; }
-    body.light .simulator-input { background: #ffffff; border-color: #ced4da; color: #212529; }
-    body.light .simulator-btn { background: #007bff; }
-    body.light .simulator-btn:hover { background: #0056b3; }
-    .simulator-results { margin-top: 20px; padding: 20px; background: #0a0e1a; border-radius: 8px; display: none; }
-    .simulator-results.show { display: block; }
-    .simulator-results h4 { margin: 0 0 15px 0; color: #4d94ff; font-size: 16px; }
-    .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-    .result-item { background: #1a2237; padding: 12px; border-radius: 6px; }
-    .result-label { font-size: 11px; color: #9ba5b8; text-transform: uppercase; margin-bottom: 4px; }
-    .result-value { font-size: 18px; font-weight: 600; color: #e8edf4; margin-bottom: 4px; }
-    .result-diff { font-size: 13px; font-weight: 600; }
-    .result-diff.positive { color: #00ff88; }
-    .result-diff.negative { color: #ff4466; }
-    body.light .simulator-results { background: #ffffff; border: 1px solid #dee2e6; }
-    body.light .result-item { background: #f8f9fa; border: 1px solid #dee2e6; }
-    body.light .result-diff.positive { color: #28a745; }
-    body.light .result-diff.negative { color: #dc3545; }
-    .simulator-presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-    .preset-btn { padding: 8px 14px; background: #2a3550; color: #e8edf4; border: 1px solid #3a4560; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-    .preset-btn:hover { background: #3a4560; border-color: #4d94ff; }
-    body.light .preset-btn { background: #e9ecef; color: #495057; border-color: #ced4da; }
-    body.light .preset-btn:hover { background: #dee2e6; border-color: #007bff; }
     body.light .calendar-month { background: #f8f9fa; border-color: #dee2e6; }
     body.light .calendar-month:hover { background: #e9ecef; border-color: #007bff; }
     body.light .calendar-month-amount { color: #212529; }
@@ -356,89 +319,6 @@
 <div class="card">
     <h3 style="margin-bottom:15px;">Portfolio Allocation</h3>
     <div class="chart-container"><canvas id="allocationChart"></canvas></div>
-</div>
-
-<div class="card">
-    <div class="simulator-panel">
-        <div class="simulator-header" onclick="toggleSimulator()">
-            <h3>Scenario Simulator</h3>
-            <span class="simulator-toggle" id="simulatorToggle">▼</span>
-        </div>
-
-```
-    <div class="simulator-content" id="simulatorContent">
-        <!-- Quick Presets -->
-        <div class="simulator-presets">
-            <button class="preset-btn" onclick="applyPreset('monthly2000')">💰 Invest 2,000 DKK/month</button>
-            <button class="preset-btn" onclick="applyPreset('monthly5000')">💰 Invest 5,000 DKK/month</button>
-            <button class="preset-btn" onclick="applyPreset('yield1')">📈 Increase yield by 1%</button>
-            <button class="preset-btn" onclick="applyPreset('yield2')">📈 Increase yield by 2%</button>
-            <button class="preset-btn" onclick="applyPreset('buyShares')">🛒 Buy 10 shares</button>
-        </div>
-        
-        <div class="simulator-section">
-            <h4>Monthly Investment</h4>
-            <div style="margin-bottom:10px;">
-                <label style="font-size:12px;color:#9ba5b8;display:block;margin-bottom:4px;">Monthly Amount (DKK)</label>
-                <input type="number" id="simMonthlyAmount" class="simulator-input" placeholder="e.g., 2000">
-            </div>
-            <div style="font-size:12px;color:#9ba5b8;">Simulate investing a fixed amount every month</div>
-        </div>
-        
-        <!-- Yield Change Scenario -->
-        <div class="simulator-section">
-            <h4>Yield Change</h4>
-            <div style="margin-bottom:10px;">
-                <label style="font-size:12px;color:#9ba5b8;display:block;margin-bottom:4px;">Yield Increase (%)</label>
-                <input type="number" id="simYieldIncrease" class="simulator-input" placeholder="e.g., 1" step="0.1">
-            </div>
-            <div style="font-size:12px;color:#9ba5b8;">Simulate a percentage increase in dividend yield</div>
-        </div>
-        
-        <!-- Buy More Shares Scenario -->
-        <div class="simulator-section">
-            <h4>Buy More Shares</h4>
-            <div class="simulator-input-group">
-                <div>
-                    <label style="font-size:12px;color:#9ba5b8;display:block;margin-bottom:4px;">Ticker</label>
-                    <select id="simTicker" class="simulator-input">
-                        <option value="">Select stock...</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="font-size:12px;color:#9ba5b8;display:block;margin-bottom:4px;">Shares</label>
-                    <input type="number" id="simShares" class="simulator-input" placeholder="e.g., 10">
-                </div>
-            </div>
-            <div style="font-size:12px;color:#9ba5b8;">Simulate buying additional shares of a specific stock</div>
-        </div>
-        
-        <button class="simulator-btn" onclick="runSimulation()">Run Simulation</button>
-        
-        <div class="simulator-results" id="simulatorResults">
-            <h4>Simulation Results</h4>
-            <div class="result-grid">
-                <div class="result-item">
-                    <div class="result-label">Total Value</div>
-                    <div class="result-value" id="simResultValue">-</div>
-                    <div class="result-diff" id="simResultValueDiff">-</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-label">Annual Income</div>
-                    <div class="result-value" id="simResultIncome">-</div>
-                    <div class="result-diff" id="simResultIncomeDiff">-</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-label">Yield</div>
-                    <div class="result-value" id="simResultYield">-</div>
-                    <div class="result-diff" id="simResultYieldDiff">-</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-```
-
 </div>
 
 <div class="card">
@@ -719,30 +599,15 @@
 // - Historical tracking: Daily income snapshots with growth visualization
 // - Portfolio History: Daily tracking of value, income, yield with charts
 // - Goal Tracking: Set and track financial goals with progress bars
-// - Scenario Simulator: What-if analysis for investments and yield changes
-// - Portfolio-Aware AI Chat: Personalized passive income advice with full context
 // - Auto price updates: TwelveData API integration
 // - Manual Price Mode: For unsupported exchanges (.CO, .MC, etc.)
+// - AI chat: Pollinations.ai powered advisor
 // - Multi-select filtering: Combine any asset types
 // - Import/Export: JSON backup/restore
 // ============================================================================
 
 var API_KEY = 'f4faaf5fc1f149eeb9364b8065b8298b';
-
-// Initialize portfolio with safety checks
-try {
-    var storedPortfolio = localStorage.getItem('portfolio');
-    if (storedPortfolio) {
-        portfolio = JSON.parse(storedPortfolio);
-        if (!portfolio.holdings) portfolio.holdings = [];
-    } else {
-        portfolio = {holdings:[], lastUpdate:null, lastScheduledUpdate:null};
-    }
-} catch(e) {
-    console.error('Portfolio load error:', e);
-    portfolio = {holdings:[], lastUpdate:null, lastScheduledUpdate:null};
-}
-
+var portfolio = JSON.parse(localStorage.getItem('portfolio') || '{"holdings":[],"lastUpdate":null,"lastScheduledUpdate":null}');
 var editingIdx = null;
 var isRefreshing = false;
 var activeFilters = [];
@@ -759,9 +624,7 @@ var goals = JSON.parse(localStorage.getItem('goals') || '[]');
 var manualPriceMode = localStorage.getItem('manualPriceMode') === 'true';
 var goalNotificationsEnabled = localStorage.getItem('goalNotifications') === 'true';
 var notifiedGoals = JSON.parse(localStorage.getItem('notifiedGoals') || '[]');
-// Set display currency safely
-var displayCurrencyEl = document.getElementById('displayCurrency');
-if (displayCurrencyEl) displayCurrencyEl.value = displayCurrency;
+document.getElementById('displayCurrency').value = displayCurrency;
 
 var filterPresets = {
     liquid: ['stock', 'savings'],
@@ -1083,330 +946,6 @@ function checkGoalNotifications() {
             localStorage.setItem('notifiedGoals', JSON.stringify(notifiedGoals));
         }
     });
-}
-
-// ============================================================================
-// SCENARIO SIMULATOR
-// ============================================================================
-// Simulate hypothetical portfolio changes without modifying real data
-// Three scenarios: Monthly investment, Yield increase, Buy more shares
-// Results show projected value, income, and yield with color-coded differences
-
-function toggleSimulator() {
-    // Expand/collapse simulator panel
-    // Also populates ticker dropdown when opening
-    var content = document.getElementById('simulatorContent');
-    var toggle = document.getElementById('simulatorToggle');
-    
-    if (content.classList.contains('show')) {
-        content.classList.remove('show');
-        toggle.classList.remove('open');
-    } else {
-        content.classList.add('show');
-        toggle.classList.add('open');
-        populateTickerDropdown();
-    }
-}
-
-function populateTickerDropdown() {
-    // Populate ticker dropdown with stocks from portfolio
-    var dropdown = document.getElementById('simTicker');
-    dropdown.innerHTML = '<option value="">Select stock...</option>';
-    
-    portfolio.holdings.forEach(function(h) {
-        if (h.type === 'stock' && h.ticker) {
-            var option = document.createElement('option');
-            option.value = h.ticker;
-            option.textContent = h.name + ' (' + h.ticker + ')';
-            dropdown.appendChild(option);
-        }
-    });
-}
-
-function clonePortfolio() {
-    // Deep clone portfolio holdings to avoid modifying the real data
-    // Uses JSON stringify/parse for complete independence
-    // Returns a safe copy that can be manipulated for simulation
-    // CRITICAL: This ensures the real portfolio is never touched
-    return JSON.parse(JSON.stringify(portfolio.holdings));
-}
-
-function applyMonthlyInvestment(simulatedHoldings, monthlyAmount) {
-    // Scenario 1: Monthly Investment
-    // Distributes investment proportionally across holdings based on portfolio weight
-    // Higher-value holdings receive proportionally more investment
-    // Only applies to holdings with shares (stocks, funds, RSU)
-    
-    if (!monthlyAmount || monthlyAmount <= 0) return;
-    
-    // Calculate total current value to determine weights
-    var totalValue = 0;
-    simulatedHoldings.forEach(function(h) {
-        totalValue += holdingValue(h);
-    });
-    
-    if (totalValue === 0) return; // Can't distribute if portfolio is empty
-    
-    // Distribute investment proportionally
-    simulatedHoldings.forEach(function(h) {
-        // Calculate this holding's weight
-        var holdingVal = holdingValue(h);
-        var weight = holdingVal / totalValue;
-        
-        // Amount to invest in this holding
-        var investmentAmount = monthlyAmount * weight;
-        
-        // Only apply to holdings with shares (stocks, funds, RSU)
-        if (h.shares && h.shares > 0 && (h.type === 'stock' || h.type === 'fund' || h.type === 'rsu')) {
-            // Calculate current price per share
-            var currentPrice = h.currentPrice || h.manualPrice || h.cost || 0;
-            
-            if (currentPrice > 0) {
-                // Calculate additional shares we can buy
-                var additionalShares = investmentAmount / toDKK(currentPrice, h.priceCurrency || h.costCurrency || 'DKK');
-                
-                // Add to share count
-                h.shares += additionalShares;
-            }
-        }
-    });
-}
-
-function applyYieldIncrease(simulatedHoldings, yieldIncreasePercent) {
-    // Scenario 2: Yield Increase
-    // Simulates companies increasing dividends or interest rates improving
-    // Applies percentage increase to all income-generating holdings
-    // Stocks/Funds: increases dividend per share
-    // Savings: increases interest rate
-    // Property: increases rental income
-    
-    if (!yieldIncreasePercent || yieldIncreasePercent === 0) return;
-    
-    simulatedHoldings.forEach(function(h) {
-        // Only apply to holdings that generate income
-        if (h.type === 'stock' || h.type === 'fund' || h.type === 'rsu') {
-            // Increase dividend per share
-            if (h.dividend && h.dividend > 0) {
-                // Apply percentage increase
-                // Example: 1% increase means multiply by 1.01
-                var multiplier = 1 + (yieldIncreasePercent / 100);
-                h.dividend = h.dividend * multiplier;
-            }
-        } else if (h.type === 'savings') {
-            // Increase interest rate
-            if (h.interestRate && h.interestRate > 0) {
-                var multiplier = 1 + (yieldIncreasePercent / 100);
-                h.interestRate = h.interestRate * multiplier;
-            }
-        } else if (h.type === 'property') {
-            // Increase rental income
-            if (h.rentalIncome && h.rentalIncome > 0) {
-                var multiplier = 1 + (yieldIncreasePercent / 100);
-                h.rentalIncome = h.rentalIncome * multiplier;
-            }
-        }
-    });
-}
-
-function applyExtraShares(simulatedHoldings, extraShares) {
-    // Scenario 3: Buy More Shares
-    // Simulates purchasing additional shares of a specific stock
-    // Finds holding by ticker symbol (case-insensitive)
-    // Only applies to holdings with shares (stocks, funds, RSU)
-    
-    if (!extraShares || !extraShares.ticker || !extraShares.amount || extraShares.amount <= 0) {
-        return;
-    }
-    
-    // Find the holding with the specified ticker
-    var holding = simulatedHoldings.find(function(h) {
-        return h.ticker && h.ticker.toUpperCase() === extraShares.ticker.toUpperCase();
-    });
-    
-    if (!holding) {
-        console.warn('Ticker not found in portfolio:', extraShares.ticker);
-        return;
-    }
-    
-    // Only apply to holdings with shares (stocks, funds, RSU)
-    if (holding.shares && (holding.type === 'stock' || holding.type === 'fund' || holding.type === 'rsu')) {
-        // Add the specified number of shares
-        holding.shares += extraShares.amount;
-    }
-}
-
-function calculateSimulatedMetrics(simulatedHoldings) {
-    // Calculate portfolio metrics from simulated holdings
-    // Returns: { totalValue, annualIncome, currentYield }
-    
-    var totalValue = 0;
-    var annualIncome = 0;
-    
-    simulatedHoldings.forEach(function(h) {
-        // Calculate value for this holding
-        var holdingVal = holdingValue(h);
-        totalValue += holdingVal;
-        
-        // Calculate income for this holding
-        var holdingInc = holdingIncome(h);
-        annualIncome += holdingInc;
-    });
-    
-    // Calculate yield percentage
-    var currentYield = totalValue > 0 ? (annualIncome / totalValue * 100) : 0;
-    
-    return {
-        totalValue: totalValue,
-        annualIncome: annualIncome,
-        currentYield: currentYield
-    };
-}
-
-function applyPreset(presetName) {
-    // Apply a preset scenario and automatically run simulation
-    // Presets provide common "what-if" scenarios with one click
-    // Clears previous inputs to avoid scenario mixing
-    
-    // Clear all inputs first
-    document.getElementById('simMonthlyAmount').value = '';
-    document.getElementById('simYieldIncrease').value = '';
-    document.getElementById('simTicker').value = '';
-    document.getElementById('simShares').value = '';
-    
-    // Apply preset values
-    switch(presetName) {
-        case 'monthly2000':
-            document.getElementById('simMonthlyAmount').value = '2000';
-            break;
-            
-        case 'monthly5000':
-            document.getElementById('simMonthlyAmount').value = '5000';
-            break;
-            
-        case 'yield1':
-            document.getElementById('simYieldIncrease').value = '1';
-            break;
-            
-        case 'yield2':
-            document.getElementById('simYieldIncrease').value = '2';
-            break;
-            
-        case 'buyShares':
-            // Use the first stock in the portfolio
-            var firstStock = portfolio.holdings.find(function(h) {
-                return h.type === 'stock' && h.ticker;
-            });
-            
-            if (firstStock) {
-                document.getElementById('simTicker').value = firstStock.ticker;
-                document.getElementById('simShares').value = '10';
-            } else {
-                alert('No stocks found in portfolio. Add a stock first.');
-                return;
-            }
-            break;
-    }
-    
-    // Automatically run the simulation
-    runSimulation();
-}
-
-function runSimulation() {
-    // Main simulation engine
-    // Reads inputs, clones portfolio, applies changes, calculates results
-    
-    // Get input values
-    var monthlyInvestment = parseFloat(document.getElementById('simMonthlyAmount').value) || 0;
-    var yieldIncreasePercent = parseFloat(document.getElementById('simYieldIncrease').value) || 0;
-    var extraSharesTicker = document.getElementById('simTicker').value;
-    var extraSharesAmount = parseFloat(document.getElementById('simShares').value) || 0;
-    
-    // Validate: at least one scenario must be selected
-    if (monthlyInvestment === 0 && yieldIncreasePercent === 0 && (!extraSharesTicker || extraSharesAmount === 0)) {
-        alert('Please enter at least one scenario to simulate');
-        return;
-    }
-    
-    // Clone portfolio (never modify the real data!)
-    var simulatedHoldings = clonePortfolio();
-    
-    // Build options object for scenarios
-    var options = {
-        monthlyInvestment: monthlyInvestment,
-        yieldIncreasePercent: yieldIncreasePercent,
-        extraShares: extraSharesTicker && extraSharesAmount > 0 ? {
-            ticker: extraSharesTicker,
-            amount: extraSharesAmount
-        } : null
-    };
-    
-    // Apply scenarios to simulated holdings ONLY
-    // Real portfolio (portfolio.holdings) is never modified
-    applyMonthlyInvestment(simulatedHoldings, options.monthlyInvestment);
-    applyYieldIncrease(simulatedHoldings, options.yieldIncreasePercent);
-    applyExtraShares(simulatedHoldings, options.extraShares);
-    
-    // Calculate simulated metrics
-    var simulatedMetrics = calculateSimulatedMetrics(simulatedHoldings);
-    
-    // Calculate current metrics for comparison
-    var currentMetrics = calculateSimulatedMetrics(portfolio.holdings);
-    
-    // Prepare result object
-    var simulationResult = {
-        current: currentMetrics,
-        simulated: simulatedMetrics,
-        differences: {
-            totalValue: simulatedMetrics.totalValue - currentMetrics.totalValue,
-            annualIncome: simulatedMetrics.annualIncome - currentMetrics.annualIncome,
-            currentYield: simulatedMetrics.currentYield - currentMetrics.currentYield
-        },
-        options: options
-    };
-    
-    // Display results in UI
-    displaySimulationResults(simulationResult);
-    
-    return simulationResult;
-}
-
-function displaySimulationResults(result) {
-    // Update the results panel with simulation outcomes
-    
-    var resultsPanel = document.getElementById('simulatorResults');
-    
-    // Show the results panel
-    resultsPanel.classList.add('show');
-    
-    // Format values
-    var simValue = Math.round(result.simulated.totalValue);
-    var simIncome = Math.round(result.simulated.annualIncome);
-    var simYield = result.simulated.currentYield;
-    
-    var diffValue = result.differences.totalValue;
-    var diffIncome = result.differences.annualIncome;
-    var diffYield = result.differences.currentYield;
-    
-    // Update value
-    document.getElementById('simResultValue').textContent = simValue.toLocaleString() + ' DKK';
-    document.getElementById('simResultValueDiff').textContent = 
-        (diffValue >= 0 ? '+' : '') + Math.round(diffValue).toLocaleString() + ' DKK';
-    document.getElementById('simResultValueDiff').className = 
-        'result-diff ' + (diffValue >= 0 ? 'positive' : 'negative');
-    
-    // Update income
-    document.getElementById('simResultIncome').textContent = simIncome.toLocaleString() + ' DKK';
-    document.getElementById('simResultIncomeDiff').textContent = 
-        (diffIncome >= 0 ? '+' : '') + Math.round(diffIncome).toLocaleString() + ' DKK';
-    document.getElementById('simResultIncomeDiff').className = 
-        'result-diff ' + (diffIncome >= 0 ? 'positive' : 'negative');
-    
-    // Update yield
-    document.getElementById('simResultYield').textContent = simYield.toFixed(2) + '%';
-    document.getElementById('simResultYieldDiff').textContent = 
-        (diffYield >= 0 ? '+' : '') + diffYield.toFixed(2) + '%';
-    document.getElementById('simResultYieldDiff').className = 
-        'result-diff ' + (diffYield >= 0 ? 'positive' : 'negative');
 }
 
 function renderGoals() {
@@ -2209,332 +1748,65 @@ function addMsg(role, text) {
     d.scrollIntoView({behavior:'smooth'});
 }
 
-// ============================================================================
-// PORTFOLIO-AWARE AI CHAT SYSTEM
-// ============================================================================
-// Provides intelligent, personalized passive income advice based on actual holdings
-// 
-// IMPORTANT: The chat NEVER modifies the real portfolio
-// - All data is read-only for context
-// - AI only provides advice and analysis
-// - User must manually make changes to their portfolio
-//
-// System Components:
-// 1. systemPrompt - Defines AI personality and rules
-// 2. getPortfolioContext() - Extracts all portfolio data
-// 3. buildContextPrompt() - Formats data for AI
-// 4. buildChatPayload() - Combines everything into API request
-// 5. sendChatRequest() - Sends to AI and returns response
-// 6. sendChatMessage() - Main orchestrator function
-//
-// The AI receives with every message:
-// - Role definition (passive income advisor)
-// - Complete portfolio JSON (holdings, totals, goals)
-// - User's question
-//
-// This enables portfolio-aware, goal-focused, personalized advice.
-
-// ============================================================================
-// PORTFOLIO CONTEXT LOADER FOR AI CHAT
-// ============================================================================
-// Extracts all dashboard data for the AI chatbot to provide portfolio-aware advice
-
-// System Prompt: Defines the chatbot's role and behavior
-var systemPrompt = 
-    "You are a Passive Income Advisor — an expert in long-term investing, passive income generation, " +
-    "and financial independence. Your role is to help users build sustainable wealth through dividends, " +
-    "rental income, and interest.\n\n" +
-    
-    "CORE PRINCIPLES:\n" +
-    "• Focus on long-term, sustainable passive income strategies\n" +
-    "• Prioritize dividend growth, quality holdings, and diversification\n" +
-    "• Use the user's actual portfolio data as the source of truth\n" +
-    "• Avoid speculation, day trading, and market timing advice\n" +
-    "• Think in years and decades, not days or months\n\n" +
-    
-    "COMMUNICATION STYLE:\n" +
-    "• Use clear, simple language without excessive jargon\n" +
-    "• Be encouraging and supportive\n" +
-    "• Reference specific holdings by name when relevant\n" +
-    "• Provide actionable insights based on the user's actual data\n" +
-    "• Stay focused on income generation and financial independence\n\n" +
-    
-    "PORTFOLIO-AWARE REASONING:\n" +
-    "• Always reference holdings by name (e.g., 'your Apple shares', 'your Copenhagen apartment')\n" +
-    "• Use exact dividend amounts from the portfolio JSON\n" +
-    "• Calculate annual income by summing all holdings' annualIncome fields\n" +
-    "• Calculate yield as: (totalAnnualIncome / totalValue) × 100\n" +
-    "• Compare holdings: identify highest/lowest income contributors\n" +
-    "• For stocks: mention ticker, shares, dividend, and frequency\n" +
-    "• For property: reference rental income and property value\n" +
-    "• For savings: reference interest rate and amount\n" +
-    "• When discussing diversification, reference actual asset types in portfolio\n\n" +
-    
-    "GOAL AWARENESS:\n" +
-    "• Always relate suggestions back to the user's financial goals\n" +
-    "• Reference goals by their label (e.g., 'your First Million goal')\n" +
-    "• Calculate progress: (currentValue / target) × 100\n" +
-    "• For Net Worth goals: compare portfolio totalValue to target\n" +
-    "• For Savings goals: sum savings holdings and compare to target\n" +
-    "• For Income goals: compare totalAnnualIncome to target\n" +
-    "• Celebrate when goals are reached (percentage >= 100%)\n" +
-    "• Suggest next steps when goals are exceeded\n" +
-    "• Encourage when progress is being made (e.g., '75% toward your goal')\n" +
-    "• If no goals exist, suggest creating specific, measurable targets\n\n" +
-    
-    "WHAT TO DO:\n" +
-    "• Analyze the user's current holdings and income streams\n" +
-    "• Suggest ways to increase passive income\n" +
-    "• Identify diversification opportunities\n" +
-    "• Help track progress toward financial goals\n" +
-    "• Explain dividend reinvestment and compounding\n" +
-    "• Discuss yield, dividend growth, and sustainability\n" +
-    "• Compare user's progress to their stated goals\n" +
-    "• Connect every suggestion to goal achievement\n\n" +
-    
-    "WHAT TO AVOID:\n" +
-    "• Short-term trading strategies\n" +
-    "• Market timing or technical analysis\n" +
-    "• Speculative or high-risk investments\n" +
-    "• Crypto or volatile assets\n" +
-    "• Making specific buy/sell recommendations without context\n" +
-    "• Generic advice that ignores their actual holdings\n" +
-    "• Ignoring their stated goals when making suggestions\n\n" +
-    
-    "Remember: The user's portfolio data is provided in JSON format. Always use this as the foundation " +
-    "for your analysis and advice. Reference their actual holdings, income, and goals. Be specific, not generic.";
-
-
-function getPortfolioContext() {
-    // Collect all portfolio data for the AI chatbot
-    // Returns a clean JSON object matching the dashboard's data model
-    
-    var context = {
-        // Holdings array with all details
-        holdings: portfolio.holdings.map(function(h) {
-            return {
-                name: h.name,
-                type: h.type,
-                ticker: h.ticker || null,
-                shares: h.shares || 0,
-                currentPrice: h.currentPrice || h.manualPrice || h.cost || 0,
-                priceCurrency: h.priceCurrency || h.costCurrency || 'DKK',
-                dividend: h.dividend || 0,
-                dividendCurrency: h.dividendCurrency || 'DKK',
-                frequency: h.frequency || 'annual',
-                propertyValue: h.propertyValue || 0,
-                rentalIncome: h.rentalIncome || 0,
-                savingsAmount: h.savingsAmount || 0,
-                interestRate: h.interestRate || 0,
-                value: holdingValue(h),
-                annualIncome: holdingIncome(h)
-            };
-        }),
-        
-        // Portfolio totals
-        totals: {
-            totalValue: 0,
-            totalAnnualIncome: 0,
-            currentYield: 0
-        },
-        
-        // Goals if any exist
-        goals: (function() {
-            try {
-                return loadGoals().map(function(g) {
-                    try {
-                        var progress = calculateGoalProgress(g);
-                        return {
-                            label: g.label,
-                            type: g.type,
-                            target: g.target,
-                            currency: g.currency,
-                            currentValue: progress.currentValue,
-                            percentage: progress.percentage,
-                            isCompleted: progress.isCompleted
-                        };
-                    } catch(e) {
-                        // If goal progress calculation fails, return basic info
-                        return {
-                            label: g.label,
-                            type: g.type,
-                            target: g.target,
-                            currency: g.currency,
-                            currentValue: 0,
-                            percentage: 0,
-                            isCompleted: false
-                        };
-                    }
-                });
-            } catch(e) {
-                return [];
-            }
-        })(),
-        
-        // Display currency
-        displayCurrency: displayCurrency,
-        
-        // Exchange rates
-        rates: rates
-    };
-    
-    // Calculate totals
-    portfolio.holdings.forEach(function(h) {
-        context.totals.totalValue += holdingValue(h);
-        context.totals.totalAnnualIncome += holdingIncome(h);
-    });
-    
-    context.totals.currentYield = context.totals.totalValue > 0 
-        ? (context.totals.totalAnnualIncome / context.totals.totalValue * 100) 
-        : 0;
-    
-    return context;
-}
-
-function buildContextPrompt() {
-    // Build the context prompt that includes portfolio data
-    // This is sent with every chat request so the AI is always aware of current holdings
-    
-    var context = getPortfolioContext();
-    var contextJSON = JSON.stringify(context, null, 2);
-    
-    var contextPrompt = 
-        "=== USER'S PORTFOLIO DATA (SOURCE OF TRUTH) ===\n\n" +
-        "Here is the user's current portfolio. Use this data as the foundation for all analysis and advice.\n\n" +
-        "```json\n" +
-        contextJSON + "\n" +
-        "```\n\n" +
-        "KEY INFORMATION:\n" +
-        "• Total Portfolio Value: " + Math.round(context.totals.totalValue).toLocaleString() + " " + context.displayCurrency + "\n" +
-        "• Total Annual Income: " + Math.round(context.totals.totalAnnualIncome).toLocaleString() + " " + context.displayCurrency + "/year\n" +
-        "• Current Yield: " + context.totals.currentYield.toFixed(2) + "%\n" +
-        "• Number of Holdings: " + context.holdings.length + "\n" +
-        "• Number of Goals: " + context.goals.length + "\n\n" +
-        "INSTRUCTIONS:\n" +
-        "• Reference holdings by name when relevant (e.g., 'your Apple shares')\n" +
-        "• Use these exact numbers in your calculations\n" +
-        "• Consider the user's goals when providing advice\n" +
-        "• Focus on how to increase passive income with their current holdings\n\n" +
-        "Now, please respond to the user's question:";
-    
-    return contextPrompt;
-}
-
-function buildChatPayload(userMessage) {
-    // Build the complete payload for the AI API
-    // Combines: system prompt + context prompt + user message
-    // Returns: properly formatted chat completion request
-    
-    var contextPrompt = buildContextPrompt();
-    
-    // Build messages array in chat completion format
-    var messages = [
-        {
-            role: "system",
-            content: systemPrompt
-        },
-        {
-            role: "assistant",
-            content: contextPrompt
-        },
-        {
-            role: "user",
-            content: userMessage
-        }
-    ];
-    
-    // Create the payload
-    var payload = {
-        model: "openai",  // Pollinations.ai uses "openai" as model identifier
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000
-    };
-    
-    return payload;
-}
-
-async function sendChatRequest(payload) {
-    // Send the payload to the AI API and return the assistant's reply
-    // Uses Pollinations.ai endpoint with portfolio-aware payload
-    
-    try {
-        var response = await fetch('https://text.pollinations.ai/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-            throw new Error('API request failed: ' + response.status);
-        }
-        
-        // Get response text
-        var responseText = await response.text();
-        
-        // Pollinations.ai returns plain text, not JSON
-        return responseText.trim();
-        
-    } catch (error) {
-        console.error('Chat API Error:', error);
-        return 'Sorry, I encountered an error. Please try again.';
-    }
-}
-
-function sendChatMessage() {
 function sendChatMessage() {
     var input = document.getElementById('chatInput');
     var msg = input.value.trim();
     if (!msg) return;
-    
-    // Add user message to chat
     addMsg('user', msg);
     input.value = '';
-    
-    // Disable send button while processing
     var btn = document.getElementById('chatSendBtn');
     btn.disabled = true;
-    
-    // Show "Thinking..." indicator
+
     var typing = document.createElement('div');
     typing.className = 'typing-indicator';
     typing.innerHTML = '<span></span><span></span><span></span>';
     document.getElementById('chatMessages').appendChild(typing);
     typing.scrollIntoView({behavior:'smooth'});
-    
-    // Build the complete payload with portfolio context
-    var payload = buildChatPayload(msg);
-    
-    // Send request to AI API
-    sendChatRequest(payload)
-        .then(function(reply) {
-            // Remove typing indicator
-            typing.remove();
-            
-            // Add assistant's reply to chat
-            addMsg('assistant', reply);
-            
-            // Store in chat history
-            chatHistory.push({role:'user', content:msg});
-            chatHistory.push({role:'assistant', content:reply});
-            
-            // Keep only last 12 messages (6 exchanges)
-            if (chatHistory.length > 12) {
-                chatHistory.splice(0, chatHistory.length - 12);
-            }
-            
-            // Re-enable send button
-            btn.disabled = false;
-        })
-        .catch(function(error) {
-            // Handle errors
-            typing.remove();
-            addMsg('assistant', 'Sorry, I encountered an error. Please try again.');
-            btn.disabled = false;
-            console.error('Chat error:', error);
-        });
+
+    var totalVal = 0;
+    var totalInc = 0;
+    portfolio.holdings.forEach(function(h) { totalVal += holdingValue(h); totalInc += holdingIncome(h); });
+    var yld = totalVal > 0 ? (totalInc/totalVal*100).toFixed(2) : '0.00';
+    var names = portfolio.holdings.map(function(h){ return h.name + ' (' + h.type + ')'; }).join(', ') || 'none yet';
+
+    var systemMsg = 'You are a helpful passive income investment advisor. ' +
+        'Portfolio value: ' + Math.round(totalVal).toLocaleString() + ' DKK. ' +
+        'Annual income: ' + Math.round(totalInc).toLocaleString() + ' DKK (' + yld + '% yield). ' +
+        'Holdings: ' + names + '. ' +
+        'Give concise practical advice. For Danish property valuations recommend Boligsiden.dk.';
+
+    var messages = [{ role: 'system', content: systemMsg }];
+    for (var i = Math.max(0, chatHistory.length-6); i < chatHistory.length; i++) {
+        messages.push(chatHistory[i]);
+    }
+    messages.push({ role: 'user', content: msg });
+
+    fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'openai', messages: messages, max_tokens: 400, temperature: 0.7 })
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(function(data) {
+        var reply = 'Sorry, I could not get a response. Please try again.';
+        if (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+            reply = data.choices[0].message.content.trim();
+        }
+        chatHistory.push({role:'user',content:msg});
+        chatHistory.push({role:'assistant',content:reply});
+        if (chatHistory.length > 12) chatHistory.splice(0, chatHistory.length - 12);
+        typing.remove();
+        addMsg('assistant', reply);
+        btn.disabled = false;
+    })
+    .catch(function() {
+        typing.remove();
+        addMsg('assistant', 'Chat is unavailable right now. Please try again in a moment.');
+        btn.disabled = false;
+    });
 }
 
 function getFiltered() {
@@ -3028,26 +2300,14 @@ document.getElementById('historyMetric').onchange = function() {
 
 // Goal tracking event handlers
 document.getElementById('saveGoalBtn').onclick = createGoal;
-var goalCurrencyEl = document.getElementById('goalCurrency');
-if (goalCurrencyEl) goalCurrencyEl.value = displayCurrency; // Default to display currency
+document.getElementById('goalCurrency').value = displayCurrency; // Default to display currency
 
-// Initialize app
-console.log('Initializing portfolio app...');
-console.log('Portfolio holdings:', portfolio.holdings.length);
-
-try {
-    updateRates();
-    checkAutoUpdate();
-    updateClearButton();
-    render();
-    renderGoals(); // Initialize goals display
-    recordIncomeSnapshot();
-    
-    console.log('App initialized successfully!');
-} catch(e) {
-    console.error('Initialization error:', e);
-}
-
+updateRates();
+checkAutoUpdate();
+updateClearButton();
+render();
+renderGoals(); // Initialize goals display
+recordIncomeSnapshot();
 setInterval(checkAutoUpdate, 60000);
 setInterval(updateNextDisplay, 60000);
 setInterval(recordIncomeSnapshot, 3600000);
